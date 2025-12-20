@@ -34,20 +34,3 @@ class User(AbstractUser):
         return self.role == 'user'
 
 
-class Contact(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=15, blank=True)
-    subject = models.CharField(max_length=200)
-    message = models.TextField()
-    created_at = models.DateTimeField(default=timezone.now)
-    is_read = models.BooleanField(default=False)
-    admin_reply = models.TextField(blank=True, null=True)
-    replied_at = models.DateTimeField(blank=True, null=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"{self.name} - {self.subject}"
-
