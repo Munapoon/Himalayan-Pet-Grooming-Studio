@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4"><i class="fas fa-shopping-bag"></i> My Orders</h2>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div class="card mb-3" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+             onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+             data-url="{% url 'products:order_detail' order.order_number %}"
+             onclick="window.location=this.dataset.url">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">Order #{{ order.order_number }}</h5>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-calendar"></i> {{ order.created_at|date:"F d, Y" }} | 
+                            <i class="fas fa-box"></i> {{ order.items.count }} item{{ order.items.count|pluralize }}
+                        </p>
+                        <div class="mb-2">
+                            <strong>Payment:</strong>
+                            {% if order.payment_method == 'cod' %}
+                                <i class="fas fa-money-bill-wave text-success"></i> Cash on Delivery
+                            {% else %}
+                                <i class="fab fa-stripe text-primary"></i> Stripe
+                            {% endif %}
+                            -
+                            {% if order.payment_status == 'pending' %}
+                                <span class="badge bg-warning">{{ order.get_payment_status_display }}</span>
+                            {% elif order.payment_status == 'paid' %}
+                                <span class="badge bg-success">{{ order.get_payment_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ order.get_payment_status_display }}</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>Status:</strong>
+                            {% if order.status == 'pending' %}
+                                <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                            {% elif order.status == 'processing' %}
+                                <span class="badge bg-info">{{ order.get_status_display }}</span>
+                            {% elif order.status == 'completed' %}
+                                <span class="badge bg-success">{{ order.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ order.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <h4 class="text-primary mb-3">Rs. {{ order.total_amount }}</h4>
+                        <span class="badge bg-primary p-2">
+                            <i class="fas fa-arrow-right"></i> Click to View
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Order Items Preview -->
+                <hr>
+                <div class="row">
+                    {% for item in order.items.all|slice:":3" %}
+                    <div class="col-md-4 mb-2">
+                        <div class="d-flex align-items-center">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" 
+                                     class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary rounded me-2 d-flex align-items-center justify-content-center" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="fas fa-image text-white"></i>
+                                </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <small class="d-block text-truncate" style="max-width: 200px;">{{ item.product.name }}</small>
+                                <small class="text-muted">Qty: {{ item.quantity }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if order.items.count > 3 %}
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted">+{{ order.items.count|add:"-3" }} more item{{ order.items.count|add:"-3"|pluralize }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-bag fa-5x text-muted mb-4"></i>
+            <h3 class="text-muted mb-3">No orders yet</h3>
+            <p class="text-muted mb-4">Start shopping to place your first order!</p>
+            <a href="{% url 'products:product_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-cart"></i> Browse Products
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

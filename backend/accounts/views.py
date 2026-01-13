@@ -9,7 +9,10 @@ from .decorators import admin_required
 
 
 def home(request):
-    return HttpResponse("Himalayan Pet Studio is running ✅")
+    if request.user.is_authenticated and request.user.is_admin_user():
+        return redirect('admin_dashboard')
+    
+    return render(request, 'accounts/home.html') 
 
 
 def user_login(request):
@@ -70,4 +73,14 @@ def user_logout(request):
 @login_required
 @admin_required
 def admin_dashboard(request):
-    return HttpResponse("Admin Dashboard ✅")
+    return render(request, 'accounts/admin_dashboard.html')
+
+
+@login_required
+def user_dashboard(request):
+    return render(request, 'accounts/user_dashboard.html')
+
+
+@login_required
+def user_profile(request):
+    return render(request, 'accounts/user_dashboard.html') # Placeholder: reusing dashboard template for now
