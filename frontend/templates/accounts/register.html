@@ -64,15 +64,14 @@
                         <div class="mb-3">
                             <label for="{{ form.username.id_for_label }}" class="form-label">Username <span
                                     class="text-danger">*</span></label>
-                            {{ form.username }}
-                            <small class="form-text text-muted">Letters, digits and @/./+/-/_ only.</small>
                             {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="alert alert-danger small py-2 mb-2">
                                 {% for error in form.username.errors %}
-                                {{ error }}
+                                <div>{{ error }}</div>
                                 {% endfor %}
                             </div>
                             {% endif %}
+                            {{ form.username }}
                         </div>
 
                         <div class="mb-3">
@@ -91,50 +90,56 @@
                         <div class="mb-3">
                             <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number <span
                                     class="text-danger">*</span></label>
-                            {{ form.phone }}
-                            <small class="form-text text-muted">Required - We'll use this to contact you about
-                                appointments.</small>
                             {% if form.phone.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="alert alert-danger small py-2 mb-2">
                                 {% for error in form.phone.errors %}
-                                {{ error }}
+                                <div>{{ error }}</div>
                                 {% endfor %}
                             </div>
                             {% endif %}
+                            {{ form.phone }}
                         </div>
 
                         <div class="mb-3">
                             <label for="{{ form.password1.id_for_label }}" class="form-label">Password <span
                                     class="text-danger">*</span></label>
-                            {{ form.password1 }}
-                            <small class="form-text text-muted">
-                                <ul class="mb-0 ps-3">
-                                    <li>At least 8 characters</li>
-                                    <li>Can't be too similar to your other personal information</li>
-                                    <li>Can't be a commonly used password</li>
-                                    <li>Can't be entirely numeric</li>
-                                </ul>
-                            </small>
                             {% if form.password1.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="alert alert-danger small py-2 mb-2">
                                 {% for error in form.password1.errors %}
-                                {{ error }}
+                                <div>{{ error }}</div>
                                 {% endfor %}
                             </div>
                             {% endif %}
+                            <div class="position-relative">
+                                {{ form.password1 }}
+                                <button type="button"
+                                    class="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
+                                    onclick="togglePassword('id_password1', this)"
+                                    style="background: none; border: none; padding: 0.25rem 0.5rem;">
+                                    <i class="fas fa-eye text-muted" id="toggleIcon_password1"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password <span
                                     class="text-danger">*</span></label>
-                            {{ form.password2 }}
                             {% if form.password2.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="alert alert-danger small py-2 mb-2">
                                 {% for error in form.password2.errors %}
-                                {{ error }}
+                                <div>{{ error }}</div>
                                 {% endfor %}
                             </div>
                             {% endif %}
+                            <div class="position-relative">
+                                {{ form.password2 }}
+                                <button type="button"
+                                    class="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2"
+                                    onclick="togglePassword('id_password2', this)"
+                                    style="background: none; border: none; padding: 0.25rem 0.5rem;">
+                                    <i class="fas fa-eye text-muted" id="toggleIcon_password2"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="d-grid mb-3">
