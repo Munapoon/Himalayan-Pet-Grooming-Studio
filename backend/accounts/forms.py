@@ -4,6 +4,17 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import User, Contact
 
 
+# Custom password widget that NEVER renders values
+class SecurePasswordInput(forms.PasswordInput):
+    def __init__(self, *args, **kwargs):
+        kwargs['render_value'] = False
+        super().__init__(*args, **kwargs)
+    
+    def get_context(self, name, value, attrs):
+        # Always set value to None to prevent rendering
+        return super().get_context(name, None, attrs)
+
+
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -47,13 +58,17 @@ class UserRegistrationForm(UserCreationForm):
             'class': 'form-control',
             'placeholder': 'Username'
         })
-        self.fields['password1'].widget.attrs.update({
+        self.fields['password1'].widget = SecurePasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Password'
+            'placeholder': 'Password',
+            'id': 'id_password1',
+            'autocomplete': 'new-password'
         })
-        self.fields['password2'].widget.attrs.update({
+        self.fields['password2'].widget = SecurePasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Confirm Password'
+            'placeholder': 'Confirm Password',
+            'id': 'id_password2',
+            'autocomplete': 'new-password'
         })
     
     def clean_email(self):
@@ -156,9 +171,11 @@ class UserLoginForm(forms.Form):
         })
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
+        widget=SecurePasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Password'
+            'placeholder': 'Password',
+            'id': 'id_password',
+            'autocomplete': 'off'
         })
     )
     remember_me = forms.BooleanField(

@@ -5,17 +5,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>{% block title %}Himalayan Pet Studio{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ request.timestamp|default:'1' }}">
+    <style>
+        /* CRITICAL: Hide browser's built-in password reveal */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        input[type="password"]::-webkit-credentials-auto-fill-button,
+        input[type="password"]::-webkit-contacts-auto-fill-button {
+            visibility: hidden !important;
+            display: none !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            right: 0 !important;
+        }
+
+        :root {
+            --color-navbar-start: #2563EB;
+            --color-navbar-end: #1D4ED8;
+            --color-btn-start: #6366F1;
+            --color-btn-end: #7C3AED;
+            --color-bg-start: #EFF6FF;
+            --color-bg-end: #F8FAFC;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, var(--color-navbar-start), var(--color-navbar-end)) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-link:hover {
+            color: #E0E7FF !important;
+            transform: translateY(-2px);
+        }
+
+        /* Login Card Styles */
+        .login-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(14px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .login-btn {
+            background: linear-gradient(90deg, var(--color-btn-start), var(--color-btn-end));
+            border-radius: 14px;
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.5);
+            color: white;
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fas fa-paw"></i> Himalayan Pet Studio
@@ -139,16 +208,16 @@
     {% endif %}
 
     <!-- MAIN CONTENT -->
-    <main class="container py-4">
+    <main class="container py-4" style="flex: 1;">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-white text-center py-3 mt-5">
+    <footer class="bg-dark text-white text-center py-3" style="margin-top: auto;">
         <p class="mb-0">&copy; 2025 Himalayan Pet Studio</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/main.js' %}?v=3"></script>
 
     {% block extra_js %}{% endblock %}
 </body>

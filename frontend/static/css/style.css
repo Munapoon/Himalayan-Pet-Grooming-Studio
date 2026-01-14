@@ -1,2 +1,155 @@
-/* Custom styles for Himalayan Pet Studio */
-/* Standard Bootstrap layout active */
+/* Modern Web App Upgrade - Himalayan Pet Studio */
+
+:root {
+    --color-navbar-start: #2563EB;
+    --color-navbar-end: #1D4ED8;
+    --color-btn-start: #6366F1;
+    --color-btn-end: #7C3AED;
+    --color-accent: #FBBF24;
+    --color-bg-start: #EFF6FF;
+    --color-bg-end: #F8FAFC;
+}
+
+body {
+    background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+    min-height: 100vh;
+}
+
+/* 1. Navbar → Glass + Gradient */
+.navbar {
+    background: linear-gradient(90deg, var(--color-navbar-start), var(--color-navbar-end)) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: #E0E7FF !important;
+    transform: translateY(-2px);
+}
+
+/* 2. Login Card → Glassmorphism + Depth */
+.login-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.6s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: "🐾";
+    font-size: 80px;
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    opacity: 0.06;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 3. Inputs → Modern Floating Effect */
+.form-control {
+    border-radius: 12px;
+    padding: 14px;
+    padding-right: 45px;
+    /* Make room for eye icon */
+    border: 1px solid #CBD5E1;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.form-control:focus {
+    border-color: #2563EB;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+    background-color: #ffffff;
+}
+
+/* Hide browser default password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-contacts-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+    margin: 0;
+}
+
+/* 4. Login Button → Animated Gradient */
+.login-btn {
+    background: linear-gradient(90deg, var(--color-btn-start), var(--color-btn-end));
+    border-radius: 14px;
+    transition: all 0.3s ease;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 20px;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(99, 102, 241, 0.5);
+    color: white;
+}
+
+/* Additional Polish */
+.btn-check:checked+.btn,
+.btn.active,
+.btn.show,
+.btn:first-child:active,
+:not(.btn-check)+.btn:active {
+    border-color: transparent;
+}
+
+/* Password Toggle Button Styling */
+.position-relative button[onclick*="togglePassword"] {
+    opacity: 0.8;
+    transition: all 0.2s ease;
+    outline: none !important;
+    box-shadow: none !important;
+    right: 5px !important;
+}
+
+.position-relative button[onclick*="togglePassword"]:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.position-relative button[onclick*="togglePassword"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.position-relative button[onclick*="togglePassword"] i {
+    font-size: 1.1rem;
+    color: #6B7280 !important;
+}

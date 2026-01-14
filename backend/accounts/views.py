@@ -67,7 +67,8 @@ def user_register(request):
 
 def user_logout(request):
     logout(request)
-    return redirect('login')
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('home')
 
 
 @login_required

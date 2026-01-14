@@ -2,71 +2,230 @@
 
 {% block title %}Login - Himalayan Pet Studio{% endblock %}
 
+{% block navbar %}
+<!-- Navbar hidden for login page -->
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-paw fa-3x text-primary mb-3"></i>
-                        <h2 class="fw-bold">Login</h2>
-                        <p class="text-muted">Welcome back to Himalayan Pet Studio</p>
-                    </div>
-                    <form method="post">
-                        {% csrf_token %}
+<style>
+    /* Hide navbar and footer on login page */
+    body>nav,
+    body>footer {
+        display: none !important;
+    }
 
-                        <!-- Non-field errors -->
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                        {% endif %}
+    /* Remove container padding for full-width login */
+    body>main {
+        padding: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+</style>
 
-                        <div class="mb-3">
-                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                            {{ form.username }}
-                            {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.username.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
+<div class="login-split-container">
+    <!-- Left Side - Image -->
+    <div class="login-image-side">
+        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=1000&fit=crop" alt="Cute Cat"
+            class="login-bg-image">
+    </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                            {{ form.password }}
-                            {% if form.password.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3 form-check">
-                            {{ form.remember_me }}
-                            <label class="form-check-label" for="{{ form.remember_me.id_for_label }}">
-                                Remember me for 2 weeks
-                            </label>
-                        </div>
-
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-sign-in-alt"></i> Login
-                            </button>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="mb-0">Don't have an account? <a href="{% url 'register' %}"
-                                    class="text-decoration-none">Register here</a></p>
-                        </div>
-                    </form>
+    <!-- Right Side - Login Form -->
+    <div class="login-form-side">
+        <div class="login-form-wrapper">
+            <!-- Logo/Icon -->
+            <div class="text-center mb-4">
+                <div class="login-icon-circle">
+                    <i class="fas fa-paw"></i>
                 </div>
             </div>
+
+            <!-- Welcome Text -->
+            <h2 class="login-title">Welcome Back</h2>
+            <p class="login-subtitle">Enter your email and password to access your account</p>
+
+            <!-- Display Messages -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+
+                <!-- Non-field errors -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Email/Username Field -->
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}"
+                        class="form-label text-uppercase small fw-bold text-muted">Email</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.username.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field -->
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}"
+                        class="form-label text-uppercase small fw-bold text-muted">Password</label>
+                    <div class="position-relative">
+                        {{ form.password }}
+                        <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y"
+                            onclick="togglePassword('id_password', this)"
+                            style="background: none; border: none; z-index: 10; padding: 0.5rem; cursor: pointer;">
+                            <i class="fas fa-eye text-secondary"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.password.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                        {{ form.remember_me }}
+                        <label class="form-check-label small" for="{{ form.remember_me.id_for_label }}">
+                            Remember Me
+                        </label>
+                    </div>
+                    <a href="#" class="text-decoration-none small fw-bold" style="color: #2563EB;">Forgot Password?</a>
+                </div>
+
+                <!-- Sign In Button -->
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary login-btn-modern btn-lg">
+                        Sign In
+                    </button>
+                </div>
+
+                <!-- Register Link -->
+                <div class="text-center">
+                    <p class="mb-0 small text-muted">Don't have an account? <a href="{% url 'register' %}"
+                            class="text-decoration-none fw-bold" style="color: #2563EB;">Create Now</a></p>
+                </div>
+            </form>
         </div>
     </div>
-    {% endblock %}
+</div>
+
+<style>
+    /* Split Screen Layout */
+    .login-split-container {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+    }
+
+    .login-image-side {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        display: none;
+    }
+
+    .login-bg-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .login-form-side {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: #ffffff;
+    }
+
+    .login-form-wrapper {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .login-icon-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        border: 3px solid #BFDBFE;
+    }
+
+    .login-icon-circle i {
+        font-size: 2rem;
+        color: #2563EB;
+    }
+
+    .login-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1F2937;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+        text-align: center;
+        color: #6B7280;
+        font-size: 0.875rem;
+        margin-bottom: 2rem;
+    }
+
+    .login-btn-modern {
+        background: #2563EB;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .login-btn-modern:hover {
+        background: #1D4ED8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Show image on larger screens */
+    @media (min-width: 992px) {
+        .login-image-side {
+            display: block;
+        }
+    }
+
+    /* Form styling */
+    .login-form-side .form-control {
+        border-radius: 8px;
+        border: 1px solid #D1D5DB;
+        padding: 0.75rem 1rem;
+        font-size: 0.9375rem;
+    }
+
+    .login-form-side .form-control:focus {
+        border-color: #2563EB;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+</style>
+{% endblock %}

@@ -10,21 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
     });
 
-    // Clear all password fields on page load to prevent autofill
+    // Remove browser default password reveal buttons
     const passwordInputs = document.querySelectorAll('input[type="password"]');
     passwordInputs.forEach(input => {
-        input.value = '';
-        // Disable browser autofill
-        input.setAttribute('autocomplete', 'off');
-        input.setAttribute('data-form-type', 'other');
+        // Disable browser's built-in password reveal
+        input.style.webkitTextSecurity = 'disc';
     });
-
-    // Additional delay to ensure autofill is cleared
-    setTimeout(() => {
-        passwordInputs.forEach(input => {
-            input.value = '';
-        });
-    }, 100);
 });
 
 // Toggle password visibility

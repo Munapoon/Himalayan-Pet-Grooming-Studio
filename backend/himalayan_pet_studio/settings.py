@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'himalayan_pet_studio',
         'USER': 'root',
-        'PASSWORD': '',  # Change this to your MySQL password
+        'PASSWORD': '',  
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
