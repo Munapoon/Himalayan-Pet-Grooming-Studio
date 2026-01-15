@@ -56,12 +56,7 @@
             <form method="post" autocomplete="off">
                 {% csrf_token %}
 
-                <!-- Non-field errors -->
-                {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
-                </div>
-                {% endif %}
+
 
                 <!-- Email/Username Field -->
                 <div class="mb-3">
@@ -92,6 +87,15 @@
                     {% if form.password.errors %}
                     <div class="text-danger small mt-1">
                         {% for error in form.password.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Non-field errors (login errors) below password -->
+                    {% if form.non_field_errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.non_field_errors %}
                         {{ error }}
                         {% endfor %}
                     </div>

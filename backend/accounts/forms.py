@@ -74,7 +74,7 @@ class UserRegistrationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('This email is already registered.')
+            raise forms.ValidationError('Email already registered.')
         return email
     
     def clean_phone(self):
@@ -82,14 +82,14 @@ class UserRegistrationForm(UserCreationForm):
         
         # Check if phone contains only digits
         if not phone.isdigit():
-             raise forms.ValidationError('Phone number must contain only digits.')
+             raise forms.ValidationError('Only digits allowed.')
 
         # Check minimum length (e.g. at least 10 digits)
         if len(phone) < 10:
-             raise forms.ValidationError('Phone number must be at least 10 digits long.')
+             raise forms.ValidationError('Minimum 10 digits required.')
 
         if User.objects.filter(phone=phone).exists():
-            raise forms.ValidationError('This phone number is already registered.')
+            raise forms.ValidationError('Phone already registered.')
         return phone
     
     def clean_username(self):
@@ -97,14 +97,14 @@ class UserRegistrationForm(UserCreationForm):
         
         # Check minimum length
         if len(username) < 4:
-            raise forms.ValidationError('Username must be at least 4 characters long.')
+            raise forms.ValidationError('Minimum 4 characters required.')
 
         if User.objects.filter(username=username).exists():
-            raise forms.ValidationError('This username is already taken.')
+            raise forms.ValidationError('Username already taken.')
             
         # Check for valid characters
         if not re.match(r'^[\w.@+-]+$', username):
-            raise forms.ValidationError('Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.')
+            raise forms.ValidationError('Only letters, numbers, and @/./+/-/_ allowed.')
             
         return username
     
@@ -113,11 +113,11 @@ class UserRegistrationForm(UserCreationForm):
         
         # Check minimum length
         if len(password) < 8:
-            raise forms.ValidationError('Password must be at least 8 characters long.')
+            raise forms.ValidationError('Minimum 8 characters required.')
         
         # Check if entirely numeric
         if password.isdigit():
-            raise forms.ValidationError('Password cannot be entirely numeric.')
+            raise forms.ValidationError('Cannot be entirely numeric.')
         
         # Check for common passwords
         common_passwords = [
@@ -125,7 +125,7 @@ class UserRegistrationForm(UserCreationForm):
             '11111111', '00000000', 'password1', '123456789', 'iloveyou'
         ]
         if password.lower() in common_passwords:
-            raise forms.ValidationError('This password is too common. Please choose a more secure password.')
+            raise forms.ValidationError('Password too common.')
         
         return password
     
@@ -143,20 +143,20 @@ class UserRegistrationForm(UserCreationForm):
             password_lower = password1.lower()
             
             if username and username.lower() in password_lower:
-                self.add_error('password1', 'Password is too similar to your username.')
+                self.add_error('password1', 'Too similar to username.')
             
             if email and email.split('@')[0].lower() in password_lower:
-                self.add_error('password1', 'Password is too similar to your email address.')
+                self.add_error('password1', 'Too similar to email.')
             
             if first_name and len(first_name) > 2 and first_name.lower() in password_lower:
-                self.add_error('password1', 'Password is too similar to your first name.')
+                self.add_error('password1', 'Too similar to first name.')
             
             if last_name and len(last_name) > 2 and last_name.lower() in password_lower:
-                self.add_error('password1', 'Password is too similar to your last name.')
+                self.add_error('password1', 'Too similar to last name.')
         
         # Check if passwords match
         if password1 and password2 and password1 != password2:
-            self.add_error('password2', 'The two password fields must match.')
+            self.add_error('password2', 'Passwords do not match.')
         
         return cleaned_data
 

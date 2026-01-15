@@ -37,8 +37,9 @@ def user_login(request):
                 if user.is_admin_user():
                     return redirect('admin_dashboard')
                 return redirect('home')
-
-            messages.error(request, 'Invalid credentials')
+            else:
+                # Add error to form instead of using messages
+                form.add_error(None, 'Invalid username or password.')
     else:
         form = UserLoginForm()
 
