@@ -51,9 +51,55 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
         }
 
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
         .nav-link:hover {
             color: #E0E7FF !important;
             transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            color: #FFFFFF !important;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+        }
+
+        .btn-login {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.5rem 1.25rem !important;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.6) !important;
+        }
+
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #FFFFFF !important;
+            border-color: #FFFFFF !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-register {
+            background: #2563EB !important;
+            color: #FFFFFF !important;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.5rem 1.25rem !important;
+            transition: all 0.3s ease;
+            border: none !important;
+        }
+
+        .btn-register:hover {
+            background: #1D4ED8 !important;
+            color: #FFFFFF !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         /* Login Card Styles */
@@ -95,22 +141,26 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                            href="{% url 'home' %}">
                             <i class="fas fa-home"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'products' %}active{% endif %}"
+                            href="#">
                             <i class="fas fa-box"></i> Products
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'appointments' %}active{% endif %}"
+                            href="#">
                             <i class="fas fa-calendar-alt"></i> Appointments
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
+                            href="#">
                             <i class="fas fa-envelope"></i> Contact Us
                         </a>
                     </li>
@@ -180,12 +230,12 @@
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
+                        <a class="nav-link btn-login" href="{% url 'login' %}">
                             <i class="fas fa-sign-in-alt"></i> Login
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-light text-primary ms-2" href="{% url 'register' %}">
+                        <a class="nav-link btn-register ms-2" href="{% url 'register' %}">
                             <i class="fas fa-user-plus"></i> Register
                         </a>
                     </li>
