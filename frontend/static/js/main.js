@@ -47,3 +47,15 @@ function togglePassword(inputId, button) {
         icon.classList.add('fa-eye');
     }
 }
+
+// Navbar Scroll Effect
+window.addEventListener('scroll', function () {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+    }
+});
