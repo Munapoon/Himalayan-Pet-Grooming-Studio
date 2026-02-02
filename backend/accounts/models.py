@@ -33,6 +33,7 @@ class User(AbstractUser):
     def is_regular_user(self):
         return self.role == 'user'
 
+
 class Contact(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -45,9 +46,8 @@ class Contact(models.Model):
     replied_at = models.DateTimeField(blank=True, null=True)
     
     class Meta:
+        db_table = 'contacts'
         ordering = ['-created_at']
     
     def __str__(self):
         return f"{self.name} - {self.subject}"
-
-

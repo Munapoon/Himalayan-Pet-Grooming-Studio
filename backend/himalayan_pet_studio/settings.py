@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
-
+    'appointments',
+    'products',
 ]
 
 MIDDLEWARE = [
@@ -57,15 +58,17 @@ ROOT_URLCONF = 'himalayan_pet_studio.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '../frontend/templates')],
+        'DIRS': [os.path.join(BASE_DIR.parent, 'frontend', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                 'django.contrib.auth.context_processors.auth',
+                'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+                'accounts.context_processors.unread_contact_count',
+                'accounts.context_processors.khalti_config',
+                'products.context_processors.cart_count',
             ],
         },
     },
@@ -83,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'himalayan_pet_studio',
         'USER': 'root',
-        'PASSWORD': '',  
+        'PASSWORD': '',  # Change this to your MySQL password
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -137,7 +140,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '../frontend/static'),
+    os.path.join(BASE_DIR.parent, 'frontend', 'static'),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -153,7 +156,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 # Session Settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Store sessions in database
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'  # Use cached database backend
 SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session after browser close
@@ -161,6 +164,14 @@ SESSION_COOKIE_NAME = 'himalayan_pet_sessionid'
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+
+# Cache Settings (required for cached_db session backend)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 # Login URLs
 LOGIN_URL = 'login'
@@ -173,3 +184,16 @@ LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+# Khalti Payment Gateway Configuration
+KHALTI_PUBLIC_KEY = os.environ.get('KHALTI_PUBLIC_KEY', 'test_public_key_your_key_here')
+KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', 'test_secret_key_your_key_here')
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')  # Your Gmail address
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  # Your Gmail App Password
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Himalayan Pet Studio <noreply@himalayan.pet>')

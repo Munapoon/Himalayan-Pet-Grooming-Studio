@@ -9,4 +9,5 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
     path('user-profile/', views.user_profile, name='user_profile'),
+    path('contact/', views.home, name='contact_us'),  # Placeholder
 ]
