@@ -1,160 +1,402 @@
 {% extends 'base.html' %}
 {% block title %}Register - Himalayan Pet Studio{% endblock %}
 
-{% block content %}
-<div class="container">
-    <div class="row justify-content-center mt-5 mb-5">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow login-card">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
-                        <h2 class="fw-bold">Register</h2>
-                        <p class="text-muted">Create your account</p>
-                    </div>
+{% block body_class %}no-pt{% endblock %}
 
-                    <!-- Display Messages -->
-                    {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+    <div class="auth-container">
+        <!-- Left Side: Visual Branding (Hidden on mobile) -->
+        <div class="auth-visual d-none d-lg-flex">
+            <div class="auth-visual-overlay"></div>
+            <div class="auth-visual-content">
+                <div class="auth-visual-brand mb-4">
+                    <i class="fas fa-user-plus fa-3x"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Join the Himalayan Pet Family</h1>
+                <p class="lead opacity-75 mb-5">Create an account to manage your pet's appointments, track grooming
+                    history, and access exclusive products.</p>
+                <div class="auth-features">
+                    <div class="feature-item">
+                        <i class="fas fa-paw me-3 text-warning"></i>
+                        <span>Personalized Pet Profiles</span>
                     </div>
-                    {% endfor %}
+                    <div class="feature-item">
+                        <i class="fas fa-calendar-alt me-3 text-warning"></i>
+                        <span>Priority Appointment Booking</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gift me-3 text-warning"></i>
+                        <span>Member-only Offers</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Registration Form -->
+        <div class="auth-form-side">
+            <div class="auth-form-container" style="max-width: 550px;">
+                <div class="text-center mb-5 d-lg-none">
+                    <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                    <h2 class="fw-bold">Create Account</h2>
+                </div>
+
+                <div class="d-none d-lg-block mb-4">
+                    <h2 class="fw-bold h1 mb-1">Get Started</h2>
+                    <p class="text-muted">Fill in your details to create your premium profile</p>
+                </div>
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4"
+                    role="alert">
+                    <small>{{ message }}</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post" autocomplete="off">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 shadow-sm mb-4">
+                        {% for error in form.non_field_errors %}
+                        <small class="d-block">{{ error }}</small>
+                        {% endfor %}
+                    </div>
                     {% endif %}
 
-                    <form method="post">
-                        {% csrf_token %}
-
-                        <!-- Non-field errors -->
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                        {% endif %}
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name <span
-                                        class="text-danger">*</span></label>
+                    <div class="row gx-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}"
+                                class="form-label fw-semibold small text-uppercase tracking-wider text-muted">First
+                                Name</label>
+                            <div class="input-group-custom">
+                                <span class="icon"><i class="far fa-user"></i></span>
                                 {{ form.first_name }}
-                                {% if form.first_name.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.first_name.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name <span
-                                        class="text-danger">*</span></label>
-                                {{ form.last_name }}
-                                {% if form.last_name.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.last_name.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.username.id_for_label }}" class="form-label">Username <span
-                                        class="text-danger">*</span></label>
-                                {{ form.username }}
-                                {% if form.username.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.username.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone <span
-                                        class="text-danger">*</span></label>
-                                {{ form.phone }}
-                                {% if form.phone.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.phone.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">Email <span
-                                    class="text-danger">*</span></label>
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.email.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
+                            {% if form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.first_name.errors|first }}</div>
                             {% endif %}
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.password1.id_for_label }}" class="form-label">Password <span
-                                        class="text-danger">*</span></label>
-                                <div class="position-relative">
-                                    {{ form.password1 }}
-                                    <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y"
-                                        onclick="togglePassword('id_password1', this)"
-                                        style="background: none; border: none; z-index: 10; padding: 0.5rem; cursor: pointer;">
-                                        <i class="fas fa-eye text-secondary"></i>
-                                    </button>
-                                </div>
-                                {% if form.password1.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.password1.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}"
+                                class="form-label fw-semibold small text-uppercase tracking-wider text-muted">Last
+                                Name</label>
+                            <div class="input-group-custom">
+                                <span class="icon"><i class="far fa-user"></i></span>
+                                {{ form.last_name }}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm <span
-                                        class="text-danger">*</span></label>
-                                <div class="position-relative">
-                                    {{ form.password2 }}
-                                    <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y"
-                                        onclick="togglePassword('id_password2', this)"
-                                        style="background: none; border: none; z-index: 10; padding: 0.5rem; cursor: pointer;">
-                                        <i class="fas fa-eye text-secondary"></i>
-                                    </button>
-                                </div>
-                                {% if form.password2.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.password2.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.last_name.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row gx-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.username.id_for_label }}"
+                                class="form-label fw-semibold small text-uppercase tracking-wider text-muted">Username</label>
+                            <div class="input-group-custom">
+                                <span class="icon"><i class="fas fa-at"></i></span>
+                                {{ form.username }}
                             </div>
+                            {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors|first }}</div>
+                            {% endif %}
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}"
+                                class="form-label fw-semibold small text-uppercase tracking-wider text-muted">Phone</label>
+                            <div class="input-group-custom">
+                                <span class="icon"><i class="fas fa-phone-alt"></i></span>
+                                {{ form.phone }}
+                            </div>
+                            {% if form.phone.errors %}
+                            <div class="text-danger small mt-1">{{ form.phone.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
 
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary login-btn btn-lg">
-                                <i class="fas fa-user-plus"></i> Register
-                            </button>
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}"
+                            class="form-label fw-semibold small text-uppercase tracking-wider text-muted">Email
+                            Address</label>
+                        <div class="input-group-custom">
+                            <span class="icon"><i class="far fa-envelope"></i></span>
+                            {{ form.email }}
                         </div>
+                        {% if form.email.errors %}
+                        <div class="text-danger small mt-1">{{ form.email.errors|first }}</div>
+                        {% endif %}
+                    </div>
 
-                        <div class="text-center">
-                            <p class="mb-0">Already have an account? <a href="{% url 'login' %}"
-                                    class="text-decoration-none">Login here</a></p>
+                    <div class="row gx-3">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.password1.id_for_label }}"
+                                class="form-label fw-semibold small text-uppercase tracking-wider text-muted">Password</label>
+                            <div class="input-group-custom">
+                                <span class="icon"><i class="fas fa-lock"></i></span>
+                                {{ form.password1 }}
+                                <button type="button" class="btn-toggle-pb"
+                                    onclick="togglePassword('id_password1', this)">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ form.password1.errors|first }}</div>
+                            {% endif %}
                         </div>
-                    </form>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.password2.id_for_label }}"
+                                class="form-label fw-semibold small text-uppercase tracking-wider text-muted">Confirm</label>
+                            <div class="input-group-custom">
+                                <span class="icon"><i class="fas fa-shield-alt"></i></span>
+                                {{ form.password2 }}
+                                <button type="button" class="btn-toggle-pb"
+                                    onclick="togglePassword('id_password2', this)">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ form.password2.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-auth-primary w-100 py-3 mb-4">
+                        <span>Create Account</span>
+                        <i class="fas fa-check-circle ms-2 mt-1"></i>
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-0 text-muted">
+                            Already have an account?
+                            <a href="{% url 'login' %}" class="fw-bold text-decoration-none color-brand ms-1">Sign In
+                                Instead</a>
+                        </p>
+                    </div>
+                </form>
+
+                <div class="auth-footer mt-4 pt-4 text-center">
+                    <a href="{% url 'home' %}" class="btn-back-home">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Home
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    :root {
+        --auth-primary: #1e3a8a;
+        --auth-secondary: #172554;
+        --auth-accent: #3b82f6;
+        --auth-text-muted: #64748b;
+        --auth-bg-light: #f8fafc;
+        --auth-border: #e2e8f0;
+    }
+
+    .auth-page-wrapper {
+        min-height: 100vh;
+        background-color: #fff;
+        display: flex;
+        overflow-x: hidden;
+    }
+
+    .auth-container {
+        display: flex;
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    /* Visual Side */
+    .auth-visual {
+        flex: 1;
+        background-image: url('https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1600&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 5rem;
+        color: #fff;
+    }
+
+    .auth-visual-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.5) 0%, rgba(23, 37, 84, 0.4) 100%);
+    }
+
+    .auth-visual-content {
+        position: relative;
+        z-index: 2;
+        max-width: 500px;
+    }
+
+    .auth-visual-brand {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 1.5rem;
+        backdrop-filter: blur(10px);
+        margin-bottom: 2rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* Form Side */
+    .auth-form-side {
+        flex: 1.1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        background-color: #f8fafc;
+    }
+
+    .auth-form-container {
+        width: 100%;
+        background: #fff;
+        padding: 3rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Custom Form Styles */
+    .input-group-custom {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-group-custom .icon {
+        position: absolute;
+        left: 1.25rem;
+        color: var(--auth-text-muted);
+        font-size: 1.1rem;
+        z-index: 4;
+    }
+
+    /* Target the Django-rendered widget */
+    .input-group-custom input {
+        width: 100%;
+        padding: 0.85rem 1rem 0.85rem 3.25rem;
+        border: 1.5px solid var(--auth-border);
+        border-radius: 1rem;
+        background-color: var(--auth-bg-light);
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    .input-group-custom input:focus {
+        border-color: var(--auth-primary);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.05);
+        outline: none;
+    }
+
+    .btn-toggle-pb {
+        position: absolute;
+        right: 1.25rem;
+        background: none;
+        border: none;
+        color: var(--auth-text-muted);
+        cursor: pointer;
+        padding: 0;
+        z-index: 4;
+    }
+
+    .btn-auth-primary {
+        background-color: var(--auth-primary);
+        color: #fff;
+        border: none;
+        border-radius: 1rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-auth-primary:hover {
+        background-color: var(--auth-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2);
+        color: #fff;
+    }
+
+    .color-brand {
+        color: var(--auth-primary);
+    }
+
+    .hover-brand:hover {
+        color: var(--auth-primary) !important;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .btn-back-home {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background-color: #475569;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back-home:hover {
+        background-color: #334155;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
+    }
+
+    @media (max-width: 991px) {
+        .auth-form-side {
+            padding: 2rem;
+            background-color: var(--auth-bg-light);
+            min-height: auto;
+            padding-top: 5rem;
+        }
+
+        .auth-page-wrapper {
+            background-color: var(--auth-bg-light);
+            display: block;
+        }
+
+        .auth-container {
+            display: block;
+        }
+
+        .auth-form-container {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+    }
+</style>
 {% endblock %}

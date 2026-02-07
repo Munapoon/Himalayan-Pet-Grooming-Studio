@@ -74,7 +74,8 @@ def product_list(request):
     
     if request.user.is_authenticated and request.user.is_admin_user():
         products = Product.objects.all()
-        template_name = 'products/product_list_admin.html'
+        # Note: If product_list_admin.html doesn't exist, we use product_list.html
+        template_name = 'products/product_list.html'
     else:
         products = Product.objects.filter(is_active=True)
         template_name = 'products/product_list.html'
