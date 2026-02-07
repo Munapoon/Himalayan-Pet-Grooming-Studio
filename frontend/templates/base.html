@@ -42,12 +42,21 @@
             /* Slate */
             --color-bg-start: #f8fafc;
             --color-bg-end: #ffffff;
+            --color-btn-start: #1e3a8a;
+            --color-btn-end: #172554;
         }
 
         body {
             background: linear-gradient(180deg, var(--color-bg-start), var(--color-bg-end));
             min-height: 100vh;
             color: var(--color-text-main);
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        body.no-pt {
+            padding-top: 0 !important;
         }
 
         .navbar {
@@ -143,8 +152,8 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body
-    style="{% block body_style %}display: flex; flex-direction: column; min-height: 100vh; padding-top: 80px;{% endblock %}">
+<body class="{% block body_class %}{% endblock %}">
+    {% block navbar %}
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container-fluid px-5">
@@ -164,20 +173,20 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'products' %}active{% endif %}"
-                            href="#">
+                        <a class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}"
+                            href="{% url 'products:product_list' %}">
                             <i class="fas fa-box"></i> Products
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'appointments' %}active{% endif %}"
-                            href="#">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'appointment_create' %}active{% endif %}"
+                            href="{% url 'appointment_create' %}">
                             <i class="fas fa-calendar-alt"></i> Appointments
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
-                            href="#">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contact_us' %}active{% endif %}"
+                            href="{% url 'contact_us' %}">
                             <i class="fas fa-envelope"></i> Contact Us
                         </a>
                     </li>
@@ -187,7 +196,7 @@
                 <form class="d-flex ms-auto me-3 position-relative d-none d-lg-block"
                     style="max-width: 400px; width: 100%;" action="{% url 'products:product_list' %}" method="GET">
                     <input class="form-control rounded-pill border-0 bg-light ps-4 py-2" type="search"
-                        placeholder="Search our store..." aria-label="Search" name="q"
+                        placeholder="Search our store..." aria-label="Search" name="search"
                         style="padding-right: 45px; box-shadow: none; font-size: 1rem;">
                     <button
                         class="btn rounded-circle position-absolute top-50 end-0 translate-middle-y me-1 text-white shadow-sm"
@@ -200,7 +209,7 @@
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="#">
+                        <a class="nav-link position-relative" href="{% url 'products:cart' %}">
                             <i class="fas fa-shopping-cart fa-lg"></i>
                             {% if cart_count > 0 %}
                             <span
@@ -230,7 +239,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{% url 'products:cart' %}">
                                     <i class="fas fa-shopping-cart text-success"></i>
                                     <span>My Cart</span>
                                 </a>
@@ -242,7 +251,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{% url 'products:order_list' %}">
                                     <i class="fas fa-shopping-bag text-warning"></i>
                                     <span>My Orders</span>
                                 </a>
@@ -275,6 +284,7 @@
             </div>
         </div>
     </nav>
+    {% endblock navbar %}
 
     <!-- MESSAGES (Floating Toasts) -->
     {% if messages %}
