@@ -67,9 +67,11 @@ def product_list(request):
     from django.core.paginator import Paginator
     from django.db.models import Q
     
-    # Get search query, category filter, and sort option
+    # Get search query, category filter, price range, and sort option
     search_query = request.GET.get('search', '')
     category_id = request.GET.get('category', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
     sort_by = request.GET.get('sort', 'newest')
     
     if request.user.is_authenticated and request.user.is_admin_user():
@@ -91,6 +93,19 @@ def product_list(request):
     # Apply category filter
     if category_id:
         products = products.filter(category_id=category_id)
+
+    # Apply price filters
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+            
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
     
     # Apply sorting
     if sort_by == 'price_low':
@@ -114,6 +129,8 @@ def product_list(request):
         'page_obj': page_obj,
         'search_query': search_query,
         'category_id': category_id,
+        'min_price': min_price,
+        'max_price': max_price,
         'sort_by': sort_by,
         'categories': categories,
     }

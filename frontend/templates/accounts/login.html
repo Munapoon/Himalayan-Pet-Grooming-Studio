@@ -7,6 +7,8 @@
 
 {% block navbar %}{% endblock %}
 
+{% block footer %}{% endblock %}
+
 {% block main_class %}p-0{% endblock %}
 
 {% block content %}
@@ -155,26 +157,32 @@
 
     .auth-page-wrapper {
         min-height: 100vh;
+        width: 100%;
         background-color: #fff;
+        display: flex;
+        align-items: stretch;
         overflow-x: hidden;
     }
 
     .auth-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: row;
         width: 100%;
         min-height: 100vh;
+        align-items: stretch;
     }
 
     /* Visual Side - Left Grid Column */
     .auth-visual {
+        flex: 1;
         background-image: url('https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=1600&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         position: relative;
         display: flex;
         align-items: center;
-        padding: 5rem;
+        justify-content: center;
+        padding: 4rem 3rem;
         color: #fff;
     }
 
@@ -190,7 +198,8 @@
     .auth-visual-content {
         position: relative;
         z-index: 2;
-        max-width: 600px;
+        max-width: 500px;
+        width: 100%;
     }
 
     .auth-visual-brand {
@@ -216,10 +225,11 @@
 
     /* Form Side - Right Grid Column */
     .auth-form-side {
+        flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 3rem;
+        padding: 3rem 2rem;
         background-color: #f8fafc;
     }
 
@@ -227,7 +237,7 @@
         width: 100%;
         max-width: 480px;
         background: #fff;
-        padding: 3rem;
+        padding: 2.5rem;
         border-radius: 1.5rem;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     }
@@ -335,15 +345,43 @@
         box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
     }
 
+    /* Medium screens - Better for split-screen/zoom */
+    @media (max-width: 1200px) {
+        .auth-visual {
+            padding: 3rem 2rem;
+        }
+
+        .auth-form-side {
+            padding: 2rem 1.5rem;
+        }
+
+        .auth-form-container {
+            padding: 2rem;
+            max-width: 420px;
+        }
+
+        .auth-visual-content {
+            max-width: 400px;
+        }
+
+        .display-4 {
+            font-size: 2.5rem;
+        }
+
+        .feature-item {
+            font-size: 1rem;
+        }
+    }
+
     @media (max-width: 1200px) {
         .auth-visual {
             padding: 3rem;
         }
     }
 
+    /* Tablet and smaller */
     @media (max-width: 991px) {
         .auth-container {
-            grid-template-columns: 1fr;
             display: block;
         }
 

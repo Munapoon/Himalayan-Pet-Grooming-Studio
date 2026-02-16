@@ -1,9 +1,14 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 
+from .models import User, Contact
+from products.models import Order
+from appointments.models import Appointment
+from django.db.models import Sum, Q
 from .forms import UserRegistrationForm, UserLoginForm
 from .decorators import admin_required
 
@@ -120,7 +125,32 @@ def user_logout(request):
 @login_required
 @admin_required
 def admin_dashboard(request):
-    return render(request, 'accounts/admin_dashboard.html')
+    # Calculate Earnings (Paid Orders)
+    total_earnings = Order.objects.filter(
+        Q(payment_status='paid') | Q(status='completed')
+    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+
+    # Pending Requests (Pending Appointments + Unread Messages)
+    pending_appointments = Appointment.objects.filter(status='pending').count()
+    unread_messages = Contact.objects.filter(is_read=False).count()
+    pending_requests = pending_appointments + unread_messages
+
+    # Tasks Progress (Completed vs Total Appointments)
+    total_appointments = Appointment.objects.count()
+    completed_appointments = Appointment.objects.filter(status='completed').count()
+    
+    if total_appointments > 0:
+        tasks_percentage = int((completed_appointments / total_appointments) * 100)
+    else:
+        tasks_percentage = 0
+
+    context = {
+        'total_earnings': total_earnings,
+        'annual_earnings': total_earnings, # For now, same as total. Can filter by year later.
+        'pending_requests': pending_requests,
+        'tasks_percentage': tasks_percentage,
+    }
+    return render(request, 'accounts/admin_dashboard.html', context)
 
 
 @login_required
@@ -131,3 +161,55 @@ def user_dashboard(request):
 @login_required
 def user_profile(request):
     return render(request, 'accounts/user_dashboard.html') # Placeholder: reusing dashboard template for now
+
+
+@login_required
+@admin_required
+def user_list(request):
+    users_list = User.objects.all().order_by('-date_joined')
+    paginator = Paginator(users_list, 10)  # Show 10 users per page
+    
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'accounts/user_list.html', {
+        'users': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.has_other_pages()
+    })
+
+
+@login_required
+@admin_required
+def user_detail(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    return render(request, 'accounts/user_detail.html', {'user_obj': user_obj})
+
+
+@login_required
+@admin_required
+def reports(request):
+    return render(request, 'accounts/reports.html')
+
+
+@login_required
+@admin_required
+def contact_messages(request):
+    messages_list = Contact.objects.all().order_by('-created_at')
+    paginator = Paginator(messages_list, 10)
+    
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Check for unread messages count for the sidebar badge
+    unread_count = Contact.objects.filter(is_read=False).count()
+    
+    return render(request, 'accounts/contact_messages.html', {
+        'messages': page_obj,
+        'page_obj': page_obj, 
+        'is_paginated': page_obj.has_other_pages(),
+        'unread_count': unread_count
+    })
+
+
+

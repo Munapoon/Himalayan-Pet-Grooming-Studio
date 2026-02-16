@@ -15,11 +15,9 @@ body {
     min-height: 100vh;
 }
 
-/* 1. Navbar → Glass + Gradient */
+/* 1. Navbar → Clean & Minimal */
 .navbar {
-    background: linear-gradient(90deg, var(--color-navbar-start), var(--color-navbar-end)) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transition: var(--transition-smooth);
 }
 
 .navbar-brand {
