@@ -436,3 +436,29 @@ def admin_service_review_list(request):
     }
     
     return render(request, 'appointments/admin_service_review_list.html', context)
+
+
+def service_list(request):
+    """Public view to list all grooming services"""
+    from .models import ServiceReview
+    from django.db.models import Avg
+    
+    # Get service ratings
+    service_types = ['bath', 'haircut', 'nails', 'full', 'spa']
+    service_ratings = {}
+    
+    for service_type in service_types:
+        reviews = ServiceReview.objects.filter(service=service_type)
+        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        review_count = reviews.count()
+        service_ratings[service_type] = {
+            'avg_rating': round(avg_rating, 1) if avg_rating else 0,
+            'review_count': review_count
+        }
+    
+    context = {
+        'service_ratings': service_ratings,
+        'service_choices': Appointment.SERVICE_CHOICES,
+    }
+    
+    return render(request, 'appointments/service_list.html', context)

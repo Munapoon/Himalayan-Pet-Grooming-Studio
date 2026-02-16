@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Products - Himalayan Pet Studio{% endblock %}
 
@@ -7,104 +8,187 @@
 {% block content %}
 <style>
     .products-hero {
-        background: url('https://images.unsplash.com/photo-1583511655826-05700d52f4d9?auto=format&fit=crop&w=1920&q=80') no-repeat center center !important;
-        background-size: cover !important;
-        color: #1e3a8a;
-        padding: 80px 0;
-        margin-bottom: 30px;
+        background: #FFFBF7 !important;
+        background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 5c-0.8 0-1.5 0.7-1.5 1.5S9.2 8 10 8s1.5-0.7 1.5-1.5S10.8 5 10 5zm6 0c-0.8 0-1.5 0.7-1.5 1.5S15.2 8 16 8s1.5-0.7 1.5-1.5S16.8 5 16 5zm-9 4c-0.8 0-1.5 0.7-1.5 1.5S6.2 12 7 12s1.5-0.7 1.5-1.5S7.8 9 7 9zm12 0c-0.8 0-1.5 0.7-1.5 1.5s0.7 1.5 1.5 1.5 1.5-0.7 1.5-1.5S19.8 9 19 9zm-6 3c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z' fill='%23fce8d5' fill-opacity='0.6'/%3E%3C/svg%3E") !important;
+        height: 420px;
         position: relative;
         overflow: hidden;
-        border-radius: 0 0 25px 25px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        padding-top: 80px;
+        /* Account for fixed-top navbar */
     }
 
-    .hero-overlay {
-        display: none;
+    .hero-content-left {
+        position: relative;
+        z-index: 5;
+        padding-left: 5%;
+        max-width: 600px;
     }
 
-    .products-hero h1 {
+    .pet-shop-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .paw-brand-icon {
+        font-size: 1.8rem;
+        color: #ff7e5f;
+    }
+
+    .brand-text {
+        font-size: 1.6rem;
         font-weight: 800;
-        font-size: 3rem;
-        margin-bottom: 0.75rem;
-        text-shadow: none;
+        color: #1e293b;
+        text-transform: lowercase;
+        letter-spacing: 0.5px;
+    }
+
+    .hero-main-heading {
+        font-size: 3.8rem;
+        font-weight: 900;
+        line-height: 1.1;
+        color: #1e293b;
         letter-spacing: -1px;
     }
 
-    .products-hero .lead {
+    .hero-wave-divider {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        background-color: #1e3a8a;
+        background-image: url("{% static 'images/product-banner-pets.png' %}") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 5% center !important;
+        background-size: 85% !important;
+        clip-path: ellipse(85% 100% at 100% 50%);
+        z-index: 1;
+        transition: all 0.5s ease;
+    }
+
+    @media (max-width: 1200px) {
+        .hero-main-heading {
+            font-size: 3rem;
+        }
+
+        .hero-wave-divider {
+            width: 65%;
+            background-size: 90% !important;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .products-hero {
+            height: auto;
+            min-height: 400px;
+            padding-top: 100px;
+            padding-bottom: 40px;
+            text-align: center;
+        }
+
+        .hero-content-left {
+            margin: 0 auto;
+            padding: 0 20px;
+            z-index: 6;
+        }
+
+        .hero-wave-divider {
+            opacity: 0.2;
+            width: 100%;
+            clip-path: none;
+            background-color: transparent;
+            background-position: center !important;
+            background-size: cover !important;
+        }
+
+        .hero-main-heading {
+            font-size: 2.8rem;
+        }
+    }
+
+    .filter-sidebar {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eef2f7;
+    }
+
+    .sidebar-title {
         font-size: 1.25rem;
-        font-weight: 500;
-        opacity: 1;
-        text-shadow: none;
-        max-width: 600px;
-        color: #334155;
-    }
-
-    .hero-badge {
-        display: inline-block;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        padding: 0.5rem 1.25rem;
-        border-radius: 50px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        letter-spacing: 0.5px;
+        font-weight: 800;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #000;
+        margin-bottom: 25px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
     }
 
-    .hero-stats {
-        margin-top: 2rem;
+    .filter-group {
+        margin-bottom: 25px;
     }
 
-    .hero-stats .stat-item {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
+    .filter-group-label {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #000;
+        margin-bottom: 15px;
+        display: block;
     }
 
-    .hero-stats .stat-item:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-2px);
+    .price-input-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .filter-card {
-        border: none;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        border-radius: 12px;
-        margin-bottom: 30px;
-        background: #f8f9fc;
+    .price-input-group {
+        flex: 1;
     }
 
-    .filter-card .form-label {
-        font-weight: 500;
+    .price-field-label {
+        font-size: 0.95rem;
         color: #64748b;
-        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 6px;
     }
 
-    .btn-primary-purple {
-        background: linear-gradient(135deg, #5B9AAD 0%, #4C8596 100%);
+    .price-input-row input {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 10px;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+
+    .price-separator {
+        color: #94a3b8;
+        font-weight: 600;
+        margin-top: 25px;
+    }
+
+    .btn-apply-filters {
+        background: #1e3a8a;
+        color: white;
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 700;
         border: none;
-        color: white;
-        font-weight: 600;
-        padding: 0.625rem 1.5rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
+        transition: all 0.3s;
+        margin-bottom: 10px;
     }
 
-    .btn-primary-purple:hover {
-        background: linear-gradient(135deg, #4C8596 0%, #3D6B7A 100%);
+    .btn-apply-filters:hover {
+        background: #172554;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(91, 154, 173, 0.3);
-        color: white;
-    }
-
-    .btn-outline-secondary {
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.625rem 1.5rem;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
     }
 
     .product-card {
@@ -112,352 +196,277 @@
         border-radius: 16px;
         overflow: hidden;
         transition: all 0.3s ease;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         height: 100%;
         background: white;
-        position: relative;
     }
 
     .product-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(91, 154, 173, 0.2);
+        box-shadow: 0 12px 24px rgba(91, 154, 173, 0.15);
         border-color: #5B9AAD;
-        z-index: 10;
     }
 
     .product-image-wrapper {
-        position: relative;
+        height: 200px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         overflow: hidden;
-        height: 220px;
-        background: #f8f9fa;
     }
 
     .product-image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.4s ease;
-    }
-
-    .product-card:hover .product-image-wrapper img {
-        transform: scale(1.06);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 3px 10px;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .product-badge.in-stock {
-        color: #10b981;
-    }
-
-    .product-badge.out-of-stock {
-        color: #ef4444;
     }
 
     .product-body {
-        padding: 15px;
-    }
-
-    .product-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 5px;
-        min-height: 42px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        padding: 20px;
     }
 
     .product-category {
-        display: inline-block;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 3px 10px;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        margin-bottom: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #6366f1;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
     }
 
-    .product-rating {
-        margin-bottom: 10px;
-    }
-
-    .product-rating .stars {
-        color: #fbbf24;
-        font-size: 0.8rem;
+    .product-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1e293b;
+        margin-bottom: 12px;
+        line-height: 1.4;
     }
 
     .product-price {
-        font-size: 1.35rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 10px;
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: #1e3a8a;
     }
 
-    .view-details-btn {
-        width: 100%;
-        padding: 8px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
+    .top-bar-filter {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        display: flex;
+        align-items: center;
+        justify-content: bwtween;
+        gap: 20px;
     }
 
-    .view-details-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        color: white;
+    .search-group {
+        flex: 1;
+        position: relative;
     }
 
-    .no-products {
-        text-align: center;
-        padding: 80px 20px;
+    .search-group i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
     }
 
-    .no-products i {
-        font-size: 5rem;
-        color: #d1d5db;
-        margin-bottom: 20px;
+    .search-group input {
+        padding-left: 45px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
     }
 
-    @media (max-width: 1200px) {
-        .products-hero h1 {
-            font-size: 2rem;
-        }
-
-        .product-image-wrapper {
-            height: 170px;
-        }
-    }
-
-    @media (max-width: 992px) {
-        .product-image-wrapper {
-            height: 180px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .products-hero h1 {
-            font-size: 1.75rem;
-        }
-
-        .product-image-wrapper {
-            height: 170px;
-        }
+    .sort-group {
+        width: 200px;
     }
 </style>
 
-<div class="products-hero">
-    <div class="hero-overlay"></div>
-    <div class="container position-relative">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="hero-badge mb-3">
-                    <i class="fas fa-paw me-2"></i>Premium Quality
+<div class="products-hero container-fluid p-0">
+    <div class="hero-wave-divider"></div>
+    <div class="container h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-lg-7 hero-content-left">
+                <div class="pet-shop-brand">
+                    <span class="paw-brand-icon"><i class="fas fa-paw"></i></span>
+                    <span class="brand-text">pet shop</span>
                 </div>
-                <h1 class="display-4 fw-bold mb-3">Our Products</h1>
-                <p class="lead mb-4">Discover premium pet care products designed with love for your furry companions.
-                    From nutritious treats to cozy accessories.</p>
-                <div class="hero-stats d-flex gap-4">
-                    <div class="stat-item">
-                        <i class="fas fa-box text-warning me-2"></i>
-                        <span class="fw-bold">500+</span> Products
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-star text-warning me-2"></i>
-                        <span class="fw-bold">4.8</span> Average Rating
-                    </div>
-                </div>
+                <h1 class="hero-main-heading">Your Pet Essentials<br>Under One Woof!</h1>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container" style="max-width: 1400px;">
-    <!-- Search and Filter Section -->
-    <div class="card filter-card mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3 align-items-end" id="filterForm">
-                <div class="col-md-4">
-                    <label for="search" class="form-label small text-muted mb-1">Search Products</label>
-                    <input type="text" class="form-control" id="search" name="search"
-                        placeholder="Search by name, description..." value="{{ search_query }}">
-                </div>
-                <div class="col-md-3">
-                    <label for="category" class="form-label small text-muted mb-1">Category</label>
-                    <select name="category" id="category" class="form-select">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="sort" class="form-label small text-muted mb-1">Sort By</label>
-                    <select name="sort" id="sort" class="form-select">
-                        <option value="newest">Newest</option>
-                        <option value="price_low">Price: Low to High</option>
-                        <option value="price_high">Price: High to Low</option>
-                        <option value="rating">Highest Rating</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary-purple flex-fill">
-                        <i class="fas fa-search me-1"></i> Search
+<div class="container mb-5">
+    <form method="get" id="filterForm">
+        <div class="row g-4">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3">
+                <div class="filter-sidebar">
+                    <h5 class="sidebar-title">Filter By:</h5>
+
+                    <!-- Price Filter (Image Style) -->
+                    <div class="filter-group">
+                        <label class="filter-group-label" style="margin-bottom: 20px;">Price</label>
+                        <div class="price-input-row">
+                            <div class="price-input-group">
+                                <div class="price-field-label">From</div>
+                                <input type="number" name="min_price" placeholder="0" value="{{ min_price }}">
+                            </div>
+                            <div class="price-separator">—</div>
+                            <div class="price-input-group">
+                                <div class="price-field-label">To</div>
+                                <input type="number" name="max_price" placeholder="4000" value="{{ max_price }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-apply-filters">
+                        Apply Filters
                     </button>
-                    <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
+                    <a href="{% url 'products:product_list' %}"
+                        class="btn btn-outline-secondary w-100 rounded-3 py-2 fw-bold">
                         Reset
                     </a>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
+            </div>
 
-{% if page_obj %}
-<div class="container" style="max-width: 1400px;">
-    <div class="row g-4">
-        {% for product in page_obj %}
-        <div class="col-lg-4 col-md-6">
-            <div class="product-card">
-                <a href="{% url 'products:product_detail' product.id %}" class="text-decoration-none">
-                    <div class="product-image-wrapper">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                        {% else %}
-                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                            <i class="fas fa-image fa-4x text-muted"></i>
-                        </div>
-                        {% endif %}
-                        <div class="product-badge {% if product.in_stock %}in-stock{% else %}out-of-stock{% endif %}">
-                            {% if product.in_stock %}
-                            <i class="fas fa-check-circle"></i> In Stock
-                            {% else %}
-                            <i class="fas fa-times-circle"></i> Out of Stock
-                            {% endif %}
-                        </div>
+            <!-- Main Product Area -->
+            <div class="col-lg-9">
+                <!-- Top Horizontal filter bar -->
+                <div class="top-bar-filter">
+                    <div class="search-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" class="form-control" placeholder="Search products..."
+                            value="{{ search_query }}">
                     </div>
-                    <div class="product-body">
-                        <span class="product-category">{{ product.category.name }}</span>
-                        <h5 class="product-title">{{ product.name }}</h5>
 
-                        <div class="product-rating">
-                            {% if product.average_rating > 0 %}
-                            <span class="stars">
-                                {% for i in "12345" %}
-                                {% if forloop.counter <= product.average_rating %} <i class="fas fa-star"></i>
+                    <div class="category-group" style="width: 180px;">
+                        <select name="category" id="category" class="form-select border-0 bg-light rounded-3">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="sort-group d-flex align-items-center gap-2" style="width: 180px;">
+                        <select name="sort" id="sort" class="form-select border-0 bg-light rounded-3">
+                            <option value="newest">Sort: Newest</option>
+                            <option value="price_low">Price: Low-High</option>
+                            <option value="price_high">Price: High-Low</option>
+                            <option value="rating">Top Rated</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% if page_obj %}
+                <div class="row g-4">
+                    {% for product in page_obj %}
+                    <div class="col-md-4">
+                        <div class="product-card">
+                            <a href="{% url 'products:product_detail' product.id %}" class="text-decoration-none">
+                                <div class="product-image-wrapper">
+                                    {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
                                     {% else %}
-                                    <i class="far fa-star"></i>
+                                    <i class="fas fa-image fa-3x text-muted opacity-25"></i>
                                     {% endif %}
-                                    {% endfor %}
-                            </span>
-                            <small class="text-muted ms-1">({{ product.total_reviews }})</small>
-                            {% else %}
-                            <small class="text-muted"><i class="far fa-star"></i> No reviews yet</small>
-                            {% endif %}
+                                </div>
+                                <div class="product-body">
+                                    <span class="product-category">{{ product.category.name }}</span>
+                                    <h5 class="product-title">{{ product.name }}</h5>
+                                    <div class="product-price">Rs. {{ product.price }}</div>
+                                </div>
+                            </a>
                         </div>
-
-                        <div class="product-price">Rs. {{ product.price }}</div>
-
-                        <button class="view-details-btn">
-                            <i class="fas fa-eye"></i> View Details
-                        </button>
                     </div>
-                </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav class="mt-5">
+                    <ul class="pagination justify-content-center align-items-center gap-3">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link border-0 rounded-circle bg-white shadow-sm text-dark d-flex align-items-center justify-content-center"
+                                style="width: 45px; height: 45px;"
+                                href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span
+                                class="page-link border-0 rounded-pill bg-primary px-5 py-2 text-white fw-bold shadow-sm">
+                                {{ page_obj.number }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link border-0 rounded-circle bg-white shadow-sm text-dark d-flex align-items-center justify-content-center"
+                                style="width: 45px; height: 45px;"
+                                href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-box-4922097-4097495.png"
+                        alt="Empty" height="200" class="mb-4">
+                    <h4 class="fw-bold">No Products Found</h4>
+                    <p class="text-muted">Try changing your filters or searching for something else.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
-        {% endfor %}
-    </div>
-
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <nav aria-label="Page navigation" class="mt-5 mb-4">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-            <li class="page-item">
-                <a class="page-link"
-                    href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">First</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link"
-                    href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Previous</a>
-            </li>
-            {% endif %}
-
-            <li class="page-item active">
-                <span class="page-link">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                </span>
-            </li>
-
-            {% if page_obj.has_next %}
-            <li class="page-item">
-                <a class="page-link"
-                    href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Next</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link"
-                    href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Last</a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
-</div>
-{% else %}
-<div class="no-products">
-    <i class="fas fa-box-open"></i>
-    <h4 class="text-muted mb-3">No products found</h4>
-    <p class="text-muted">Try adjusting your search or filter criteria.</p>
-    <a href="{% url 'products:product_list' %}" class="btn btn-primary mt-3">
-        <i class="fas fa-redo"></i> View All Products
-    </a>
-</div>
-{% endif %}
+    </form>
 </div>
 
 <script>
-    // Set filter values from URL parameters when page loads
     document.addEventListener('DOMContentLoaded', function () {
         const urlParams = new URLSearchParams(window.location.search);
+        const filterForm = document.getElementById('filterForm');
 
-        // Set category dropdown
+        // Set initial values from URL
         const categoryId = urlParams.get('category');
         if (categoryId) {
-            const categorySelect = document.getElementById('category');
-            if (categorySelect) {
-                categorySelect.value = categoryId;
-            }
+            const select = document.getElementById('category');
+            if (select) select.value = categoryId;
         }
 
-        // Set sort dropdown
         const sortBy = urlParams.get('sort');
         if (sortBy) {
-            const sortSelect = document.getElementById('sort');
-            if (sortSelect) {
-                sortSelect.value = sortBy;
-            }
+            const select = document.getElementById('sort');
+            if (select) select.value = sortBy;
+        }
+
+        // Auto-submit on select change
+        document.getElementById('category').addEventListener('change', () => filterForm.submit());
+        document.getElementById('sort').addEventListener('change', () => filterForm.submit());
+
+        // Optional: Auto-submit search after typing (with debounce)
+        let searchTimeout;
+        const searchInput = filterForm.querySelector('input[name="search"]');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterForm.submit();
+                }, 800);
+            });
         }
     });
 </script>
-
 {% endblock %}

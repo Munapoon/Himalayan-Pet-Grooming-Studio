@@ -7,23 +7,20 @@
 
 {% block extra_css %}
 <style>
-    /* COMPONENT: Professional Minimalist Navbar (Homepage Only) */
+    /* Homepage Specific: Transparent Navbar */
     .navbar {
         background: transparent !important;
-        /* Position is fixed-top from base.html */
-        border-bottom: none !important;
         box-shadow: none !important;
+        border-bottom: none !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        padding: 1rem 0 !important;
         backdrop-filter: none !important;
-        padding-top: 15px;
-        transition: all 0.3s ease;
     }
 
     .navbar.navbar-scrolled {
-        background: #ffffff !important;
-        /* White on scroll */
+        background: rgba(255, 255, 255, 1) !important;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding: 0.6rem 0 !important;
     }
 
     /* Ensure hero carousel starts at the top behind navbar */
@@ -31,53 +28,17 @@
         margin-top: 0;
     }
 
-    /* Professional Text & Button Overrides */
-    .navbar .navbar-brand {
-        color: #1e3a8a !important;
-        font-weight: 800;
-        font-size: 1.6rem;
-    }
-
-    .navbar .nav-link {
-        color: #1e3a8a !important;
-        font-weight: 600;
-        font-size: 1.05rem;
-    }
-
-    .navbar .nav-link.active {
-        background: transparent !important;
-        color: #1e3a8a !important;
-        border: 1px solid #1e3a8a;
-        border-radius: 50px;
-    }
-
-    .navbar .btn-login {
-        color: #1e3a8a !important;
-        border: 1.5px solid #1e3a8a !important;
-        background: transparent !important;
-    }
-
-    .navbar .btn-login:hover {
-        background: rgba(30, 58, 138, 0.05) !important;
-    }
-
-    .navbar .btn-register {
-        background: #1e3a8a !important;
-        color: #ffffff !important;
-        border: none !important;
-        font-weight: 700;
-    }
-
-    .navbar .btn-register:hover {
-        background: #172554 !important;
-        transform: translateY(-2px);
-    }
-
-    /* Hero Carousel Section */
     .hero-carousel {
         position: relative;
         overflow: hidden;
-        height: 600px;
+        height: 500px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-carousel {
+            height: 350px;
+            /* More compact for mobile */
+        }
     }
 
     .carousel-slide {
@@ -96,8 +57,8 @@
     }
 
     .hero-slide-1 {
-        /* Dog background (Bulldog style) */
-        background: linear-gradient(to right, rgba(178, 218, 230, 0.9) 20%, rgba(178, 218, 230, 0) 100%),
+        /* Restored Bulldog image */
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.98) 25%, rgba(255, 255, 255, 0) 85%),
             url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=1600&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
@@ -122,54 +83,52 @@
     .hero-content {
         position: relative;
         z-index: 2;
-        max-width: 600px;
-        padding: 0 60px;
+        max-width: 700px;
+        padding-left: 8%;
+        /* Percentage-based alignment */
     }
 
     .hero-introducing {
-        font-size: 2rem;
-        font-weight: 600;
-        letter-spacing: 8px;
+        font-size: 1.6rem;
+        font-weight: 400;
+        letter-spacing: 12px;
         color: #1e3a8a;
-        /* Dark Navy - Reference Match */
-        margin-bottom: 10px;
+        margin-bottom: 5px;
+        text-transform: uppercase;
         animation: fadeInDown 1s ease;
-        text-shadow: none;
     }
 
     .hero-title {
-        font-size: 5.5rem;
+        font-size: 6rem;
         font-weight: 900;
         line-height: 0.95;
-        color: #1e3a8a;
-        /* Dark Navy */
-        text-shadow: none;
-        margin-bottom: 20px;
-        letter-spacing: 2px;
+        color: #27469b;
+        margin-bottom: 25px;
+        letter-spacing: -2px;
+        text-transform: uppercase;
         animation: fadeInLeft 1s ease 0.2s both;
     }
 
     .hero-subtitle {
-        font-size: 1rem;
-        font-weight: 500;
-        color: #1e3a8a !important;
-        /* Force Dark Navy */
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #475569 !important;
         letter-spacing: 2px;
+        text-transform: uppercase;
         margin-bottom: 40px;
         animation: fadeInUp 1s ease 0.3s both;
     }
 
     .hero-btn {
         background-color: #1e3a8a;
-        /* Dark Navy Button */
         color: #ffffff;
         border: none;
-        padding: 18px 50px;
-        font-size: 1.1rem;
-        font-weight: 700;
+        padding: 14px 45px;
+        font-size: 1rem;
+        font-weight: 800;
         border-radius: 50px;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
         transition: all 0.3s ease;
         animation: fadeInUp 1s ease 0.4s both;
@@ -184,12 +143,12 @@
 
     .hero-image {
         position: absolute;
-        right: 50px;
+        right: 8%;
+        /* Percentage-based positioning */
         top: 50%;
         transform: translateY(-50%);
-        width: 550px;
-        height: 380px;
-        /* Fixed Landscape Height */
+        width: 440px;
+        height: 300px;
         z-index: 2;
         animation: slideInRight 1.2s ease 0.3s both;
     }
@@ -211,64 +170,60 @@
     /* Carousel Navigation */
     .carousel-nav {
         position: absolute;
-        left: 40px;
+        left: 20px;
         top: 50%;
         transform: translateY(-50%);
         z-index: 10;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
     }
 
     .carousel-btn {
-        background: rgba(255, 255, 255, 0.9);
+        background: white;
         border: none;
-        width: 60px;
-        height: 60px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .carousel-btn:hover {
-        background: white;
-        transform: scale(1.1);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .carousel-btn i {
-        font-size: 1.5rem;
-        color: #333;
+        font-size: 1.2rem;
+        color: #1e3a8a;
     }
 
     /* Carousel Indicators */
     .carousel-indicators {
         position: absolute;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
+        bottom: 50px;
+        right: 15%;
+        /* Positioned bottom-right as per screenshot */
+        left: auto;
+        transform: none;
         display: flex;
-        gap: 12px;
+        gap: 10px;
         z-index: 10;
     }
 
     .indicator {
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.5);
+        background: #cbd5e1;
         cursor: pointer;
         transition: all 0.3s ease;
     }
 
     .indicator.active {
-        background: white;
-        width: 40px;
-        border-radius: 6px;
+        background: #1e3a8a;
+        width: 35px;
+        border-radius: 5px;
     }
 
     @keyframes fadeInDown {
@@ -400,15 +355,15 @@
 
     /* Service Cards - Stylish Design */
     .service-card {
-        border-radius: 24px;
+        border-radius: 20px;
         padding: 0;
-        min-width: 350px;
-        max-width: 350px;
-        height: 580px;
+        min-width: 320px;
+        max-width: 320px;
+        height: 560px;
         display: flex;
         flex-direction: column;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
         overflow: hidden;
         position: relative;
         border: 1px solid #e2e8f0;
@@ -711,9 +666,9 @@
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
-                        <div class="hero-introducing">INTRODUCING</div>
-                        <h1 class="hero-title">PET FASHION</h1>
-                        <p class="hero-subtitle">TRENDING PET FASHION WITH PETMAMA</p>
+                        <div class="hero-introducing">EXPLORE</div>
+                        <h1 class="hero-title">PET ESSENTIALS</h1>
+                        <p class="hero-subtitle">QUALITY PRODUCTS FOR YOUR FURRY FRIENDS</p>
                         <a href="{% url 'products:product_list' %}" class="btn hero-btn">
                             Shop Now
                         </a>
@@ -730,10 +685,10 @@
                 <div class="col-lg-6">
                     <div class="hero-content">
                         <div class="hero-introducing">DISCOVER</div>
-                        <h1 class="hero-title">PREMIUM GROOMING</h1>
+                        <h1 class="hero-title">Book Now</h1>
                         <p class="hero-subtitle">PROFESSIONAL PET CARE SERVICES</p>
-                        <a href="{% url 'appointment_create' %}" class="btn hero-btn">
-                            Book Now
+                        <a href="{% url 'service_list' %}" class="btn hero-btn">
+                            Grooming Services
                         </a>
                     </div>
                 </div>
@@ -781,8 +736,13 @@
     <!-- Services Section with Horizontal Slider -->
     <div class="row text-center mb-5">
         <div class="col-12">
-            <h2 class="fw-bold mb-3 section-title">Our Premium Grooming Services</h2>
-            <p class="text-muted mb-4">Professional pet care tailored to your pet's needs</p>
+            <h2 class="fw-bold mb-3" style="color: #1e3a8a; font-size: 2.5rem;">
+                Our Premium <span style="position: relative; display: inline-block;">Grooming<span
+                        style="position: absolute; bottom: -5px; left: 0; width: 100%; height: 3px; background: #6366f1; border-radius: 2px;"></span></span>
+                Services
+            </h2>
+            <p class="text-muted" style="font-size: 1rem; opacity: 0.8;">Professional pet care tailored to your pet's
+                needs</p>
         </div>
     </div>
 
@@ -1467,6 +1427,16 @@
 </div>
 
 <script>
+    // Navbar Scroll Effect
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+    });
+
     // Hero Carousel Functionality
     document.addEventListener('DOMContentLoaded', function () {
         const slides = document.querySelectorAll('.carousel-slide');
