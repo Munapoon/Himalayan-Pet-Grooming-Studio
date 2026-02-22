@@ -233,18 +233,7 @@
     </div>
 </div>
 
-<style>
-    .service-card-hover {
-        transition: all 0.3s ease;
-    }
-
-    .service-card-hover:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .border-dashed {
-        border: 2px dashed #dee2e6 !important;
-    }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/appointments/service_list.css' %}">
+{% endblock %}
 {% endblock %}

@@ -1,0 +1,267 @@
+/* 
+   Authentication Shared Styles (Login & Register)
+   Himalayan Pet Grooming Studio
+*/
+
+:root {
+    --auth-primary: #1e3a8a;
+    --auth-secondary: #172554;
+    --auth-accent: #3b82f6;
+    --auth-text-muted: #64748b;
+    --auth-bg-light: #f8fafc;
+    --auth-border: #e2e8f0;
+}
+
+.auth-page-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background-color: #fff;
+    display: flex;
+    align-items: stretch;
+    overflow-x: hidden;
+}
+
+.auth-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    min-height: 100vh;
+    align-items: stretch;
+}
+
+/* Visual Side - Left Grid Column */
+.auth-visual {
+    flex: 1;
+    background-image: url('https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=1600&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 3rem;
+    color: #fff;
+}
+
+/* Override background for Register if needed, but keeping it consistent for now */
+.register-visual {
+    background-image: url('https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1600&auto=format&fit=crop');
+}
+
+.auth-visual-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.95) 0%, rgba(23, 37, 84, 0.8) 100%);
+}
+
+.auth-visual-content {
+    position: relative;
+    z-index: 2;
+    max-width: 500px;
+    width: 100%;
+}
+
+.auth-visual-brand {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 1.5rem;
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.feature-item i {
+    color: #fbbf24;
+}
+
+/* Form Side - Right Grid Column */
+.auth-form-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    background-color: #f8fafc;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Custom Form Styles */
+.input-group-custom {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group-custom .icon {
+    position: absolute;
+    left: 1.25rem;
+    color: var(--auth-text-muted);
+    font-size: 1.1rem;
+    z-index: 4;
+}
+
+.form-control-custom,
+.input-group-custom input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3.25rem;
+    border: 1.5px solid var(--auth-border);
+    border-radius: 1rem;
+    background-color: var(--auth-bg-light);
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.form-control-custom:focus,
+.input-group-custom input:focus {
+    border-color: var(--auth-primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.05);
+    outline: none;
+}
+
+.form-control-custom.is-invalid {
+    border-color: #ef4444;
+}
+
+.btn-toggle-pb {
+    position: absolute;
+    right: 1.25rem;
+    background: none;
+    border: none;
+    color: var(--auth-text-muted);
+    cursor: pointer;
+    padding: 0;
+    z-index: 4;
+}
+
+.btn-auth-primary {
+    background-color: var(--auth-primary);
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-auth-primary:hover {
+    background-color: var(--auth-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2);
+    color: #fff;
+}
+
+.color-brand {
+    color: var(--auth-primary);
+}
+
+.hover-brand:hover {
+    color: var(--auth-primary) !important;
+}
+
+.custom-check .form-check-input:checked {
+    background-color: var(--auth-primary);
+    border-color: var(--auth-primary);
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+.btn-back-home {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background-color: #475569;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-back-home:hover {
+    background-color: #334155;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .auth-visual {
+        padding: 3rem 2rem;
+    }
+
+    .auth-form-side {
+        padding: 2rem 1.5rem;
+    }
+
+    .auth-form-container {
+        padding: 2rem;
+        max-width: 420px;
+    }
+
+    .auth-visual-content {
+        max-width: 400px;
+    }
+
+    .display-4 {
+        font-size: 2.5rem;
+    }
+
+    .feature-item {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 991px) {
+    .auth-container {
+        display: block;
+    }
+
+    .auth-visual {
+        display: none;
+    }
+
+    .auth-form-side {
+        padding: 2rem;
+        background-color: var(--auth-bg-light);
+        min-height: 100vh;
+    }
+
+    .auth-page-wrapper {
+        background-color: var(--auth-bg-light);
+    }
+
+    .auth-form-container {
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    }
+}

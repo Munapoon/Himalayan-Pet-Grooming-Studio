@@ -15,68 +15,65 @@
     <div class="card">
         <div class="card-body">
             {% if page_obj %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Profile</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Status</th>
-                                <th>Joined Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in page_obj %}
-                            <tr style="cursor: pointer;" data-url="{% url 'user_detail' user.id %}" onclick="window.location=this.dataset.url">
-                                <td><strong>#{{ user.id }}</strong></td>
-                                <td>
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            <strong>{{ user.first_name|first|upper|default:"U" }}</strong>
-                                        </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Profile</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in page_obj %}
+                        <tr style="cursor: pointer;" data-url="{% url 'user_detail' user.id %}"
+                            onclick="window.location=this.dataset.url">
+                            <td><strong>#{{ user.id }}</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                        style="width: 40px; height: 40px;">
+                                        <strong>{{ user.first_name|first|upper|default:"U" }}</strong>
                                     </div>
-                                </td>
-                                <td>
-                                    <strong>{{ user.get_full_name|default:user.username }}</strong>
-                                    <br>
-                                    <small class="text-muted">@{{ user.username }}</small>
-                                </td>
-                                <td>
-                                    <i class="fas fa-envelope text-primary"></i> {{ user.email }}
-                                </td>
-                                <td>
-                                    <i class="fas fa-phone text-success"></i> {{ user.phone }}
-                                </td>
-                                <td>
-                                    {% if user.is_active %}
-                                        <span class="badge bg-success">Active</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Inactive</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                <br>
+                                <small class="text-muted">@{{ user.username }}</small>
+                            </td>
+                            <td>
+                                <i class="fas fa-envelope text-primary"></i> {{ user.email }}
+                            </td>
+                            <td>
+                                <i class="fas fa-phone text-success"></i> {{ user.phone }}
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <p class="text-center text-muted py-4">No users found.</p>
+            <p class="text-center text-muted py-4">No users found.</p>
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Pagination -->
     {% include 'pagination.html' %}
 </div>
 
-<style>
-    tbody tr:hover {
-        background-color: #f8f9fa;
-        transition: background-color 0.3s ease;
-    }
-</style>
+{% endblock %}
 {% endblock %}
