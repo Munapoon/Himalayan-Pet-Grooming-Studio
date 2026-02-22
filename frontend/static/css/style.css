@@ -8,6 +8,46 @@
     --color-accent: #FBBF24;
     --color-bg-start: #EFF6FF;
     --color-bg-end: #F8FAFC;
+    --bs-primary: #1D4ED8;
+    --bs-primary-rgb: 29, 78, 216;
+}
+
+/* Bootstrap Primary Color Override */
+.bg-primary {
+    background-color: #1D4ED8 !important;
+}
+
+.text-primary {
+    color: #1D4ED8 !important;
+}
+
+.btn-primary {
+    background-color: #1D4ED8 !important;
+    border-color: #1D4ED8 !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #1e40af !important;
+    border-color: #1e40af !important;
+}
+
+.btn-outline-primary {
+    color: #1D4ED8 !important;
+    border-color: #1D4ED8 !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    background-color: #1D4ED8 !important;
+    border-color: #1D4ED8 !important;
+    color: white !important;
+}
+
+.border-left-primary {
+    border-left: 4px solid #1D4ED8 !important;
 }
 
 body {
