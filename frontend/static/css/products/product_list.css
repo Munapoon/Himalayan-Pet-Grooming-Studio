@@ -1,0 +1,279 @@
+/* 
+   Product List Page Styles
+   Himalayan Pet Grooming Studio
+*/
+
+.products-hero {
+    background: #FFFBF7 !important;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 5c-0.8 0-1.5 0.7-1.5 1.5S9.2 8 10 8s1.5-0.7 1.5-1.5S10.8 5 10 5zm6 0c-0.8 0-1.5 0.7-1.5 1.5S15.2 8 16 8s1.5-0.7 1.5-1.5S16.8 5 16 5zm-9 4c-0.8 0-1.5 0.7-1.5 1.5S6.2 12 7 12s1.5-0.7 1.5-1.5S7.8 9 7 9zm12 0c-0.8 0-1.5 0.7-1.5 1.5s0.7 1.5 1.5 1.5 1.5-0.7 1.5-1.5S19.8 9 19 9zm-6 3c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z' fill='%23fce8d5' fill-opacity='0.6'/%3E%3C/svg%3E") !important;
+    height: 420px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    padding-top: 80px;
+    /* Account for fixed-top navbar */
+}
+
+.hero-content-left {
+    position: relative;
+    z-index: 5;
+    padding-left: 5%;
+    max-width: 600px;
+}
+
+.pet-shop-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+
+.paw-brand-icon {
+    font-size: 1.8rem;
+    color: #ff7e5f;
+}
+
+.brand-text {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1e293b;
+    text-transform: lowercase;
+    letter-spacing: 0.5px;
+}
+
+.hero-main-heading {
+    font-size: 3.8rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #1e293b;
+    letter-spacing: -1px;
+}
+
+.hero-wave-divider {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background-color: #1e3a8a;
+    background-repeat: no-repeat !important;
+    background-position: right 5% center !important;
+    background-size: 85% !important;
+    clip-path: ellipse(85% 100% at 100% 50%);
+    z-index: 1;
+    transition: all 0.5s ease;
+}
+
+.filter-sidebar {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eef2f7;
+}
+
+.sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #000;
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-group {
+    margin-bottom: 25px;
+}
+
+.filter-group-label {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #000;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.price-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-input-group {
+    flex: 1;
+}
+
+.price-field-label {
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.price-input-row input {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    font-size: 0.95rem;
+    width: 100%;
+}
+
+.price-separator {
+    color: #94a3b8;
+    font-weight: 600;
+    margin-top: 25px;
+}
+
+.btn-apply-filters {
+    background: #1e3a8a;
+    color: white;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: none;
+    transition: all 0.3s;
+    margin-bottom: 10px;
+}
+
+.btn-apply-filters:hover {
+    background: #172554;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+.product-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    background: white;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(91, 154, 173, 0.15);
+    border-color: #5B9AAD;
+}
+
+.product-image-wrapper {
+    height: 200px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.product-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-body {
+    padding: 20px;
+}
+
+.product-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6366f1;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.product-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.product-price {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #1e3a8a;
+}
+
+.top-bar-filter {
+    background: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-group {
+    flex: 1;
+    position: relative;
+}
+
+.search-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.search-group input {
+    padding-left: 45px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.sort-group {
+    width: 200px;
+}
+
+@media (max-width: 1200px) {
+    .hero-main-heading {
+        font-size: 3rem;
+    }
+
+    .hero-wave-divider {
+        width: 65%;
+        background-size: 90% !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .products-hero {
+        height: auto;
+        min-height: 400px;
+        padding-top: 100px;
+        padding-bottom: 40px;
+        text-align: center;
+    }
+
+    .hero-content-left {
+        margin: 0 auto;
+        padding: 0 20px;
+        z-index: 6;
+    }
+
+    .hero-wave-divider {
+        opacity: 0.2;
+        width: 100%;
+        clip-path: none;
+        background-color: transparent;
+        background-position: center !important;
+        background-size: cover !important;
+    }
+
+    .hero-main-heading {
+        font-size: 2.8rem;
+    }
+}

@@ -1,0 +1,17 @@
+/* 
+   Service List Page Styles
+   Himalayan Pet Grooming Studio
+*/
+
+.service-card-hover {
+    transition: all 0.3s ease;
+}
+
+.service-card-hover:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+.border-dashed {
+    border: 2px dashed #dee2e6 !important;
+}

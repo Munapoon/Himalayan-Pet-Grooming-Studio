@@ -34,7 +34,8 @@
                 </thead>
                 <tbody>
                     {% for appointment in page_obj %}
-                    <tr style="cursor: pointer;" data-url="{% url 'admin_appointment_detail' appointment.id %}" onclick="window.location=this.dataset.url">
+                    <tr style="cursor: pointer;" data-url="{% url 'admin_appointment_detail' appointment.id %}"
+                        onclick="window.location=this.dataset.url">
                         <td>
                             <strong>{{ appointment.user.get_full_name|default:appointment.user.username }}</strong><br>
                             <small class="text-muted">@{{ appointment.user.username }}</small>
@@ -45,7 +46,8 @@
                         </td>
                         <td>
                             <strong>{{ appointment.pet_name }}</strong><br>
-                            <small class="text-muted">{{ appointment.pet_type }} - {{ appointment.get_service_display }}</small>
+                            <small class="text-muted">{{ appointment.pet_type }} - {{ appointment.get_service_display
+                                }}</small>
                         </td>
                         <td>
                             <i class="fas fa-calendar"></i> {{ appointment.appointment_date|date:"M d, Y" }}<br>
@@ -61,28 +63,33 @@
                             </span>
                         </td>
                         <td style="white-space: nowrap;" onclick="event.stopPropagation();">
-                            <a href="{% url 'admin_appointment_detail' appointment.id %}" class="btn btn-sm btn-info" title="View Details">
+                            <a href="{% url 'admin_appointment_detail' appointment.id %}" class="btn btn-sm btn-info"
+                                title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
                             {% if appointment.status == 'pending' %}
-                            <form method="POST" action="{% url 'appointment_confirm' appointment.id %}" style="display: inline;">
+                            <form method="POST" action="{% url 'appointment_confirm' appointment.id %}"
+                                style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-success" title="Confirm Booking">
                                     <i class="fas fa-check"></i>
                                 </button>
                             </form>
                             {% elif appointment.status == 'confirmed' %}
-                            <form method="POST" action="{% url 'appointment_complete' appointment.id %}" style="display: inline;">
+                            <form method="POST" action="{% url 'appointment_complete' appointment.id %}"
+                                style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-success" title="Mark as Completed">
                                     <i class="fas fa-check-double"></i>
                                 </button>
                             </form>
                             {% endif %}
-                            <a href="{% url 'appointment_update' appointment.id %}" class="btn btn-sm btn-warning" title="Edit">
+                            <a href="{% url 'appointment_update' appointment.id %}" class="btn btn-sm btn-warning"
+                                title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-sm btn-danger" title="Delete">
+                            <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-sm btn-danger"
+                                title="Delete">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
@@ -93,7 +100,8 @@
         </div>
         {% else %}
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> No appointments found. <a href="{% url 'appointment_create' %}">Book your first appointment!</a>
+            <i class="fas fa-info-circle"></i> No appointments found. <a href="{% url 'appointment_create' %}">Book your
+                first appointment!</a>
         </div>
         {% endif %}
     </div>
@@ -102,9 +110,5 @@
 <!-- Pagination -->
 {% include 'pagination.html' %}
 
-<style>
-    tbody tr:hover {
-        background-color: #e9ecef;
-    }
-</style>
+{% endblock %}
 {% endblock %}
