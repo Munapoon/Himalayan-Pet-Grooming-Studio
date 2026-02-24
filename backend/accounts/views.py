@@ -17,20 +17,23 @@ def home(request):
     if request.user.is_authenticated and request.user.is_admin_user():
         return redirect('admin_dashboard')
     
-    # Get service ratings
-    from appointments.models import ServiceReview
+    # Get active services from DB
+    from appointments.models import Service, ServiceReview
     from django.db.models import Avg, Count
     
-    service_types = ['bath', 'full', 'haircut', 'nails']
-    service_ratings = {}
+    services = Service.objects.filter(is_active=True).order_by('order')
     
-    for service_type in service_types:
-        reviews = ServiceReview.objects.filter(service=service_type)
-        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
-        review_count = reviews.count()
-        service_ratings[service_type] = {
-            'avg_rating': round(avg_rating, 1) if avg_rating else 0,
-            'review_count': review_count
+    # Get service ratings for backward compatibility / specific needs
+    service_ratings = {}
+    for svc in services:
+        reviews = ServiceReview.objects.filter(service=svc.slug)
+        avg = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        count = reviews.count()
+        svc.avg_rating = round(avg, 1) if avg else 0
+        svc.review_count = count
+        service_ratings[svc.slug] = {
+            'avg_rating': svc.avg_rating,
+            'review_count': count
         }
     
     # Get top rated products
@@ -57,6 +60,7 @@ def home(request):
     ).order_by('-total_sold')[:5]
     
     context = {
+        'services': services,
         'service_ratings': service_ratings,
         'top_rated_products': top_rated_products,
         'top_products': top_products,

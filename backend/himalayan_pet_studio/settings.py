@@ -175,15 +175,8 @@ CACHES = {
 
 # Login URLs
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'user_dashboard'
 LOGOUT_REDIRECT_URL = 'login'
-# Login URLs
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'login'
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # Khalti Payment Gateway Configuration
 KHALTI_PUBLIC_KEY = os.environ.get('KHALTI_PUBLIC_KEY', 'test_public_key_your_key_here')

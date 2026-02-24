@@ -1,0 +1,159 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Himalayan Pet Studio Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{% url 'admin_service_list' %}"
+                    class="btn btn-outline-secondary me-3 shadow-sm rounded-circle">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-edit me-2"></i>Service Details</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label
+                                    }}</label>
+
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.slug.id_for_label }}" class="form-label fw-bold">{{ form.slug.label
+                                    }}</label>
+
+                                {{ form.slug }}
+                                <div class="form-text small">Unique URL key (e.g., bath-and-brush). Used for matching
+                                    appointments.</div>
+                                {% if form.slug.errors %}
+                                <div class="text-danger small mt-1">{{ form.slug.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label for="{{ form.short_description.id_for_label }}" class="form-label fw-bold">{{
+                                    form.short_description.label }}</label>
+
+                                {{ form.short_description }}
+                                {% if form.short_description.errors %}
+                                <div class="text-danger small mt-1">{{ form.short_description.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{
+                                    form.description.label }}</label>
+
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.price.id_for_label }}" class="form-label fw-bold">{{
+                                    form.price.label }}</label>
+
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                <div class="text-danger small mt-1">{{ form.price.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.duration.id_for_label }}" class="form-label fw-bold">{{
+                                    form.duration.label }}</label>
+
+                                {{ form.duration }}
+                                {% if form.duration.errors %}
+                                <div class="text-danger small mt-1">{{ form.duration.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.order.id_for_label }}" class="form-label fw-bold">{{
+                                    form.order.label }}</label>
+
+                                {{ form.order }}
+                                {% if form.order.errors %}
+                                <div class="text-danger small mt-1">{{ form.order.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label for="{{ form.image_url.id_for_label }}" class="form-label fw-bold">{{
+                                    form.image_url.label }}</label>
+
+                                {{ form.image_url }}
+                                {% if form.image_url.errors %}
+                                <div class="text-danger small mt-1">{{ form.image_url.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label for="{{ form.features_json.id_for_label }}" class="form-label fw-bold">{{
+                                    form.features_json.label }}</label>
+
+                                {{ form.features_json }}
+                                <div class="form-text small">Enter as a JSON list, e.g.
+                                    <code>["Bath", "Nail trim"]</code>
+                                </div>
+                                {% if form.features_json.errors %}
+                                <div class="text-danger small mt-1">{{ form.features_json.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.badge.id_for_label }}" class="form-label fw-bold">{{
+                                    form.badge.label }}</label>
+
+                                {{ form.badge }}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.badge_color.id_for_label }}" class="form-label fw-bold">{{
+                                    form.badge_color.label }}</label>
+
+                                {{ form.badge_color }}
+                            </div>
+
+                            <div class="col-md-4 d-flex align-items-end mb-3">
+                                <div class="form-check form-switch p-3 bg-light rounded shadow-sm w-100 border">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label fw-bold ms-2"
+                                        for="{{ form.is_active.id_for_label }}">Active on Site</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'admin_service_list' %}" class="btn btn-light px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5 shadow">
+                                <i class="fas fa-save me-2"></i>Save Service
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

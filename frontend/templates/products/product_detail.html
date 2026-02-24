@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ product.name }} - Himalayan Pet Studio{% endblock %}
 
@@ -60,6 +61,7 @@
                         <span class="rating-text">{{ product.average_rating }}/5</span>
                         <span class="rating-count">({{ product.total_reviews }} review{{ product.total_reviews|pluralize
                             }})</span>
+
                         {% else %}
                         <span class="rating-count">No reviews yet</span>
                         {% endif %}
@@ -103,13 +105,13 @@
                         <form method="post" action="{% url 'products:add_to_cart' product.id %}" id="addToCartForm">
                             {% csrf_token %}
                             <div class="quantity-controls">
-                                <button type="button" class="quantity-btn" onclick="decrementQty()">
+                                <button type="button" class="quantity-btn decrement-btn">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1"
                                     max="{{ product.stock_quantity }}" class="quantity-input">
-                                <button type="button" class="quantity-btn" data-max="{{ product.stock_quantity }}"
-                                    onclick="incrementQty(this.dataset.max)">
+                                <button type="button" class="quantity-btn increment-btn"
+                                    data-max="{{ product.stock_quantity }}">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -121,7 +123,7 @@
                                     <i class="fas fa-shopping-cart"></i>
                                     Add to Cart
                                 </button>
-                                <button type="button" class="btn-buy-now" onclick="buyNow()">
+                                <button type="button" class="btn-buy-now">
                                     <i class="fas fa-bolt"></i>
                                     Buy Now
                                 </button>
@@ -129,13 +131,13 @@
                         </form>
                         {% else %}
                         <div class="quantity-controls">
-                            <button type="button" class="quantity-btn" onclick="decrementQty()">
+                            <button type="button" class="quantity-btn decrement-btn">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <input type="number" id="quantity" value="1" min="1" max="{{ product.stock_quantity }}"
                                 class="quantity-input">
-                            <button type="button" class="quantity-btn" data-max="{{ product.stock_quantity }}"
-                                onclick="incrementQty(this.dataset.max)">
+                            <button type="button" class="quantity-btn increment-btn"
+                                data-max="{{ product.stock_quantity }}">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
@@ -228,24 +230,7 @@
     </div>
 </div>
 
-<script>
-    function incrementQty(max) {
-        var qty = document.getElementById('quantity');
-        if (parseInt(qty.value) < max) {
-            qty.value = parseInt(qty.value) + 1;
-        }
-    }
-
-    function decrementQty() {
-        var qty = document.getElementById('quantity');
-        if (parseInt(qty.value) > 1) {
-            qty.value = parseInt(qty.value) - 1;
-        }
-    }
-
-    function buyNow() {
-        document.getElementById('redirectTo').value = 'cart';
-        document.getElementById('addToCartForm').submit();
-    }
-</script>
+{% block extra_js %}
+<script src="{% static 'js/product_detail.js' %}"></script>
+{% endblock %}
 {% endblock %}

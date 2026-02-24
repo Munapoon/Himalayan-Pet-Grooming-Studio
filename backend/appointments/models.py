@@ -1,71 +1,106 @@
 from django.db import models
-from accounts.models import User
+from django.conf import settings
+from django.utils import timezone
+import json
+
+
+class Service(models.Model):
+    """Dynamic grooming service model — editable from Admin Dashboard."""
+    SLUG_CHOICES = [
+        ('bath', 'Bath & Brush'),
+        ('haircut', 'Haircut & Styling'),
+        ('nails', 'Nail Trimming'),
+        ('full', 'Full Grooming'),
+        ('spa', 'Spa Treatment'),
+    ]
+
+    slug = models.CharField(max_length=20, unique=True, choices=SLUG_CHOICES,
+                            help_text="Unique key that matches URL and appointment type.")
+    name = models.CharField(max_length=100)
+    short_description = models.CharField(max_length=255, blank=True,
+                                         help_text="Short tagline shown on cards.")
+    description = models.TextField(blank=True, help_text="Full description on detail page.")
+    price = models.CharField(max_length=100, blank=True, help_text="e.g. Rs. 950 - Rs. 2250")
+    duration = models.CharField(max_length=100, blank=True, help_text="e.g. 45-90 minutes")
+    image_url = models.URLField(blank=True, help_text="External image URL for the service.")
+    features_json = models.TextField(blank=True, default='[]',
+                                     help_text='JSON list of feature strings, e.g. ["Bath","Nail trim"]')
+    badge = models.CharField(max_length=50, blank=True,
+                             help_text="Optional badge text (e.g. Best Value).")
+    badge_color = models.CharField(max_length=20, default='primary',
+                                   help_text="Bootstrap color: primary, danger, success, warning, info")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower = first).")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'services'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def features(self):
+        """Return features as a Python list."""
+        try:
+            return json.loads(self.features_json)
+        except (ValueError, TypeError):
+            return []
+
+    def set_features(self, features_list):
+        """Save a Python list as JSON."""
+        self.features_json = json.dumps(features_list)
 
 
 class Appointment(models.Model):
-    """
-    Model for pet grooming appointments
-    """
+    SERVICE_CHOICES = [
+        ('bath', 'Bath & Brush'),
+        ('haircut', 'Haircut & Styling'),
+        ('nails', 'Nail Trimming'),
+        ('full', 'Full Grooming'),
+        ('spa', 'Spa Treatment'),
+    ]
+
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
-    
-    SERVICE_CHOICES = [
-        ('bath', 'Bath & Brush'),
-        ('haircut', 'Haircut & Styling'),
-        ('nails', 'Nail Trimming'),
-        ('full', 'Full Grooming Package'),
-        ('spa', 'Spa Treatment'),
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
     pet_name = models.CharField(max_length=100)
-    pet_type = models.CharField(max_length=50)  # Dog, Cat, etc.
+    pet_type = models.CharField(max_length=100)
     service = models.CharField(max_length=20, choices=SERVICE_CHOICES)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         db_table = 'appointments'
-        ordering = ['-appointment_date', '-appointment_time']
-        verbose_name = 'Appointment'
-        verbose_name_plural = 'Appointments'
-    
+        ordering = ['-created_at']
+
     def __str__(self):
-        return f"{self.pet_name} - {self.get_service_display()} on {self.appointment_date}"
+        return f"{self.pet_name} - {self.service} ({self.appointment_date})"
+
 
 class ServiceReview(models.Model):
-    """
-    Model for service reviews
-    """
-    RATING_CHOICES = [
-        (1, '1 - Poor'),
-        (2, '2 - Fair'),
-        (3, '3 - Good'),
-        (4, '4 - Very Good'),
-        (5, '5 - Excellent'),
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='service_reviews')
-    service = models.CharField(max_length=20, choices=Appointment.SERVICE_CHOICES)
-    rating = models.IntegerField(choices=RATING_CHOICES)
-    review = models.TextField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='service_reviews')
     appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
+    service = models.CharField(max_length=20, choices=Appointment.SERVICE_CHOICES)
+    rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)])
+    review = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
     class Meta:
         db_table = 'service_reviews'
+        unique_together = ('user', 'service')
         ordering = ['-created_at']
-        verbose_name = 'Service Review'
-        verbose_name_plural = 'Service Reviews'
-    
+
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.get_service_display()} - {self.rating} stars"
+        return f"{self.user.username} - {self.service} - {self.rating}"

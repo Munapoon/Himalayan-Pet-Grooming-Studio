@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Appointments - Himalayan Pet Studio{% endblock %}
 
@@ -132,14 +133,7 @@
 <link rel="stylesheet" href="{% static 'css/appointments/appointment_list.css' %}">
 {% endblock %}
 
-<script>
-    // Handle appointment card clicks
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.appointment-card[data-url]').forEach(function (card) {
-            card.addEventListener('click', function () {
-                window.location.href = this.getAttribute('data-url');
-            });
-        });
-    });
-</script>
+{% block extra_js %}
+<script src="{% static 'js/appointment_list.js' %}"></script>
+{% endblock %}
 {% endblock %}
