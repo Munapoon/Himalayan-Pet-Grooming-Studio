@@ -23,8 +23,7 @@
                             <thead>
                                 <tr>
                                     <th style="width: 50px;">
-                                        <input type="checkbox" id="select-all" class="form-check-input" checked
-                                            onchange="toggleAllItems()">
+                                        <input type="checkbox" id="select-all" class="form-check-input" checked>
                                     </th>
                                     <th>Product</th>
                                     <th>Price</th>
@@ -38,8 +37,7 @@
                                 <tr id="cart-row-{{ item.id }}">
                                     <td class="align-middle">
                                         <input type="checkbox" class="form-check-input cart-item-checkbox"
-                                            data-item-id="{{ item.id }}" data-price="{{ item.subtotal }}" checked
-                                            onchange="updateOrderSummary()">
+                                            data-item-id="{{ item.id }}" data-price="{{ item.subtotal }}" checked>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -67,20 +65,20 @@
                                             class="d-inline" id="update-form-{{ item.id }}">
                                             {% csrf_token %}
                                             <div class="input-group" style="width: 150px;">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary cart-decrement"
                                                     data-item-id="{{ item.id }}"
-                                                    data-stock="{{ item.product.stock_quantity }}"
-                                                    onclick="decrementCartQty(this.dataset.itemId, this.dataset.stock)">
+                                                    data-stock="{{ item.product.stock_quantity }}">
                                                     <i class="fas fa-minus"></i>
                                                 </button>
                                                 <input type="text" name="quantity" id="qty-{{ item.id }}"
                                                     value="{{ item.quantity }}"
                                                     class="form-control form-control-sm text-center fw-bold" readonly
                                                     style="background-color: white; cursor: default;">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary cart-increment"
                                                     data-item-id="{{ item.id }}"
-                                                    data-stock="{{ item.product.stock_quantity }}"
-                                                    onclick="incrementCartQty(this.dataset.itemId, this.dataset.stock)">
+                                                    data-stock="{{ item.product.stock_quantity }}">
                                                     <i class="fas fa-plus"></i>
                                                 </button>
                                             </div>
@@ -140,135 +138,45 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button onclick="proceedToCheckout()" class="btn btn-primary btn-lg" id="checkout-btn">
-                            <i class="fas fa-lock"></i> Proceed to Checkout
-                        </button>
-                        <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-shopping-bag"></i> Continue Shopping
-                        </a>
+                        <div class="d-grid gap-2">
+                            <button id="checkout-btn" data-url="{% url 'products:checkout' %}"
+                                class="btn btn-primary btn-lg">
+                                <i class="fas fa-lock"></i> Proceed to Checkout
+                            </button>
+                            <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-shopping-bag"></i> Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-shield-alt"></i> Secure Shopping</h6>
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Secure Payment</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Quality Products</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Fast Delivery</li>
+                            <li class="mb-0"><i class="fas fa-check text-success"></i> 24/7 Support</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h6 class="card-title"><i class="fas fa-shield-alt"></i> Secure Shopping</h6>
-                    <ul class="list-unstyled small mb-0">
-                        <li class="mb-2"><i class="fas fa-check text-success"></i> Secure Payment</li>
-                        <li class="mb-2"><i class="fas fa-check text-success"></i> Quality Products</li>
-                        <li class="mb-2"><i class="fas fa-check text-success"></i> Fast Delivery</li>
-                        <li class="mb-0"><i class="fas fa-check text-success"></i> 24/7 Support</li>
-                    </ul>
-                </div>
-            </div>
         </div>
+        {% else %}
+        <!-- Empty Cart -->
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+            <h3 class="text-muted mb-3">Your cart is empty</h3>
+            <p class="text-muted mb-4">Start adding products to your cart!</p>
+            <a href="{% url 'products:product_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Browse Products
+            </a>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <!-- Empty Cart -->
-    <div class="text-center py-5">
-        <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
-        <h3 class="text-muted mb-3">Your cart is empty</h3>
-        <p class="text-muted mb-4">Start adding products to your cart!</p>
-        <a href="{% url 'products:product_list' %}" class="btn btn-primary btn-lg">
-            <i class="fas fa-shopping-bag"></i> Browse Products
-        </a>
-    </div>
-    {% endif %}
-</div>
 
-<script>
-    function incrementCartQty(itemId, maxQty) {
-        var qtyInput = document.getElementById('qty-' + itemId);
-        var currentQty = parseInt(qtyInput.value);
-
-        if (currentQty < maxQty) {
-            qtyInput.value = currentQty + 1;
-            document.getElementById('update-form-' + itemId).submit();
-        }
-    }
-
-    function decrementCartQty(itemId, maxQty) {
-        var qtyInput = document.getElementById('qty-' + itemId);
-        var currentQty = parseInt(qtyInput.value);
-
-        if (currentQty > 1) {
-            qtyInput.value = currentQty - 1;
-            document.getElementById('update-form-' + itemId).submit();
-        }
-    }
-
-    function toggleAllItems() {
-        const selectAll = document.getElementById('select-all');
-        const checkboxes = document.querySelectorAll('.cart-item-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = selectAll.checked;
-        });
-        updateOrderSummary();
-    }
-
-    function updateOrderSummary() {
-        const checkboxes = document.querySelectorAll('.cart-item-checkbox:checked');
-        let total = 0;
-        let count = 0;
-
-        checkboxes.forEach(checkbox => {
-            total += parseFloat(checkbox.dataset.price);
-            count++;
-        });
-
-        document.getElementById('selected-count').textContent = count;
-        document.getElementById('selected-total').textContent = total.toFixed(2);
-        document.getElementById('final-total').textContent = total.toFixed(2);
-
-        // Update select-all checkbox state
-        const allCheckboxes = document.querySelectorAll('.cart-item-checkbox');
-        const selectAll = document.getElementById('select-all');
-        selectAll.checked = checkboxes.length === allCheckboxes.length;
-
-        // Disable checkout if no items selected
-        document.getElementById('checkout-btn').disabled = count === 0;
-    }
-
-    function proceedToCheckout() {
-        const checkboxes = document.querySelectorAll('.cart-item-checkbox:checked');
-
-        if (checkboxes.length === 0) {
-            alert('Please select at least one item to checkout');
-            return;
-        }
-
-        // Collect selected item IDs
-        const selectedIds = Array.from(checkboxes).map(cb => cb.dataset.itemId);
-
-        // Create a form and submit
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{% url "products:checkout" %}';
-
-        // Add CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-
-        // Add selected item IDs
-        selectedIds.forEach(id => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'selected_items';
-            input.value = id;
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function () {
-        updateOrderSummary();
-    });
-</script>
-{% endblock %}
+    {% block extra_js %}
+    <script src="{% static 'js/cart.js' %}"></script>
+    {% endblock %}
+    {% endblock %}

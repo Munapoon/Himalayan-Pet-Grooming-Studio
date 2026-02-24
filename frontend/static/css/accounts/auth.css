@@ -32,6 +32,7 @@
 /* Visual Side - Left Grid Column */
 .auth-visual {
     flex: 1;
+    min-height: 100%;
     background-image: url('https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=1600&auto=format&fit=crop');
     background-size: cover;
     background-position: center;
@@ -104,6 +105,10 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 
+.auth-form-register {
+    max-width: 580px;
+}
+
 /* Custom Form Styles */
 .input-group-custom {
     position: relative;
@@ -122,12 +127,13 @@
 .form-control-custom,
 .input-group-custom input {
     width: 100%;
-    padding: 1rem 1rem 1rem 3.25rem;
+    padding: 1.1rem 1.1rem 1.1rem 3.5rem;
     border: 1.5px solid var(--auth-border);
     border-radius: 1rem;
     background-color: var(--auth-bg-light);
     transition: all 0.2s ease;
-    font-size: 1rem;
+    font-size: 1.3rem;
+    font-weight: 400;
 }
 
 .form-control-custom:focus,
@@ -185,6 +191,20 @@
 .custom-check .form-check-input:checked {
     background-color: var(--auth-primary);
     border-color: var(--auth-primary);
+}
+
+.custom-check .form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.15rem;
+    cursor: pointer;
+}
+
+.custom-check .form-check-label {
+    font-size: 1.05rem;
+    padding-left: 0.5rem;
+    cursor: pointer;
+    color: var(--auth-text-muted);
 }
 
 .tracking-wider {

@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Register - Himalayan Pet Studio{% endblock %}
 
 {% block body_class %}no-pt{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block navbar %}{% endblock %}
 
@@ -9,7 +11,7 @@
 <div class="auth-page-wrapper">
     <div class="auth-container">
         <!-- Left Side: Visual Branding (Hidden on mobile) -->
-        <div class="auth-visual d-none d-lg-flex">
+        <div class="auth-visual register-visual d-none d-lg-flex">
             <div class="auth-visual-overlay"></div>
             <div class="auth-visual-content">
                 <div class="auth-visual-brand mb-4">
@@ -37,7 +39,7 @@
 
         <!-- Right Side: Registration Form -->
         <div class="auth-form-side">
-            <div class="auth-form-container" style="max-width: 550px;">
+            <div class="auth-form-container auth-form-register">
                 <div class="text-center mb-5 d-lg-none">
                     <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
                     <h2 class="fw-bold">Create Account</h2>

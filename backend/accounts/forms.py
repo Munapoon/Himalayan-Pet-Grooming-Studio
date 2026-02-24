@@ -36,7 +36,8 @@ class UserRegistrationForm(UserCreationForm):
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'First Name'
+            'placeholder': 'First Name',
+            'autofocus': True
         })
     )
     last_name = forms.CharField(
@@ -50,7 +51,7 @@ class UserRegistrationForm(UserCreationForm):
     
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone', 'first_name', 'last_name', 'password1', 'password2']
+        fields = ['username', 'email', 'phone', 'first_name', 'last_name']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,12 +74,16 @@ class UserRegistrationForm(UserCreationForm):
     
     def clean_email(self):
         email = self.cleaned_data.get('email')
+        if not email:
+            return email
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('Email already registered.')
         return email
     
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
+        if not phone:
+            return phone
         
         # Check if phone contains only digits
         if not phone.isdigit():
@@ -94,6 +99,8 @@ class UserRegistrationForm(UserCreationForm):
     
     def clean_username(self):
         username = self.cleaned_data.get('username')
+        if not username:
+            return username
         
         # Check minimum length
         if len(username) < 4:
@@ -110,6 +117,8 @@ class UserRegistrationForm(UserCreationForm):
     
     def clean_password1(self):
         password = self.cleaned_data.get('password1')
+        if not password:
+            return password
         
         # Check minimum length
         if len(password) < 8:

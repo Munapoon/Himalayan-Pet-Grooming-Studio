@@ -119,32 +119,40 @@
 
                 <!-- Pagination -->
                 {% if page_obj.has_other_pages %}
-                <nav class="mt-5">
-                    <ul class="pagination justify-content-center align-items-center gap-3">
+                <nav class="mt-5 d-flex justify-content-center">
+                    <ul class="pagination-segmented shadow-sm">
                         {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link border-0 rounded-circle bg-white shadow-sm text-dark d-flex align-items-center justify-content-center"
-                                style="width: 45px; height: 45px;"
+                        <li class="page-item enabled">
+                            <a class="page-link"
                                 href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                        </li>
                         {% endif %}
 
-                        <li class="page-item active">
-                            <span
-                                class="page-link border-0 rounded-pill bg-primary px-5 py-2 text-white fw-bold shadow-sm">
-                                {{ page_obj.number }}
-                            </span>
+                        {% for i in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                            <a class="page-link"
+                                href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                                {{ i }}
+                            </a>
                         </li>
+                        {% endfor %}
 
                         {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link border-0 rounded-circle bg-white shadow-sm text-dark d-flex align-items-center justify-content-center"
-                                style="width: 45px; height: 45px;"
+                            <a class="page-link"
                                 href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
                         </li>
                         {% endif %}
                     </ul>
@@ -164,39 +172,7 @@
     </form>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const filterForm = document.getElementById('filterForm');
-
-        // Set initial values from URL
-        const categoryId = urlParams.get('category');
-        if (categoryId) {
-            const select = document.getElementById('category');
-            if (select) select.value = categoryId;
-        }
-
-        const sortBy = urlParams.get('sort');
-        if (sortBy) {
-            const select = document.getElementById('sort');
-            if (select) select.value = sortBy;
-        }
-
-        // Auto-submit on select change
-        document.getElementById('category').addEventListener('change', () => filterForm.submit());
-        document.getElementById('sort').addEventListener('change', () => filterForm.submit());
-
-        // Optional: Auto-submit search after typing (with debounce)
-        let searchTimeout;
-        const searchInput = filterForm.querySelector('input[name="search"]');
-        if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    filterForm.submit();
-                }, 800);
-            });
-        }
-    });
-</script>
+{% block extra_js %}
+<script src="{% static 'js/product_list.js' %}"></script>
+{% endblock %}
 {% endblock %}

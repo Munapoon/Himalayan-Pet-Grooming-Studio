@@ -1,4 +1,5 @@
 {% extends 'admin_base.html' %}
+{% load static %}
 
 {% block title %}{{ user_profile.get_full_name|default:user_profile.username }} - User Details{% endblock %}
 

@@ -376,3 +376,51 @@ body.no-pt {
 .main-wrapper {
     flex: 1;
 }
+
+/* User Dropdown Enhancements */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 10px;
+    min-width: 220px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item {
+    border-radius: 8px;
+    padding: 10px 15px !important;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-text-dark);
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+}
+
+.dropdown-item:hover {
+    background-color: #f1f5f9;
+    color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.dropdown-item.text-danger i {
+    color: #ef4444;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+}
+
+.dropdown-divider {
+    margin: 8px 10px;
+    opacity: 0.1;
+}

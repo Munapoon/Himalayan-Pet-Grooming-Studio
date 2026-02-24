@@ -1,6 +1,7 @@
 from django import forms
-from .models import Appointment
+from .models import Appointment, Service
 from datetime import time
+import json
 
 
 class AppointmentForm(forms.ModelForm):
@@ -15,6 +16,17 @@ class AppointmentForm(forms.ModelForm):
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'min': '09:00', 'max': '18:00'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Special instructions...'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dynamically set service choices from Service model
+        active_services = Service.objects.filter(is_active=True).order_by('order')
+        if active_services.exists():
+            choices = [(s.slug, s.name) for s in active_services]
+            self.fields['service'].choices = choices
+        else:
+            # Fallback to model choices if DB is empty
+            self.fields['service'].choices = Appointment.SERVICE_CHOICES
     
     def clean_appointment_time(self):
         appointment_time = self.cleaned_data.get('appointment_time')
@@ -49,3 +61,51 @@ class AppointmentForm(forms.ModelForm):
                 )
         
         return cleaned_data
+
+
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = [
+            'name', 'slug', 'short_description', 'description', 
+            'price', 'duration', 'image_url', 'features_json', 
+            'badge', 'badge_color', 'is_active', 'order'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Service Name'}),
+            'slug': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. bath-brush'}),
+            'short_description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Brief tagline...'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Detailed description...'}),
+            'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Rs. 1500'}),
+            'duration': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 60-90 min'}),
+            'image_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+            'features_json': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 3, 
+                'placeholder': '["Feature 1", "Feature 2"]'
+            }),
+            'badge': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Popular'}),
+            'badge_color': forms.Select(attrs={'class': 'form-control'}, choices=[
+                ('primary', 'Primary (Blue)'),
+                ('success', 'Success (Green)'),
+                ('danger', 'Danger (Red)'),
+                ('warning', 'Warning (Yellow)'),
+                ('info', 'Info (Cyan)'),
+                ('dark', 'Dark'),
+            ]),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_features_json(self):
+        data = self.cleaned_data.get('features_json')
+        if data:
+            try:
+                # Validate that it's a valid JSON list
+                parsed = json.loads(data)
+                if not isinstance(parsed, list):
+                    raise forms.ValidationError('Features must be a JSON list of strings.')
+            except json.JSONDecodeError:
+                raise forms.ValidationError('Please enter valid JSON format, e.g. ["Feature 1", "Feature 2"]')
+        return data
+

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Appointment
+from .models import Appointment, Service
 from .forms import AppointmentForm
 from accounts.decorators import admin_required
 
@@ -157,118 +157,54 @@ def appointment_update_status(request, pk):
 
 @login_required
 def service_detail(request, service_type):
-    """View service details with reviews"""
+    """View service details with reviews — data from the Service DB model."""
     from .models import ServiceReview
-    from django.db.models import Avg, Count
-    
-    # Get service info
-    service_choices = dict(Appointment._meta.get_field('service').choices)
-    if service_type not in service_choices:
+    from django.db.models import Avg
+
+    # Validate service type
+    valid_slugs = [s[0] for s in Appointment.SERVICE_CHOICES]
+    if service_type not in valid_slugs:
         messages.error(request, 'Invalid service type.')
         return redirect('home')
-    
-    service_name = service_choices[service_type]
-    
-    # Service details with images and descriptions
-    service_info = {
-        'bath': {
-            'image': 'https://images.unsplash.com/photo-1558788353-f76d92427f16?w=800',
-            'description': 'Complete bath service with premium shampoo, conditioning, blow-dry, and brush-out. Perfect for keeping your pet clean and fresh.',
-            'price': 'Rs. 950 - Rs. 2250',
-            'duration': '45-90 minutes',
-            'features': [
-                'Premium pet shampoo & conditioner',
-                'Thorough brush-out',
-                'Professional blow-dry',
-                'Nail trimming included',
-                'Ear cleaning',
-                'Paw pad moisturizing'
-            ]
-        },
-        'haircut': {
-            'image': 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
-            'description': 'Professional haircut and styling tailored to your pet\'s breed and your preferences. Our expert groomers ensure your pet looks their best.',
-            'price': 'Rs. 1200',
-            'duration': '60-120 minutes',
-            'features': [
-                'Breed-specific cuts',
-                'Custom styling',
-                'Face & feet trim',
-                'Sanitary trim',
-                'Full body scissoring',
-                'Finishing touches'
-            ]
-        },
-        'nails': {
-            'image': 'https://images.unsplash.com/photo-1611850968574-de37a1f28b11?w=800',
-            'description': 'Professional nail trimming and filing service to keep your pet comfortable and prevent scratching.',
-            'price': 'Starting at Rs. 300',
-            'duration': '15-30 minutes',
-            'features': [
-                'Precise nail trimming',
-                'Smooth filing',
-                'Quick check included',
-                'Paw pad inspection',
-                'Gentle handling',
-                'Stress-free experience'
-            ]
-        },
-        'full': {
-            'image': 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800',
-            'description': 'Our most comprehensive grooming package combining bath, haircut, and all finishing touches for a complete transformation.',
-            'price': 'Rs. 1500 - Rs. 2950',
-            'duration': '2-3 hours',
-            'features': [
-                'Full bath & conditioning',
-                'Complete haircut styling',
-                'Nail trim & filing',
-                'Teeth brushing',
-                'Ear cleaning & care',
-                'Paw pad trim',
-                'Luxury cologne application',
-                'Decorative bow or bandana'
-            ]
-        },
-        'spa': {
-            'image': 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800',
-            'description': 'Luxury spa treatment for your beloved pet. Includes massage, aromatherapy, and premium grooming products for ultimate relaxation.',
-            'price': 'Rs. 2000 - Rs. 3500',
-            'duration': '2-3 hours',
-            'features': [
-                'Aromatherapy bath',
-                'Relaxing massage',
-                'Premium spa products',
-                'Hot towel treatment',
-                'Pawdicure service',
-                'Facial treatment',
-                'Calming essential oils',
-                'Luxury finishing'
-            ]
+
+    # Fetch from DB (fallback if not yet seeded)
+    service_obj = Service.objects.filter(slug=service_type, is_active=True).first()
+
+    # Build a service_details dict the template already expects
+    if service_obj:
+        service_name = service_obj.name
+        service_details = {
+            'image':       service_obj.image_url,
+            'description': service_obj.description,
+            'price':       service_obj.price,
+            'duration':    service_obj.duration,
+            'features':    service_obj.features,  # list from JSON
         }
-    }
-    
-    service_details = service_info.get(service_type, {})
-    
+    else:
+        # Fallback to choice label if DB row missing
+        service_name = dict(Appointment.SERVICE_CHOICES).get(service_type, service_type)
+        service_details = {}
+
     # Check if user has completed this service
     has_used_service = Appointment.objects.filter(
         user=request.user,
         service=service_type,
         status='completed'
     ).exists()
-    
+
     # Check if user already reviewed this service
     user_review = ServiceReview.objects.filter(
         user=request.user,
         service=service_type
     ).first()
-    
+
     # Get all reviews for this service
     reviews = ServiceReview.objects.filter(service=service_type).select_related('user')
-    
+
     # Calculate average rating
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
     total_reviews = reviews.count()
-    
+
     # Get rating distribution
     rating_distribution = {}
     for i in range(1, 6):
@@ -278,19 +214,24 @@ def service_detail(request, service_type):
             'count': count,
             'percentage': round(percentage, 1)
         }
-    
+
+    # All active services for the sidebar navigation
+    all_services = Service.objects.filter(is_active=True).order_by('order')
+
     context = {
-        'service_type': service_type,
-        'service_name': service_name,
+        'service_type':    service_type,
+        'service_name':    service_name,
         'service_details': service_details,
+        'service_obj':     service_obj,
         'has_used_service': has_used_service,
-        'user_review': user_review,
-        'reviews': reviews,
-        'avg_rating': round(avg_rating, 1),
-        'total_reviews': total_reviews,
+        'user_review':     user_review,
+        'reviews':         reviews,
+        'avg_rating':      round(avg_rating, 1),
+        'total_reviews':   total_reviews,
         'rating_distribution': rating_distribution,
+        'all_services':    all_services,
     }
-    
+
     return render(request, 'appointments/service_detail.html', context)
 
 
@@ -439,26 +380,88 @@ def admin_service_review_list(request):
 
 
 def service_list(request):
-    """Public view to list all grooming services"""
+    """Public view to list all grooming services — data from the Service DB model."""
     from .models import ServiceReview
     from django.db.models import Avg
-    
-    # Get service ratings
-    service_types = ['bath', 'haircut', 'nails', 'full', 'spa']
+    from django.core.paginator import Paginator
+
+    # Fetch active services from DB ordered by display order
+    services_list = Service.objects.filter(is_active=True).order_by('order')
+
+    # Pagination - 5 services per page (puts new ones on page 2)
+    paginator = Paginator(services_list, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Attach avg_rating and review_count to each service object in current page
     service_ratings = {}
-    
-    for service_type in service_types:
-        reviews = ServiceReview.objects.filter(service=service_type)
-        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
-        review_count = reviews.count()
-        service_ratings[service_type] = {
-            'avg_rating': round(avg_rating, 1) if avg_rating else 0,
-            'review_count': review_count
+    for svc in page_obj:
+        reviews = ServiceReview.objects.filter(service=svc.slug)
+        avg = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        count = reviews.count()
+        svc.avg_rating = round(avg, 1) if avg else 0
+        svc.review_count = count
+        service_ratings[svc.slug] = {
+            'avg_rating': svc.avg_rating,
+            'review_count': count,
         }
-    
+
     context = {
+        'services':        page_obj,
+        'page_obj':        page_obj,
         'service_ratings': service_ratings,
-        'service_choices': Appointment.SERVICE_CHOICES,
     }
-    
     return render(request, 'appointments/service_list.html', context)
+
+
+@login_required
+@admin_required
+def admin_service_list(request):
+    """Admin view to manage grooming services."""
+    services = Service.objects.all().order_by('order', 'name')
+    return render(request, 'appointments/admin_service_list.html', {'services': services})
+
+
+@login_required
+@admin_required
+def admin_service_add(request):
+    """Admin view to add a new grooming service."""
+    from .forms import ServiceForm
+    if request.method == 'POST':
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Service added successfully.')
+            return redirect('admin_service_list')
+    else:
+        form = ServiceForm()
+    return render(request, 'appointments/admin_service_form.html', {'form': form, 'title': 'Add Service'})
+
+
+@login_required
+@admin_required
+def admin_service_edit(request, pk):
+    """Admin view to edit an existing grooming service."""
+    from .forms import ServiceForm
+    service = get_object_or_404(Service, pk=pk)
+    if request.method == 'POST':
+        form = ServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Service "{service.name}" updated successfully.')
+            return redirect('admin_service_list')
+    else:
+        form = ServiceForm(instance=service)
+    return render(request, 'appointments/admin_service_form.html', {'form': form, 'title': f'Edit Service: {service.name}'})
+
+
+@login_required
+@admin_required
+def admin_service_delete(request, pk):
+    """Admin view to delete a grooming service."""
+    service = get_object_or_404(Service, pk=pk)
+    if request.method == 'POST':
+         service.delete()
+         messages.success(request, f'Service "{service.name}" deleted successfully.')
+         return redirect('admin_service_list')
+    return render(request, 'appointments/admin_service_confirm_delete.html', {'service': service})

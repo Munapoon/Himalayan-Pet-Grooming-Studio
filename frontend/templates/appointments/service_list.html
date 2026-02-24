@@ -14,202 +14,74 @@
     </div>
 
     <div class="row g-4">
-        <!-- Bath & Brush -->
+        {% for service in services %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card-hover">
+            <div
+                class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card-hover {% if service.badge %}border-primary{% endif %}">
                 <div class="position-relative">
+                    {% if service.image_url %}
+                    <img src="{{ service.image_url }}" class="card-img-top" alt="{{ service.name }}"
+                        style="height: 250px; object-fit: cover;">
+                    {% else %}
                     <img src="https://images.unsplash.com/photo-1558788353-f76d92427f16?w=800" class="card-img-top"
-                        alt="Bath & Brush" style="height: 250px; object-fit: cover;">
+                        alt="{{ service.name }}" style="height: 250px; object-fit: cover;">
+                    {% endif %}
+
+                    {% if service.badge %}
                     <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-primary rounded-pill px-3 py-2">Rs. 950+</span>
+                        <span class="badge bg-{{ service.badge_color }} rounded-pill px-3 py-2">{{ service.badge
+                            }}</span>
+
                     </div>
+                    {% elif service.price %}
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <span class="badge bg-primary rounded-pill px-3 py-2">{{ service.price }}</span>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="h4 fw-bold mb-0">Bath & Brush</h3>
+                        <h3 class="h4 fw-bold mb-0">{{ service.name }}</h3>
                         <div class="text-warning small">
-                            {% with rating=service_ratings.bath.avg_rating %}
                             {% for i in "12345" %}
-                            {% if forloop.counter <= rating %} <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                                {% endfor %}
-                                {% endwith %}
+                            {% if forloop.counter <= service.avg_rating %} <i class="fas fa-star"></i>
+                                {% elif forloop.counter|add:"-0.5" <= service.avg_rating %} <i
+                                    class="fas fa-star-half-alt"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                    {% endfor %}
                         </div>
                     </div>
-                    <p class="text-muted mb-4">Complete bath service with premium shampoo, conditioning, and
-                        professional blow-dry.</p>
+
+                    {% if service.short_description %}
+                    <p class="text-muted mb-4">{{ service.short_description }}</p>
+                    {% endif %}
+
+                    {% if service.features %}
                     <ul class="list-unstyled mb-4">
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Premium shampoo & conditioner
-                        </li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Thorough brush-out & blow-dry
-                        </li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Nail trimming & ear cleaning
-                        </li>
+                        {% for feature in service.features|slice:":3" %}
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> {{ feature }}</li>
+                        {% endfor %}
                     </ul>
-                    <div class="d-grid">
-                        <a href="{% url 'service_detail' 'bath' %}" class="btn btn-outline-primary rounded-pill">View
+                    {% endif %}
+
+                    <div class="d-grid mt-auto">
+                        <a href="{% url 'service_detail' service.slug %}"
+                            class="btn btn-outline-primary rounded-pill">View
                             Details</a>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Haircut & Styling -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card-hover">
-                <div class="position-relative">
-                    <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800" class="card-img-top"
-                        alt="Haircut" style="height: 250px; object-fit: cover;">
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-primary rounded-pill px-3 py-2">Rs. 1200+</span>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="h4 fw-bold mb-0">Haircut & Styling</h3>
-                        <div class="text-warning small">
-                            {% with rating=service_ratings.haircut.avg_rating %}
-                            {% for i in "12345" %}
-                            {% if forloop.counter <= rating %} <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                                {% endfor %}
-                                {% endwith %}
-                        </div>
-                    </div>
-                    <p class="text-muted mb-4">Professional haircut and styling tailored to your pet's breed and
-                        preferences.</p>
-                    <ul class="list-unstyled mb-4">
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Breed-specific custom cuts</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Face, feet & sanitary trim</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Full body scissoring</li>
-                    </ul>
-                    <div class="d-grid">
-                        <a href="{% url 'service_detail' 'haircut' %}" class="btn btn-outline-primary rounded-pill">View
-                            Details</a>
-                    </div>
-                </div>
-            </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+            <p class="text-muted lead">No grooming services available at the moment.</p>
         </div>
+        {% endfor %}
 
-        <!-- Full Grooming -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card-hover border-primary">
-                <div class="position-relative">
-                    <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800" class="card-img-top"
-                        alt="Full Grooming" style="height: 250px; object-fit: cover;">
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-danger rounded-pill px-3 py-2">Best Value</span>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="h4 fw-bold mb-0">Full Package</h3>
-                        <div class="text-warning small">
-                            {% with rating=service_ratings.full.avg_rating %}
-                            {% for i in "12345" %}
-                            {% if forloop.counter <= rating %} <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                                {% endfor %}
-                                {% endwith %}
-                        </div>
-                    </div>
-                    <p class="text-muted mb-4">Our most comprehensive package for a complete pet transformation.</p>
-                    <ul class="list-unstyled mb-4">
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Bath + Haircut + Nails</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Teeth brushing & ear care</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Luxury cologne & accessory</li>
-                    </ul>
-                    <div class="d-grid">
-                        <a href="{% url 'service_detail' 'full' %}" class="btn btn-primary rounded-pill shadow">View
-                            Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nail Trimming -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card-hover">
-                <div class="position-relative">
-                    <img src="https://images.unsplash.com/photo-1611850968574-de37a1f28b11?w=800" class="card-img-top"
-                        alt="Nail Trimming" style="height: 250px; object-fit: cover;">
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-primary rounded-pill px-3 py-2">Rs. 300+</span>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="h4 fw-bold mb-0">Nail Trimming</h3>
-                        <div class="text-warning small">
-                            {% with rating=service_ratings.nails.avg_rating %}
-                            {% for i in "12345" %}
-                            {% if forloop.counter <= rating %} <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                                {% endfor %}
-                                {% endwith %}
-                        </div>
-                    </div>
-                    <p class="text-muted mb-4">Professional nail trimming and filing to keep your pet comfortable.</p>
-                    <ul class="list-unstyled mb-4">
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Precise & safe trimming</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Smooth filing finish</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Paw pad inspection</li>
-                    </ul>
-                    <div class="d-grid">
-                        <a href="{% url 'service_detail' 'nails' %}" class="btn btn-outline-primary rounded-pill">View
-                            Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Spa Treatment -->
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden service-card-hover">
-                <div class="position-relative">
-                    <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800" class="card-img-top"
-                        alt="Spa Treatment" style="height: 250px; object-fit: cover;">
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-primary rounded-pill px-3 py-2">Rs. 2000+</span>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="h4 fw-bold mb-0">Spa Treatment</h3>
-                        <div class="text-warning small">
-                            {% with rating=service_ratings.spa.avg_rating %}
-                            {% for i in "12345" %}
-                            {% if forloop.counter <= rating %} <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                                {% endfor %}
-                                {% endwith %}
-                        </div>
-                    </div>
-                    <p class="text-muted mb-4">Luxury spa treatment including massage and aromatherapy.</p>
-                    <ul class="list-unstyled mb-4">
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Aromatherapy bath & massage</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Premium spa products</li>
-                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Hot towel treatment</li>
-                    </ul>
-                    <div class="d-grid">
-                        <a href="{% url 'service_detail' 'spa' %}" class="btn btn-outline-primary rounded-pill">View
-                            Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Custom Booking -->
+        <!-- Custom Booking (Always show at the end) -->
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden bg-light border-dashed">
                 <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
@@ -225,7 +97,51 @@
                 </div>
             </div>
         </div>
+
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-5">
+        <div class="col-12 d-flex justify-content-center">
+            <nav aria-label="Services pagination">
+                <ul class="pagination pagination-rounded">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="mt-5 pt-4 text-center">
         <p class="text-muted">Prices may vary based on pet size, breed, and coat condition. <a
