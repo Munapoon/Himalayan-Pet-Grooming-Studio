@@ -1,8 +1,3 @@
-/* 
-   Authentication Shared Styles (Login & Register)
-   Himalayan Pet Grooming Studio
-*/
-
 :root {
     --auth-primary: #1e3a8a;
     --auth-secondary: #172554;
@@ -33,7 +28,7 @@
 .auth-visual {
     flex: 1;
     min-height: 100%;
-    background-image: url('https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=1600&auto=format&fit=crop');
+    background-image: url('');
     background-size: cover;
     background-position: center;
     position: relative;
@@ -44,10 +39,20 @@
     color: #fff;
 }
 
-/* Override background for Register if needed, but keeping it consistent for now */
 .register-visual {
-    background-image: url('https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1600&auto=format&fit=crop');
+    background-image: url('../images/register-grooming.png');
 }
+
+/* Hide the overlay specifically for register page */
+.register-visual .auth-visual-overlay {
+    display: none !important;
+}
+
+/* Hide any text content inside register visual */
+.register-visual .auth-visual-content {
+    display: none !important;
+}
+
 
 .auth-visual-overlay {
     position: absolute;

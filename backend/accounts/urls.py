@@ -9,7 +9,7 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
     path('user-profile/', views.user_profile, name='user_profile'),
-    path('contact/', views.home, name='contact_us'),  # Placeholder
+    path('contact/', views.Contact, name='contact_us'),  
     
     # Admin Views
     path('users/', views.user_list, name='user_list'),
@@ -17,5 +17,5 @@ urlpatterns = [
     path('reports/', views.reports, name='reports'),
     path('messages/', views.contact_messages, name='contact_messages'),
     
-    # Emergency Reset (Added temporarily) - REMOVED
+
 ]

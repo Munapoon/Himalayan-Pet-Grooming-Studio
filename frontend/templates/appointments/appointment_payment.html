@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pay Advance - Himalayan Pet Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/appointments/appointment_payment.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+    <div class="container">
+        <div class="payment-card">
+
+            <!-- Header -->
+            <div class="payment-header">
+                <div class="icon-circle">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Advance Payment Required</h2>
+                <p>Secure your grooming appointment with a small advance</p>
+            </div>
+
+            <!-- Body -->
+            <div class="payment-body">
+
+                <!-- Booking Summary -->
+                <div class="booking-summary">
+                    <h5><i class="fas fa-calendar-check me-2"></i>Booking Summary</h5>
+                    <div class="summary-row">
+                        <span class="label">Pet Name</span>
+                        <span class="value">{{ appointment.pet_name }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Pet Type</span>
+                        <span class="value">{{ appointment.pet_type }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Service</span>
+                        <span class="value">{{ appointment.get_service_display }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Date</span>
+                        <span class="value">{{ appointment.appointment_date|date:"D, d M Y" }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Time</span>
+                        <span class="value">{{ appointment.appointment_time|time:"g:i A" }}</span>
+                    </div>
+                </div>
+
+                <!-- Advance Amount -->
+                <div class="advance-box">
+                    <div class="amount">Rs. {{ advance_amount }}</div>
+                    <div class="label">Advance Amount</div>
+                    <p class="note">
+                        This advance secures your slot. The remaining amount is paid at the studio.
+                        Non-refundable for no-shows.
+                    </p>
+                </div>
+
+                <!-- Khalti Pay Button -->
+                <button id="payment-button" class="btn-khalti">
+                    <i class="fas fa-wallet"></i>
+                    Pay Rs. {{ advance_amount }} via Khalti
+                </button>
+
+                <!-- Cancel -->
+                <form method="post" action="{% url 'appointment_delete' appointment.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-cancel"
+                        onclick="return confirm('Cancel this booking? Your slot will be released.')">
+                        <i class="fas fa-times me-2"></i>Cancel Booking
+                    </button>
+                </form>
+
+                <div class="security-note">
+                    <i class="fas fa-lock"></i>
+                    Payments are securely processed by Khalti
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for Khalti verification -->
+<form id="khalti-verify-form" method="post" action="{% url 'appointment_khalti_verify' %}" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="token" id="khalti-token">
+    <input type="hidden" name="amount" id="khalti-amount">
+    <input type="hidden" name="appointment_id" value="{{ appointment.pk }}">
+</form>
+
+{% block extra_js %}
+<!-- Khalti Checkout SDK -->
+<script
+    src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.17.0.0.0/khalti-checkout.compat.min.js"></script>
+<script>
+    var advancePaisa = parseInt("{{ advance_paisa|default:'0' }}", 10);
+
+    var config = {
+        publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
+        productIdentity: "appt-{{ appointment.pk }}",
+        productName: "Grooming Appointment - {{ appointment.get_service_display }}",
+        productUrl: window.location.href,
+        paymentPreference: ["KHALTI", "EBANKING", "MOBILE_BANKING", "CONNECT_IPS", "SCT"],
+        eventHandler: {
+            onSuccess(payload) {
+                document.getElementById('khalti-token').value = payload.token;
+                document.getElementById('khalti-amount').value = payload.amount;
+                document.getElementById('khalti-verify-form').submit();
+            },
+            onError(error) {
+                console.error(error);
+                alert('Payment failed. Please try again.');
+            },
+            onClose() {
+                console.log('Khalti widget closed.');
+            }
+        }
+    };
+
+    var checkout = new KhaltiCheckout(config);
+
+    document.getElementById('payment-button').addEventListener('click', function () {
+        checkout.show({ amount: advancePaisa });
+    });
+</script>
+{% endblock %}
+{% endblock %}

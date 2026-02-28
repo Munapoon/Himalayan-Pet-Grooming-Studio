@@ -153,16 +153,22 @@ def product_create(request):
 
 
 def product_detail(request, pk):
-    from .models import Review, Sale
+    from .models import Review, Sale, OrderItem
     product = get_object_or_404(Product, pk=pk)
     
     # Check if user has purchased this product
+    # Check BOTH: Sale records (admin) AND actual OrderItems from user orders
     has_purchased = False
     if request.user.is_authenticated and not request.user.is_admin_user():
-        has_purchased = Sale.objects.filter(
+        via_sale = Sale.objects.filter(
             customer=request.user,
             product=product
         ).exists()
+        via_order = OrderItem.objects.filter(
+            order__user=request.user,
+            product=product
+        ).exists()
+        has_purchased = via_sale or via_order
     
     # Get user's existing review if any
     user_review = None
@@ -303,17 +309,22 @@ def clear_cart(request):
 
 @login_required
 def add_review(request, pk):
-    """Add or update a product review"""
-    from .models import Review, Sale
+    """Add or update a product review — only for users who purchased the product"""
+    from .models import Review, Sale, OrderItem
     from .forms import ReviewForm
     
     product = get_object_or_404(Product, pk=pk)
     
-    # Check if user has purchased this product
-    has_purchased = Sale.objects.filter(
+    # Check if user has purchased this product via Sale OR OrderItem
+    via_sale = Sale.objects.filter(
         customer=request.user,
         product=product
     ).exists()
+    via_order = OrderItem.objects.filter(
+        order__user=request.user,
+        product=product
+    ).exists()
+    has_purchased = via_sale or via_order
     
     if not has_purchased:
         messages.error(request, 'You can only review products you have purchased.')
