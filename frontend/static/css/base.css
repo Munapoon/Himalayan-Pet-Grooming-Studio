@@ -42,8 +42,8 @@ html {
 
     /* Search pill: input + button always side by side */
     .nav-search-pill {
-        width: 190px !important;
-        min-width: 160px !important;
+        width: 220px !important;
+        min-width: 180px !important;
         padding: 3px 4px 3px 12px !important;
         gap: 5px !important;
     }
@@ -186,8 +186,10 @@ body.no-pt {
 /* Auth buttons container: NEVER shrink, always visible, proper gap */
 .navbar-collapse>.d-flex.align-items-center {
     flex-shrink: 0 !important;
-    margin-left: auto !important;
-    gap: 10px !important;
+    margin-left: 16px !important;
+    /* exactly 16px between search and right group */
+    gap: 16px !important;
+    /* exactly 16px between each button in the right group */
 }
 
 .navbar-brand {
@@ -201,10 +203,10 @@ body.no-pt {
 }
 
 .nav-link {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #1e3a8a !important;
-    padding: 0.45rem 0.8rem !important;
+    padding: 0.55rem 1rem !important;
     border-radius: 50px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -238,12 +240,12 @@ body.no-pt {
     justify-content: center;
     font-weight: 700;
     color: #1e3a8a !important;
-    padding: 0.45rem 1.2rem !important;
+    padding: 0.55rem 1.4rem !important;
     border-radius: 50px;
     transition: all 0.3s;
     background: transparent !important;
     border: 1.5px solid #1e3a8a !important;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     gap: 6px;
     text-decoration: none !important;
     white-space: nowrap;
@@ -263,8 +265,8 @@ body.no-pt {
     color: white !important;
     font-weight: 700;
     border-radius: 50px;
-    padding: 0.45rem 1.4rem !important;
-    font-size: 1.05rem;
+    padding: 0.55rem 1.6rem !important;
+    font-size: 1.1rem;
     border: none !important;
     transition: all 0.3s;
     box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
@@ -289,13 +291,14 @@ body.no-pt {
     border-radius: 50px;
     padding: 3px 4px 3px 16px;
     border: 1.5px solid #e2e8f0;
-    width: 260px;
-    min-width: 180px;
+    width: 320px;
+    min-width: 200px;
     height: 40px;
     transition: all 0.3s ease;
     margin: 0 !important;
     flex-shrink: 1;
     gap: 6px;
+    margin-left: auto !important;
 }
 
 .nav-search-pill:focus-within {
@@ -322,9 +325,9 @@ body.no-pt {
     background: #1e3a8a;
     color: #ffffff;
     border: none;
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;

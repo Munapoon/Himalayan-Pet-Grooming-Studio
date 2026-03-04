@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=8">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -38,7 +38,7 @@
 
             <div class="collapse navbar-collapse gap-2" id="navbarNav">
                 <!-- Main Nav Links (Closer to Brand) -->
-                <ul class="navbar-nav me-auto ms-lg-2 gap-0">
+                <ul class="navbar-nav me-auto ms-lg-4 gap-3">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                             href="{% url 'home' %}">
@@ -78,7 +78,7 @@
 
                     {% if user.is_authenticated %}
                     <!-- Cart & User profile -->
-                    <a class="nav-link position-relative px-2" href="{% url 'products:cart' %}">
+                    <a class="nav-link position-relative d-flex align-items-center" href="{% url 'products:cart' %}">
                         <i class="fas fa-shopping-cart fa-lg"></i>
                         {% if cart_count > 0 %}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"

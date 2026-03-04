@@ -1,17 +1,22 @@
 from django import forms
 from .models import Appointment, Service
 from datetime import time
+from django.utils import timezone
 import json
 
 
 class AppointmentForm(forms.ModelForm):
+    service = forms.ChoiceField(
+        choices=[], 
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Appointment
         fields = ['pet_name', 'pet_type', 'service', 'appointment_date', 'appointment_time', 'notes']
         widgets = {
             'pet_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name'}),
             'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dog, Cat, etc.'}),
-            'service': forms.Select(attrs={'class': 'form-control'}),
             'appointment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'min': '09:00', 'max': '18:00'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Special instructions...'}),
@@ -44,6 +49,20 @@ class AppointmentForm(forms.ModelForm):
         appointment_time = cleaned_data.get('appointment_time')
         
         if appointment_date and appointment_time:
+            # Get current local time (naive, stripped of tzinfo for comparison with form's naive time)
+            local_now = timezone.localtime()
+            today = local_now.date()
+            current_time = local_now.time().replace(tzinfo=None)
+
+            # Check if appointment is in the past
+            if appointment_date < today:
+                raise forms.ValidationError('You cannot book an appointment for a past date.')
+            if appointment_date == today and appointment_time <= current_time:
+                raise forms.ValidationError(
+                    f'The selected time {appointment_time.strftime("%I:%M %p")} has already passed. '
+                    f'Please choose a future time (current time: {current_time.strftime("%I:%M %p")}).'
+                )
+
             # Check if slot is already booked
             existing_appointment = Appointment.objects.filter(
                 appointment_date=appointment_date,

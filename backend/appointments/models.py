@@ -14,8 +14,8 @@ class Service(models.Model):
         ('spa', 'Spa Treatment'),
     ]
 
-    slug = models.CharField(max_length=20, unique=True, choices=SLUG_CHOICES,
-                            help_text="Unique key that matches URL and appointment type.")
+    slug = models.CharField(max_length=100, unique=True,
+                            help_text="Unique key that matches URL and appointment type (e.g., puppy-first-bath).")
     name = models.CharField(max_length=100)
     short_description = models.CharField(max_length=255, blank=True,
                                          help_text="Short tagline shown on cards.")
@@ -87,7 +87,7 @@ class Appointment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
     pet_name = models.CharField(max_length=100)
     pet_type = models.CharField(max_length=100)
-    service = models.CharField(max_length=20, choices=SERVICE_CHOICES)
+    service = models.CharField(max_length=100)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
     notes = models.TextField(blank=True, null=True)
@@ -109,11 +109,23 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.pet_name} - {self.service} ({self.appointment_date})"
 
+    def get_service_display(self):
+        """Look up the human-readable service name from the Service table."""
+        svc = Service.objects.filter(slug=self.service).first()
+        if svc:
+            return svc.name
+        # Fallback to legacy choices dict
+        name = dict(self.SERVICE_CHOICES).get(self.service)
+        if name:
+            return name
+        # Last resort: return the raw slug, prettified
+        return self.service.replace('-', ' ').title()
+
 
 class ServiceReview(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='service_reviews')
     appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
-    service = models.CharField(max_length=20, choices=Appointment.SERVICE_CHOICES)
+    service = models.CharField(max_length=100)
     rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)])
     review = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
@@ -125,3 +137,13 @@ class ServiceReview(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.service} - {self.rating}"
+
+    def get_service_display(self):
+        """Look up the human-readable service name from the Service table."""
+        svc = Service.objects.filter(slug=self.service).first()
+        if svc:
+            return svc.name
+        name = dict(Appointment.SERVICE_CHOICES).get(self.service)
+        if name:
+            return name
+        return self.service.replace('-', ' ').title()
