@@ -279,64 +279,60 @@
 }
 
 /* Segmented Pagination Style */
-.pagination-segmented {
+.pagination-rounded {
     display: flex;
     list-style: none;
     padding: 0;
     margin: 0;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid #dee2e6;
-    background: #fff;
+    gap: 8px;
 }
 
-.pagination-segmented .page-item {
-    border-right: 1px solid #dee2e6;
+.pagination-rounded .page-item {
+    border: none;
 }
 
-.pagination-segmented .page-item:last-child {
-    border-right: none;
-}
-
-.pagination-segmented .page-link {
+.pagination-rounded .page-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
-    height: 44px;
-    padding: 0 15px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
     text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.2s;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: none !important;
-    background: transparent !important;
-    color: #007bff !important;
+    background: white !important;
+    color: var(--color-primary) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-.pagination-segmented .page-link i {
+.pagination-rounded .page-link i {
     font-size: 1.1rem;
 }
 
-.pagination-segmented .page-item.active .page-link {
-    background: #007bff !important;
-    color: #fff !important;
+.pagination-rounded .page-item.active .page-link {
+    background: var(--color-primary) !important;
+    color: white !important;
+    box-shadow: 0 6px 15px rgba(30, 58, 138, 0.25);
+    transform: scale(1.1);
 }
 
-.pagination-segmented .page-item:first-child .page-link {
-    background: #f1f3f5 !important;
-    color: #868e96 !important;
+.pagination-rounded .page-item:not(.active) .page-link:hover {
+    background: #f1f5f9 !important;
+    color: var(--color-primary) !important;
+    transform: translateY(-3px);
 }
 
-.pagination-segmented .page-item:first-child.enabled .page-link {
-    color: #007bff !important;
-}
-
-.pagination-segmented .page-item.disabled .page-link {
+.pagination-rounded .page-item.disabled .page-link {
+    background: #f8fafc !important;
+    color: #cbd5e1 !important;
     cursor: not-allowed;
-    opacity: 0.6;
+    box-shadow: none;
+    opacity: 0.5;
 }
 
-.pagination-segmented .page-link:hover:not(.active) {
+.pagination-rounded .page-link:hover:not(.active) {
     background: #f8f9fa !important;
 }

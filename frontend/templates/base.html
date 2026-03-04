@@ -26,7 +26,7 @@
     {% block navbar %}
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container-fluid px-lg-5">
+        <div class="container-fluid px-3">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fas fa-paw me-2"></i>
                 <span>Himalayan Pet Grooming Studio</span>
@@ -36,45 +36,45 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse gap-4" id="navbarNav">
+            <div class="collapse navbar-collapse gap-2" id="navbarNav">
                 <!-- Main Nav Links (Closer to Brand) -->
-                <ul class="navbar-nav me-auto ms-lg-5 gap-4">
+                <ul class="navbar-nav me-auto ms-lg-2 gap-0">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                             href="{% url 'home' %}">
-                            <i class="fas fa-home"></i><span>Home</span>
+                            <i class="fas fa-home nav-icon"></i><span>Home</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}"
                             href="{% url 'products:product_list' %}">
-                            <i class="fas fa-shopping-bag"></i><span>Products</span>
+                            <i class="fas fa-shopping-bag nav-icon"></i><span>Products</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'service_list' %}active{% endif %}"
                             href="{% url 'service_list' %}">
-                            <i class="fas fa-scissors"></i><span>Grooming Services</span>
+                            <i class="fas fa-scissors nav-icon"></i><span>Grooming Services</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'contact_us' %}active{% endif %}"
                             href="{% url 'contact_us' %}">
-                            <i class="fas fa-envelope"></i><span>Contact Us</span>
+                            <i class="fas fa-envelope nav-icon"></i><span>Contact Us</span>
                         </a>
                     </li>
                 </ul>
 
                 <!-- Premium Search Bar (Pill Style) -->
                 <form action="{% url 'products:product_list' %}" method="GET" class="nav-search-pill d-none d-lg-flex">
-                    <input type="text" name="q" placeholder="Search our store..." aria-label="Search">
+                    <input type="text" name="q" placeholder="Search..." aria-label="Search">
                     <button type="submit" class="nav-search-btn">
                         <i class="fas fa-search"></i>
                     </button>
                 </form>
 
                 <!-- Right Auth Elements -->
-                <div class="d-flex align-items-center gap-4">
+                <div class="d-flex align-items-center gap-2" id="navbar-auth">
 
                     {% if user.is_authenticated %}
                     <!-- Cart & User profile -->

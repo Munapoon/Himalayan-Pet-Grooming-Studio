@@ -63,23 +63,24 @@ def appointment_detail(request, pk):
 
 @login_required
 def appointment_create(request):
-    """Create a new appointment"""
+    """Create a new appointment — redirects to advance payment after booking"""
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
             appointment.user = request.user
+            appointment.advance_amount = 200  # Fixed advance
+            appointment.payment_status = 'unpaid'
             appointment.save()
-            messages.success(request, 'Appointment booked successfully!')
-            
+            messages.info(request, 'Almost done! Please pay the advance amount of Rs. 200 to confirm your booking.')
+
             # Redirect to home if coming from home page
             if request.POST.get('from_home'):
-                return redirect('home')
-            return redirect('appointment_list')
+                request.session['pending_appointment'] = appointment.pk
+                return redirect('appointment_payment', pk=appointment.pk)
+            return redirect('appointment_payment', pk=appointment.pk)
         else:
-            # If coming from home page and form has errors, redirect back with form
             if request.POST.get('from_home'):
-                # Add error messages
                 for field, errors in form.errors.items():
                     for error in errors:
                         if field == '__all__':
@@ -88,14 +89,73 @@ def appointment_create(request):
                             messages.error(request, f'{field.replace("_", " ").title()}: {error}')
                 return redirect('home')
     else:
-        # Get service from URL parameter
         service = request.GET.get('service')
         if service:
             form = AppointmentForm(initial={'service': service})
         else:
             form = AppointmentForm()
-    
+
     return render(request, 'appointments/appointment_form.html', {'form': form, 'action': 'Create'})
+
+
+@login_required
+def appointment_payment(request, pk):
+    """Show advance payment page for a booked appointment"""
+    appointment = get_object_or_404(Appointment, pk=pk, user=request.user)
+
+    # Already paid — go to list
+    if appointment.payment_status == 'paid':
+        messages.success(request, 'Your appointment is already paid and booked!')
+        return redirect('appointment_list')
+
+    context = {
+        'appointment': appointment,
+        'advance_amount': appointment.advance_amount,
+        'advance_paisa': int(appointment.advance_amount * 100),  # Khalti uses paisa
+    }
+    return render(request, 'appointments/appointment_payment.html', context)
+
+
+@login_required
+def appointment_khalti_verify(request):
+    """Verify Khalti payment for appointment advance"""
+    import requests as http_requests
+    from django.conf import settings as django_settings
+
+    if request.method == 'POST':
+        token = request.POST.get('token')
+        amount = request.POST.get('amount')
+        appointment_pk = request.POST.get('appointment_id')
+
+        appointment = get_object_or_404(Appointment, pk=appointment_pk, user=request.user)
+
+        # Verify with Khalti
+        url = "https://khalti.com/api/v2/payment/verify/"
+        payload = {"token": token, "amount": amount}
+        headers = {"Authorization": f"Key {getattr(django_settings, 'KHALTI_SECRET_KEY', '')}"}
+
+        try:
+            response = http_requests.post(url, payload, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                appointment.payment_status = 'paid'
+                appointment.payment_method = 'khalti'
+                appointment.khalti_transaction_id = data.get('idx', token)
+                appointment.save()
+                messages.success(
+                    request,
+                    f'Advance payment of Rs. {appointment.advance_amount} received! '
+                    f'Your appointment is confirmed pending admin approval.'
+                )
+                return redirect('appointment_detail', pk=appointment.pk)
+            else:
+                messages.error(request, 'Payment verification failed. Please try again or contact us.')
+                return redirect('appointment_payment', pk=appointment.pk)
+        except Exception as e:
+            messages.error(request, f'Payment error: {str(e)}')
+            return redirect('appointment_payment', pk=appointment.pk)
+
+    return redirect('appointment_list')
 
 
 @login_required

@@ -4,7 +4,6 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import User, Contact
 
 
-# Custom password widget that NEVER renders values
 class SecurePasswordInput(forms.PasswordInput):
     def __init__(self, *args, **kwargs):
         kwargs['render_value'] = False

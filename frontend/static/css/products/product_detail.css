@@ -349,6 +349,21 @@
     color: white;
 }
 
+/* Shown to logged-in users who haven't purchased the product */
+.review-locked-msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #92400e;
+    border: 1.5px solid rgba(245, 158, 11, 0.35);
+    padding: 9px 18px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+
 .review-card {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border-radius: 16px;

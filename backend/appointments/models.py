@@ -70,6 +70,20 @@ class Appointment(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
+    PAYMENT_STATUS_CHOICES = [
+        ('unpaid', 'Unpaid'),
+        ('paid', 'Paid'),
+        ('refunded', 'Refunded'),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ('khalti', 'Khalti'),
+        ('cash', 'Cash at Studio'),
+    ]
+
+    # Fixed advance amount in NPR
+    ADVANCE_AMOUNT = 200
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
     pet_name = models.CharField(max_length=100)
     pet_type = models.CharField(max_length=100)
@@ -78,6 +92,13 @@ class Appointment(models.Model):
     appointment_time = models.TimeField()
     notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # Advance payment fields
+    advance_amount = models.DecimalField(max_digits=10, decimal_places=2, default=200.00)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
+    khalti_transaction_id = models.CharField(max_length=255, blank=True, null=True)
+
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
