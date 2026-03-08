@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import smtplib
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -95,13 +97,7 @@ DATABASES = {
     }
 }
 
-# SQLite Database (Alternative - No setup required)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+
 
 
 # Password validation
@@ -185,8 +181,27 @@ KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', 'test_secret_key_your_ke
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')  # Your Gmail address
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  # Your Gmail App Password
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Himalayan Pet Studio <noreply@himalayan.pet>')
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'munapoon89@gmail.com'  
+EMAIL_HOST_PASSWORD = 'esgi mamq ugga ozwc'  
+DEFAULT_FROM_EMAIL = 'munapoon89@gmail.com'
+
+
+# Monkeypatch smtplib to fix compatibility between Django and Python 3.12+
+_original_starttls = smtplib.SMTP.starttls
+_original_ssl_init = smtplib.SMTP_SSL.__init__
+
+def _fixed_starttls(self, *args, **kwargs):
+    kwargs.pop('keyfile', None)
+    kwargs.pop('certfile', None)
+    return _original_starttls(self, *args, **kwargs)
+
+def _fixed_ssl_init(self, *args, **kwargs):
+    kwargs.pop('keyfile', None)
+    kwargs.pop('certfile', None)
+    return _original_ssl_init(self, *args, **kwargs)
+
+smtplib.SMTP.starttls = _fixed_starttls
+smtplib.SMTP_SSL.__init__ = _fixed_ssl_init

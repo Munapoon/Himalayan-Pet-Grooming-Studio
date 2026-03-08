@@ -193,3 +193,86 @@ class UserLoginForm(forms.Form):
         })
     )
 
+
+class ForgotPasswordForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email address'
+        })
+    )
+
+
+class VerifyResetCodeForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your email address'
+        })
+    )
+    code = forms.CharField(
+        max_length=6,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter 6-digit code',
+            'style': 'letter-spacing: 4px; font-size: 1.4rem; font-weight: 700;'
+        })
+    )
+
+
+class ResetPasswordForm(forms.Form):
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=SecurePasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'New Password'
+        })
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=SecurePasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm New Password'
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('new_password1')
+        password2 = cleaned_data.get('new_password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords do not match.")
+        return cleaned_data
+
+
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(
+        label="Current Password",
+        widget=SecurePasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Current Password'
+        })
+    )
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=SecurePasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'New Password'
+        })
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=SecurePasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm New Password'
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('new_password1')
+        password2 = cleaned_data.get('new_password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("New passwords do not match.")
+        return cleaned_data
+

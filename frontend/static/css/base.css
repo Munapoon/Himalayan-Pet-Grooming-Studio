@@ -1,7 +1,4 @@
-/* 
-   Base Design System & Global Styles
-   Himalayan Pet Grooming Studio
-*/
+
 
 html {
     font-size: 11px;
@@ -18,9 +15,7 @@ html {
 }
 
 
-/* ══════════════════════════════════════════════════
-   NAVBAR AUTH: NEVER let it shrink or get clipped
-   ══════════════════════════════════════════════════ */
+
 #navbar-auth {
     flex-shrink: 0 !important;
     flex-grow: 0 !important;

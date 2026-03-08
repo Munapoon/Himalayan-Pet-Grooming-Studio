@@ -1,16 +1,131 @@
-from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Sum, Q
+from django.utils import timezone
+from datetime import timedelta
+import random
 
 from .models import User, Contact
 from products.models import Order
 from appointments.models import Appointment
-from django.db.models import Sum, Q
-from .forms import UserRegistrationForm, UserLoginForm
+from .forms import (
+    UserRegistrationForm, UserLoginForm, ForgotPasswordForm, 
+    VerifyResetCodeForm, ResetPasswordForm, ChangePasswordForm
+)
 from .decorators import admin_required
+
+
+def forgot_password(request):
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = User.objects.get(email=email)
+                # Generate a 6-digit code
+                code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+                user.reset_code = code
+                user.reset_code_expires_at = timezone.now() + timedelta(minutes=15)
+                user.save()
+                
+                # Store email in session for verification
+                request.session['reset_email'] = email
+                
+                # Debug print for console
+                print(f"DEBUG: Password reset code for {email} is {code}")
+                
+                # Attempt to send actual email
+                try:
+                    send_mail(
+                        'Password Reset - Himalayan Pet Studio',
+                        f'Your verification code is: {code}\n\nThis code expires in 15 minutes.',
+                        None,  # Uses DEFAULT_FROM_EMAIL from settings
+                        [email],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+                    messages.warning(request, f"Email failed to send: {str(e)}. However, you can check the server console for the code.")
+                
+                messages.success(request, f"A reset code has been sent to {email}.")
+                return redirect('verify_reset_code')
+            except User.DoesNotExist:
+                messages.error(request, "User with this email does not exist.")
+    else:
+        form = ForgotPasswordForm()
+    return render(request, 'accounts/forgot_password.html', {'form': form})
+
+
+def verify_reset_code(request):
+    if request.method == 'POST':
+        form = VerifyResetCodeForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            code = form.cleaned_data['code']
+            try:
+                user = User.objects.get(email=email, reset_code=code)
+                if user.reset_code_expires_at > timezone.now():
+                    # Valid code, store email in session for the reset page
+                    request.session['reset_email'] = email
+                    return redirect('reset_password')
+                else:
+                    messages.error(request, "Reset code has expired.")
+            except User.DoesNotExist:
+                messages.error(request, "Invalid email or reset code.")
+    else:
+        form = VerifyResetCodeForm()
+    return render(request, 'accounts/verify_reset_code.html', {'form': form})
+
+
+def reset_password(request):
+    email = request.session.get('reset_email')
+    if not email:
+        return redirect('forgot_password')
+        
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            try:
+                user = User.objects.get(email=email)
+                user.set_password(form.cleaned_data['new_password1'])
+                user.reset_code = None
+                user.reset_code_expires_at = None
+                user.save()
+                
+                # Clear session
+                del request.session['reset_email']
+                
+                messages.success(request, "Password has been reset successfully. Please login.")
+                return redirect('login')
+            except User.DoesNotExist:
+                messages.error(request, "Something went wrong. Please try again.")
+    else:
+        form = ResetPasswordForm()
+    return render(request, 'accounts/reset_password.html', {'form': form})
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            if user.check_password(form.cleaned_data['old_password']):
+                user.set_password(form.cleaned_data['new_password1'])
+                user.save()
+                # We need to re-login the user or they will be logged out
+                login(request, user)
+                messages.success(request, "Your password has been changed successfully.")
+                return redirect('user_profile')
+            else:
+                form.add_error('old_password', 'Current password is incorrect.')
+    else:
+        form = ChangePasswordForm()
+    return render(request, 'accounts/change_password.html', {'form': form})
 
 
 def home(request):
@@ -214,6 +329,25 @@ def contact_messages(request):
         'is_paginated': page_obj.has_other_pages(),
         'unread_count': unread_count
     })
+
+
+def contact_us(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        
+        Contact.objects.create(
+            name=name,
+            email=email,
+            subject=subject,
+            message=message
+        )
+        messages.success(request, 'Your message has been sent successfully!')
+        return redirect('contact_us')
+        
+    return render(request, 'contact.html')
 
 
 

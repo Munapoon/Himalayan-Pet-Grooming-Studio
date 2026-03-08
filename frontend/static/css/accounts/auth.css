@@ -10,7 +10,7 @@
 .auth-page-wrapper {
     min-height: 100vh;
     width: 100%;
-    background-color: #fff;
+    background-color: #f8fafc;
     display: flex;
     align-items: stretch;
     overflow-x: hidden;
@@ -24,34 +24,21 @@
     align-items: stretch;
 }
 
-/* Visual Side - Left Grid Column */
+/* Visual Side - Left Column */
 .auth-visual {
     flex: 1;
     min-height: 100%;
-    background-image: url('');
-    background-size: cover;
-    background-position: center;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 4rem 3rem;
     color: #fff;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
 }
 
-.register-visual {
-    background-image: url('../images/register-grooming.png');
-}
 
-/* Hide the overlay specifically for register page */
-.register-visual .auth-visual-overlay {
-    display: none !important;
-}
-
-/* Hide any text content inside register visual */
-.register-visual .auth-visual-content {
-    display: none !important;
-}
 
 
 .auth-visual-overlay {
@@ -91,14 +78,14 @@
     color: #fbbf24;
 }
 
-/* Form Side - Right Grid Column */
+/* Form Side - Right Column */
 .auth-form-side {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 3rem 2rem;
-    background-color: #f8fafc;
+    background-color: transparent;
 }
 
 .auth-form-container {
