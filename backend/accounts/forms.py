@@ -245,6 +245,8 @@ class ResetPasswordForm(forms.Form):
         return cleaned_data
 
 
+
+
 class ChangePasswordForm(forms.Form):
     old_password = forms.CharField(
         label="Current Password",
@@ -275,4 +277,17 @@ class ChangePasswordForm(forms.Form):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("New passwords do not match.")
         return cleaned_data
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'profile_picture']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Address', 'rows': 3}),
+        }
 
