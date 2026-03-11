@@ -46,7 +46,7 @@
             </a>
 
             <a class="nav-link {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_detail' %}active{% endif %}"
-                href="{% url 'user_list' %}">
+             >
                 <i class="fas fa-users"></i> <span>Users</span>
             </a>
 
@@ -94,12 +94,12 @@
             </div>
 
             <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}"
-                href="{% url 'reports' %}">
+            >
                 <i class="fas fa-chart-line"></i> <span>Reports</span>
             </a>
 
             <a class="nav-link {% if request.resolver_match.url_name == 'contact_messages' %}active{% endif %}"
-                href="{% url 'contact_messages' %}">
+               href="{% url 'contact_messages' %}">
                 <i class="fas fa-envelope"></i> <span>Contact Messages</span>
                 {% if unread_count > 0 %}
                 <span class="badge bg-danger ms-2">{{ unread_count }}</span>

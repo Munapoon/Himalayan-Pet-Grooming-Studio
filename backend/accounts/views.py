@@ -1,16 +1,131 @@
-from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Sum, Q
+from django.utils import timezone
+from datetime import timedelta
+import random
 
 from .models import User, Contact
 from products.models import Order
 from appointments.models import Appointment
-from django.db.models import Sum, Q
-from .forms import UserRegistrationForm, UserLoginForm
+from .forms import (
+    UserRegistrationForm, UserLoginForm, ForgotPasswordForm, 
+    VerifyResetCodeForm, ResetPasswordForm, ChangePasswordForm
+)
 from .decorators import admin_required
+
+
+def forgot_password(request):
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = User.objects.get(email=email)
+                # Generate a 6-digit code
+                code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+                user.reset_code = code
+                user.reset_code_expires_at = timezone.now() + timedelta(minutes=15)
+                user.save()
+                
+                # Store email in session for verification
+                request.session['reset_email'] = email
+                
+                # Debug print for console
+                print(f"DEBUG: Password reset code for {email} is {code}")
+                
+                # Attempt to send actual email
+                try:
+                    send_mail(
+                        'Password Reset - Himalayan Pet Studio',
+                        f'Your verification code is: {code}\n\nThis code expires in 15 minutes.',
+                        None,  # Uses DEFAULT_FROM_EMAIL from settings
+                        [email],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+                    messages.warning(request, f"Email failed to send: {str(e)}. However, you can check the server console for the code.")
+                
+                messages.success(request, f"A reset code has been sent to {email}.")
+                return redirect('verify_reset_code')
+            except User.DoesNotExist:
+                messages.error(request, "User with this email does not exist.")
+    else:
+        form = ForgotPasswordForm()
+    return render(request, 'accounts/forgot_password.html', {'form': form})
+
+
+def verify_reset_code(request):
+    if request.method == 'POST':
+        form = VerifyResetCodeForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            code = form.cleaned_data['code']
+            try:
+                user = User.objects.get(email=email, reset_code=code)
+                if user.reset_code_expires_at > timezone.now():
+                    # Valid code, store email in session for the reset page
+                    request.session['reset_email'] = email
+                    return redirect('reset_password')
+                else:
+                    messages.error(request, "Reset code has expired.")
+            except User.DoesNotExist:
+                messages.error(request, "Invalid email or reset code.")
+    else:
+        form = VerifyResetCodeForm()
+    return render(request, 'accounts/verify_reset_code.html', {'form': form})
+
+
+def reset_password(request):
+    email = request.session.get('reset_email')
+    if not email:
+        return redirect('forgot_password')
+        
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            try:
+                user = User.objects.get(email=email)
+                user.set_password(form.cleaned_data['new_password1'])
+                user.reset_code = None
+                user.reset_code_expires_at = None
+                user.save()
+                
+                # Clear session
+                del request.session['reset_email']
+                
+                messages.success(request, "Password has been reset successfully. Please login.")
+                return redirect('login')
+            except User.DoesNotExist:
+                messages.error(request, "Something went wrong. Please try again.")
+    else:
+        form = ResetPasswordForm()
+    return render(request, 'accounts/reset_password.html', {'form': form})
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            if user.check_password(form.cleaned_data['old_password']):
+                user.set_password(form.cleaned_data['new_password1'])
+                user.save()
+                # We need to re-login the user or they will be logged out
+                login(request, user)
+                messages.success(request, "Your password has been changed successfully.")
+                return redirect('user_profile')
+            else:
+                form.add_error('old_password', 'Current password is incorrect.')
+    else:
+        form = ChangePasswordForm()
+    return render(request, 'accounts/change_password.html', {'form': form})
 
 
 def home(request):
@@ -164,7 +279,18 @@ def user_dashboard(request):
 
 @login_required
 def user_profile(request):
-    return render(request, 'accounts/user_dashboard.html') # Placeholder: reusing dashboard template for now
+    # Fetch user stats for the profile page
+    total_appointments = Appointment.objects.filter(user=request.user).count()
+    total_orders = Order.objects.filter(user=request.user).count()
+    # Assume 1 order item = 1 point for now as a simple loyalty placeholder
+    member_points = total_orders * 10 
+    
+    context = {
+        'total_appointments': total_appointments,
+        'total_orders': total_orders,
+        'member_points': member_points,
+    }
+    return render(request, 'accounts/user_profile.html', context)
 
 
 @login_required
@@ -216,4 +342,58 @@ def contact_messages(request):
     })
 
 
+def contact_us(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, 'You must be logged in to send a message.')
+            return redirect('login')
+            
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone', '')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        
+        Contact.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            subject=subject,
+            message=message
+        )
+        messages.success(request, 'Your message has been sent successfully!')
+        return redirect('contact_us')
+    
+    faqs = [
+        {
+            'question': 'What are your opening hours?',
+            'answer': 'We are open Sunday through Friday, from 10:00 AM to 6:00 PM. We are closed on Saturdays and public holidays.'
+        },
+        {
+            'question': 'Do I need to book an appointment in advance?',
+            'answer': 'Yes, we highly recommend booking an appointment to ensure your pet gets the dedicated time they deserve. You can book directly through our website or call us.'
+        },
+        {
+            'question': 'How long does a typical grooming session take?',
+            'answer': 'A standard grooming session usually takes between 2 to 4 hours, depending on the breed, coat condition, and services requested.'
+        },
+        {
+            'question': 'Do you groom all breeds of dogs and cats?',
+            'answer': 'Yes, we welcome all breeds and sizes of both dogs and cats! Our groomers are experienced with various coat types and temperaments.'
+        },
+        {
+            'question': 'What vaccinations are required for grooming?',
+            'answer': 'For the safety of all our furry guests, we require pets to be up-to-date on their rabies vaccination and recommend being current on other core vaccines.'
+        }
+    ]
+        
+    return render(request, 'contact.html', {'faqs': faqs})
 
+
+@login_required
+def my_contact_requests(request):
+    messages_list = Contact.objects.filter(email=request.user.email).order_by('-id')
+    
+    return render(request, 'accounts/my_contact_request.html', {
+        'messages_list': messages_list
+    })

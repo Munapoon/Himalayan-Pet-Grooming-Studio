@@ -42,7 +42,7 @@
 
 .hero-slide-2 {
     background: linear-gradient(to right, rgba(91, 154, 173, 0.85) 35%, rgba(91, 154, 173, 0.1) 100%),
-        url('static/images/hero2.png');
+        url('../images/hero_grooming.png');
     background-size: cover;
     background-position: center;
 }
