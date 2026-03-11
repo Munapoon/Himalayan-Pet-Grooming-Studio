@@ -14,7 +14,8 @@ from products.models import Order
 from appointments.models import Appointment
 from .forms import (
     UserRegistrationForm, UserLoginForm, ForgotPasswordForm, 
-    VerifyResetCodeForm, ResetPasswordForm, ChangePasswordForm
+    VerifyResetCodeForm, ResetPasswordForm, ChangePasswordForm,
+    UserProfileForm
 )
 from .decorators import admin_required
 
@@ -279,6 +280,15 @@ def user_dashboard(request):
 
 @login_required
 def user_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('user_profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+
     # Fetch user stats for the profile page
     total_appointments = Appointment.objects.filter(user=request.user).count()
     total_orders = Order.objects.filter(user=request.user).count()
@@ -286,6 +296,7 @@ def user_profile(request):
     member_points = total_orders * 10 
     
     context = {
+        'form': form,
         'total_appointments': total_appointments,
         'total_orders': total_orders,
         'member_points': member_points,
