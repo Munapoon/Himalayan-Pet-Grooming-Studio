@@ -279,7 +279,18 @@ def user_dashboard(request):
 
 @login_required
 def user_profile(request):
-    return render(request, 'accounts/user_dashboard.html') # Placeholder: reusing dashboard template for now
+    # Fetch user stats for the profile page
+    total_appointments = Appointment.objects.filter(user=request.user).count()
+    total_orders = Order.objects.filter(user=request.user).count()
+    # Assume 1 order item = 1 point for now as a simple loyalty placeholder
+    member_points = total_orders * 10 
+    
+    context = {
+        'total_appointments': total_appointments,
+        'total_orders': total_orders,
+        'member_points': member_points,
+    }
+    return render(request, 'accounts/user_profile.html', context)
 
 
 @login_required
@@ -333,21 +344,56 @@ def contact_messages(request):
 
 def contact_us(request):
     if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, 'You must be logged in to send a message.')
+            return redirect('login')
+            
         name = request.POST.get('name')
         email = request.POST.get('email')
+        phone = request.POST.get('phone', '')
         subject = request.POST.get('subject')
         message = request.POST.get('message')
         
         Contact.objects.create(
             name=name,
             email=email,
+            phone=phone,
             subject=subject,
             message=message
         )
         messages.success(request, 'Your message has been sent successfully!')
         return redirect('contact_us')
+    
+    faqs = [
+        {
+            'question': 'What are your opening hours?',
+            'answer': 'We are open Sunday through Friday, from 10:00 AM to 6:00 PM. We are closed on Saturdays and public holidays.'
+        },
+        {
+            'question': 'Do I need to book an appointment in advance?',
+            'answer': 'Yes, we highly recommend booking an appointment to ensure your pet gets the dedicated time they deserve. You can book directly through our website or call us.'
+        },
+        {
+            'question': 'How long does a typical grooming session take?',
+            'answer': 'A standard grooming session usually takes between 2 to 4 hours, depending on the breed, coat condition, and services requested.'
+        },
+        {
+            'question': 'Do you groom all breeds of dogs and cats?',
+            'answer': 'Yes, we welcome all breeds and sizes of both dogs and cats! Our groomers are experienced with various coat types and temperaments.'
+        },
+        {
+            'question': 'What vaccinations are required for grooming?',
+            'answer': 'For the safety of all our furry guests, we require pets to be up-to-date on their rabies vaccination and recommend being current on other core vaccines.'
+        }
+    ]
         
-    return render(request, 'contact.html')
+    return render(request, 'contact.html', {'faqs': faqs})
 
 
-
+@login_required
+def my_contact_requests(request):
+    messages_list = Contact.objects.filter(email=request.user.email).order_by('-id')
+    
+    return render(request, 'accounts/my_contact_request.html', {
+        'messages_list': messages_list
+    })

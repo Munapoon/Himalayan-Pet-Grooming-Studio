@@ -10,7 +10,8 @@ urlpatterns = [
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
     path('user-profile/', views.user_profile, name='user_profile'),
     path('contact-us/', views.contact_us, name='contact_us'), 
-     
+    path('my-contact-requests/', views.my_contact_requests, name='my_contact_requests'),
+    path('admin-dashboard/contact-messages/', views.contact_messages, name='contact_messages'),
     
     # Password Reset & Change
     path('accounts/forgot-password/', views.forgot_password, name='forgot_password'),
