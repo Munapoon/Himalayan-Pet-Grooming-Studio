@@ -28,10 +28,11 @@
                     {% endif %}
 
                     {% if service.badge %}
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge bg-{{ service.badge_color }} rounded-pill px-3 py-2">{{ service.badge
-                            }}</span>
-
+                    <div class="position-absolute top-0 end-0 m-3 d-flex flex-column align-items-end gap-1">
+                        <span class="badge bg-{{ service.badge_color }} rounded-pill px-3 py-2">{{ service.badge }}</span>
+                        {% if service.price %}
+                        <span class="badge bg-primary rounded-pill px-3 py-2">{{ service.price }}</span>
+                        {% endif %}
                     </div>
                     {% elif service.price %}
                     <div class="position-absolute top-0 end-0 m-3">
