@@ -508,7 +508,11 @@ def order_detail(request, order_number):
     """View order details"""
     from .models import Order
     
-    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items__product'),
+        order_number=order_number,
+        user=request.user
+    )
     
     context = {
         'order': order,
