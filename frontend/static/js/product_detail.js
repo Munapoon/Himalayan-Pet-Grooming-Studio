@@ -8,6 +8,8 @@ function incrementQty(max) {
         const maxValue = parseInt(max) || Infinity;
         if (currentVal < maxValue) {
             qtyInput.value = currentVal + 1;
+        } else {
+            alert('Cannot exceed available stock limit (' + maxValue + ' items)');
         }
     }
 }
@@ -25,6 +27,15 @@ function decrementQty() {
 function buyNow() {
     const redirectTo = document.getElementById('redirectTo');
     const form = document.getElementById('addToCartForm');
+    
+    // Manual validation for size requirement since form.submit() bypasses onsubmit
+    const sizeBlock = document.getElementById('sizeSelectionBlock');
+    const sizeInput = document.getElementById('selectedSizeInput');
+    if (sizeBlock && (!sizeInput || !sizeInput.value)) {
+        alert('Please select a size first!');
+        return;
+    }
+
     if (redirectTo && form) {
         redirectTo.value = 'cart';
         form.submit();
@@ -35,7 +46,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Quantity increment
     const incrementBtns = document.querySelectorAll('.increment-btn');
     incrementBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             incrementQty(this.dataset.max);
         });
     });
@@ -43,7 +56,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Quantity decrement
     const decrementBtns = document.querySelectorAll('.decrement-btn');
     decrementBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             decrementQty();
         });
     });

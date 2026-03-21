@@ -28,9 +28,30 @@
                     <h4>{{ user_profile.get_full_name|default:user_profile.username }}</h4>
                     <p class="text-muted">@{{ user_profile.username }}</p>
                     {% if user_profile.is_active %}
-                    <span class="badge bg-success">Active User</span>
+                    <span class="badge bg-success mb-3">Active User</span>
+                    <form method="POST" action="{% url 'user_toggle_status' user_profile.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-warning w-100 mb-2" onclick="return confirm('Deactivate this user? They will not be able to log in.')">
+                            <i class="fas fa-ban"></i> Deactivate User
+                        </button>
+                    </form>
                     {% else %}
-                    <span class="badge bg-secondary">Inactive User</span>
+                    <span class="badge bg-secondary mb-3">Inactive User</span>
+                    <form method="POST" action="{% url 'user_toggle_status' user_profile.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-success w-100 mb-2" onclick="return confirm('Activate this user? They will regain access.')">
+                            <i class="fas fa-check-circle"></i> Activate User
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if not user_profile.is_superuser %}
+                    <form method="POST" action="{% url 'user_delete' user_profile.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-danger w-100" onclick="return confirm('Are you completely sure? This will DELETE the user and all their records permanently.')">
+                            <i class="fas fa-trash"></i> Delete User
+                        </button>
+                    </form>
                     {% endif %}
                 </div>
             </div>

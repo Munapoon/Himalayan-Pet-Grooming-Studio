@@ -20,14 +20,12 @@
                     <h6 class="m-0 fw-bold"><i class="fas fa-edit me-2"></i>Service Details</h6>
                 </div>
                 <div class="card-body">
-                    <form method="post" class="needs-validation">
+                    <form method="post" class="needs-validation" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label
-                                    }}</label>
-
+                                <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label }}</label>
                                 {{ form.name }}
                                 {% if form.name.errors %}
                                 <div class="text-danger small mt-1">{{ form.name.errors }}</div>
@@ -35,21 +33,16 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="{{ form.slug.id_for_label }}" class="form-label fw-bold">{{ form.slug.label
-                                    }}</label>
-
+                                <label for="{{ form.slug.id_for_label }}" class="form-label fw-bold">{{ form.slug.label }}</label>
                                 {{ form.slug }}
-                                <div class="form-text small">Unique URL key (e.g., bath-and-brush). Used for matching
-                                    appointments.</div>
+                                <div class="form-text small">Unique URL key (e.g., bath-and-brush). Used for matching appointments.</div>
                                 {% if form.slug.errors %}
                                 <div class="text-danger small mt-1">{{ form.slug.errors }}</div>
                                 {% endif %}
                             </div>
 
                             <div class="col-12">
-                                <label for="{{ form.short_description.id_for_label }}" class="form-label fw-bold">{{
-                                    form.short_description.label }}</label>
-
+                                <label for="{{ form.short_description.id_for_label }}" class="form-label fw-bold">{{ form.short_description.label }}</label>
                                 {{ form.short_description }}
                                 {% if form.short_description.errors %}
                                 <div class="text-danger small mt-1">{{ form.short_description.errors }}</div>
@@ -57,9 +50,7 @@
                             </div>
 
                             <div class="col-12">
-                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{
-                                    form.description.label }}</label>
-
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{ form.description.label }}</label>
                                 {{ form.description }}
                                 {% if form.description.errors %}
                                 <div class="text-danger small mt-1">{{ form.description.errors }}</div>
@@ -67,9 +58,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="{{ form.price.id_for_label }}" class="form-label fw-bold">{{
-                                    form.price.label }}</label>
-
+                                <label for="{{ form.price.id_for_label }}" class="form-label fw-bold">{{ form.price.label }}</label>
                                 {{ form.price }}
                                 {% if form.price.errors %}
                                 <div class="text-danger small mt-1">{{ form.price.errors }}</div>
@@ -77,9 +66,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="{{ form.duration.id_for_label }}" class="form-label fw-bold">{{
-                                    form.duration.label }}</label>
-
+                                <label for="{{ form.duration.id_for_label }}" class="form-label fw-bold">{{ form.duration.label }}</label>
                                 {{ form.duration }}
                                 {% if form.duration.errors %}
                                 <div class="text-danger small mt-1">{{ form.duration.errors }}</div>
@@ -87,49 +74,50 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="{{ form.order.id_for_label }}" class="form-label fw-bold">{{
-                                    form.order.label }}</label>
-
+                                <label for="{{ form.order.id_for_label }}" class="form-label fw-bold">{{ form.order.label }}</label>
                                 {{ form.order }}
                                 {% if form.order.errors %}
                                 <div class="text-danger small mt-1">{{ form.order.errors }}</div>
                                 {% endif %}
                             </div>
 
-                            <div class="col-12">
-                                <label for="{{ form.image_url.id_for_label }}" class="form-label fw-bold">{{
-                                    form.image_url.label }}</label>
-
+                            <div class="col-md-6">
+                                <label for="{{ form.image_url.id_for_label }}" class="form-label fw-bold">{{ form.image_url.label }}</label>
                                 {{ form.image_url }}
                                 {% if form.image_url.errors %}
                                 <div class="text-danger small mt-1">{{ form.image_url.errors }}</div>
                                 {% endif %}
                             </div>
 
-                            <div class="col-12">
-                                <label for="{{ form.features_json.id_for_label }}" class="form-label fw-bold">{{
-                                    form.features_json.label }}</label>
-
-                                {{ form.features_json }}
-                                <div class="form-text small">Enter as a JSON list, e.g.
-                                    <code>["Bath", "Nail trim"]</code>
+                            <div class="col-md-6">
+                                <label for="{{ form.image.id_for_label }}" class="form-label fw-bold">Service Image</label>
+                                {{ form.image }}
+                                {% if form.image.errors %}
+                                <div class="text-danger small mt-1">{{ form.image.errors }}</div>
+                                {% endif %}
+                                {% if form.instance.image %}
+                                <div class="mt-2">
+                                    <img src="{{ form.instance.image.url }}" alt="{{ form.instance.name }}" style="max-height: 150px; width: auto;" class="img-thumbnail border-0 shadow-sm rounded">
                                 </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label for="{{ form.features_json.id_for_label }}" class="form-label fw-bold">{{ form.features_json.label }}</label>
+                                {{ form.features_json }}
+                                <div class="form-text small">Enter as a JSON list, e.g. <code>["Bath", "Nail trim"]</code></div>
                                 {% if form.features_json.errors %}
                                 <div class="text-danger small mt-1">{{ form.features_json.errors }}</div>
                                 {% endif %}
                             </div>
 
                             <div class="col-md-4">
-                                <label for="{{ form.badge.id_for_label }}" class="form-label fw-bold">{{
-                                    form.badge.label }}</label>
-
+                                <label for="{{ form.badge.id_for_label }}" class="form-label fw-bold">{{ form.badge.label }}</label>
                                 {{ form.badge }}
                             </div>
 
                             <div class="col-md-4">
-                                <label for="{{ form.badge_color.id_for_label }}" class="form-label fw-bold">{{
-                                    form.badge_color.label }}</label>
-
+                                <label for="{{ form.badge_color.id_for_label }}" class="form-label fw-bold">{{ form.badge_color.label }}</label>
                                 {{ form.badge_color }}
                             </div>
 

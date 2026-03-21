@@ -94,6 +94,42 @@
                         <p class="description-text">{{ product.description }}</p>
                     </div>
 
+                    {% if "cloth" in product.category.name|lower or "apparel" in product.category.name|lower or "accessor" in product.category.name|lower %}
+                    <!-- Clothing Size Guide -->
+                    <div class="product-description mt-4" style="background:#f1f5f9; padding:15px; border-radius:12px; border:1px solid #e2e8f0;" id="sizeSelectionBlock">
+                        <h4 class="h5 mb-3" style="color:var(--color-primary); font-weight:700;"><i class="fas fa-ruler-combined me-2"></i> Select Size (By Weight)</h4>
+                        <div class="row text-center g-2" id="sizeCards">
+                            <div class="col-4">
+                                <label class="w-100 mb-0" style="cursor: pointer;">
+                                    <input type="radio" name="display_size" value="Small" class="d-none" onchange="document.getElementById('selectedSizeInput').value=this.value; document.querySelectorAll('.size-card').forEach(c=>c.style.borderColor='#cbd5e1'); this.nextElementSibling.style.borderColor='var(--color-primary)';">
+                                    <div class="size-card bg-white p-2 rounded shadow-sm" style="border: 2px solid #cbd5e1; transition: 0.2s;">
+                                        <strong class="d-block text-dark">Small (S)</strong>
+                                        <span class="small text-muted d-block mt-1"><i class="fas fa-weight-hanging me-1"></i>Up to 5 kg</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <label class="w-100 mb-0" style="cursor: pointer;">
+                                    <input type="radio" name="display_size" value="Medium" class="d-none" onchange="document.getElementById('selectedSizeInput').value=this.value; document.querySelectorAll('.size-card').forEach(c=>c.style.borderColor='#cbd5e1'); this.nextElementSibling.style.borderColor='var(--color-primary)';">
+                                    <div class="size-card bg-white p-2 rounded shadow-sm" style="border: 2px solid #cbd5e1; transition: 0.2s;">
+                                        <strong class="d-block text-dark">Medium (M)</strong>
+                                        <span class="small text-muted d-block mt-1"><i class="fas fa-weight-hanging me-1"></i>5 kg - 12 kg</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <label class="w-100 mb-0" style="cursor: pointer;">
+                                    <input type="radio" name="display_size" value="Large" class="d-none" onchange="document.getElementById('selectedSizeInput').value=this.value; document.querySelectorAll('.size-card').forEach(c=>c.style.borderColor='#cbd5e1'); this.nextElementSibling.style.borderColor='var(--color-primary)';">
+                                    <div class="size-card bg-white p-2 rounded shadow-sm" style="border: 2px solid #cbd5e1; transition: 0.2s;">
+                                        <strong class="d-block text-dark">Large (L)</strong>
+                                        <span class="small text-muted d-block mt-1"><i class="fas fa-weight-hanging me-1"></i>12 kg - 25+ kg</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Quantity and Actions -->
                     {% if product.in_stock %}
                     <div class="quantity-section">
@@ -102,14 +138,17 @@
                         </div>
 
                         {% if user.is_authenticated %}
-                        <form method="post" action="{% url 'products:add_to_cart' product.id %}" id="addToCartForm">
+                        <form method="post" action="{% url 'products:add_to_cart' product.id %}" id="addToCartForm" onsubmit="if(document.getElementById('sizeSelectionBlock') && !document.getElementById('selectedSizeInput').value) { alert('Please select a size first!'); return false; } return true;">
                             {% csrf_token %}
+                            <input type="hidden" name="size" id="selectedSizeInput" value="">
+                            
                             <div class="quantity-controls">
                                 <button type="button" class="quantity-btn decrement-btn">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1"
-                                    max="{{ product.stock_quantity }}" class="quantity-input">
+                                    max="{{ product.stock_quantity }}" class="quantity-input" readonly
+                                    style="background-color: white; cursor: default;">
                                 <button type="button" class="quantity-btn increment-btn"
                                     data-max="{{ product.stock_quantity }}">
                                     <i class="fas fa-plus"></i>
@@ -135,7 +174,8 @@
                                 <i class="fas fa-minus"></i>
                             </button>
                             <input type="number" id="quantity" value="1" min="1" max="{{ product.stock_quantity }}"
-                                class="quantity-input">
+                                class="quantity-input" readonly
+                                style="background-color: white; cursor: default;">
                             <button type="button" class="quantity-btn increment-btn"
                                 data-max="{{ product.stock_quantity }}">
                                 <i class="fas fa-plus"></i>

@@ -105,6 +105,9 @@
                                             class="text-decoration-none">
                                             {{ item.product.name }}
                                         </a>
+                                        {% if item.size %}
+                                        <div class="small text-muted mt-1">Size: {{ item.size }}</div>
+                                        {% endif %}
                                     </td>
                                     <td>Rs. {{ item.unit_price }}</td>
                                     <td>{{ item.quantity }}</td>

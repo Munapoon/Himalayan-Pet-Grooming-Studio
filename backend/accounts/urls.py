@@ -16,6 +16,9 @@ urlpatterns = [
     # Admin Users and Reports
     path('admin-dashboard/users/', views.user_list, name='user_list'),
     path('admin-dashboard/users/<int:pk>/', views.user_detail, name='user_detail'),
+    path('admin-dashboard/users/<int:pk>/toggle-status/', views.user_toggle_status, name='user_toggle_status'),
+    path('admin-dashboard/users/<int:pk>/delete/', views.user_delete, name='user_delete'),
+    path('admin-dashboard/contact-messages/<int:pk>/read/', views.mark_contact_read, name='mark_contact_read'),
     path('admin-dashboard/reports/', views.reports, name='reports'),
     path('admin-dashboard/reports/export-csv/', views.export_sales_csv, name='export_sales_csv'),
     

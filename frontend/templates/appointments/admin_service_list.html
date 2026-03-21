@@ -35,7 +35,10 @@
                         <tr>
                             <td class="fw-bold">{{ service.order }}</td>
                             <td>
-                                {% if service.image_url %}
+                                {% if service.image %}
+                                <img src="{{ service.image.url }}" alt="{{ service.name }}" class="rounded shadow-sm"
+                                    style="width: 60px; height: 40px; object-fit: cover;">
+                                {% elif service.image_url %}
                                 <img src="{{ service.image_url }}" alt="{{ service.name }}" class="rounded shadow-sm"
                                     style="width: 60px; height: 40px; object-fit: cover;">
                                 {% else %}

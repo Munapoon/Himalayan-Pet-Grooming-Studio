@@ -67,6 +67,29 @@
                     <hr>
                     <h5>Description</h5>
                     <p>{{ product.description }}</p>
+
+                    {% if "cloth" in product.category.name|lower or "apparel" in product.category.name|lower %}
+                    <div class="mt-4 p-3 bg-light rounded border">
+                        <h6 class="text-primary fw-bold mb-3"><i class="fas fa-ruler-combined me-2"></i> Size Guide (Weight)</h6>
+                        <div class="row text-center g-2">
+                            <div class="col-4">
+                                <div class="bg-white p-2 rounded border shadow-sm">
+                                    <strong class="d-block">Small (S)</strong><small class="text-muted d-block">Up to 5 kg</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-white p-2 rounded border shadow-sm">
+                                    <strong class="d-block">Medium (M)</strong><small class="text-muted d-block">5 - 12 kg</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-white p-2 rounded border shadow-sm">
+                                    <strong class="d-block">Large (L)</strong><small class="text-muted d-block">12 - 25+ kg</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -91,6 +91,9 @@
                                             <div>
                                                 <strong>{{ item.product.name }}</strong><br>
                                                 <small class="text-muted">{{ item.product.category.name }}</small>
+                                                {% if item.size %}
+                                                <br><small class="text-primary fw-bold">Size: {{ item.size }}</small>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </td>

@@ -91,15 +91,13 @@
                                     <div class="text-warning">
                                         {% for i in "12345" %}
                                         {% if forloop.counter <= avg_rating %} <i class="fas fa-star"></i>
-                                            {% elif forloop.counter|add:"-0.5" <= avg_rating %} <i
-                                                class="fas fa-star-half-alt"></i>
-                                                {% else %}
-                                                <i class="far fa-star"></i>
-                                                {% endif %}
-                                                {% endfor %}
+                                        {% elif forloop.counter|add:"-0.5" <= avg_rating %} <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                        <i class="far fa-star"></i>
+                                        {% endif %}
+                                        {% endfor %}
                                     </div>
-                                    <small class="text-muted">{{ total_reviews }} review{{ total_reviews|pluralize
-                                        }}</small>
+                                    <small class="text-muted">{{ total_reviews }} review{{ total_reviews|pluralize }}</small>
 
 
                                 </div>
@@ -107,8 +105,7 @@
                                 <div class="flex-grow-1">
                                     {% for rating, data in rating_distribution.items reversed %}
                                     <div class="d-flex align-items-center mb-1">
-                                        <span class="me-2" style="width: 60px;">{{ rating }} star{{ rating|pluralize
-                                            }}</span>
+                                        <span class="me-2" style="width: 60px;">{{ rating }} star{{ rating|pluralize }}</span>
                                         <div class="progress flex-grow-1" style="height: 8px;">
                                             {% with percentage=data.percentage|default:0 %}
                                             <div class="progress-bar bg-warning" role="progressbar"
@@ -135,8 +132,7 @@
 
                     <div class="card mb-4">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">{% if user_review %}Update Your Review{% else %}Write a Review{% endif %}
-                            </h5>
+                            <h5 class="mb-0">{% if user_review %}Update Your Review{% else %}Write a Review{% endif %}</h5>
                         </div>
                         <div class="card-body">
                             <form method="post" action="{% url 'add_service_review' service_type %}">
@@ -145,8 +141,7 @@
                                     <label class="form-label">Rating</label>
                                     <div class="rating-input">
                                         {% for i in "54321" %}
-                                        <input type="radio" name="rating" id="rating{{ i }}" value="{{ i }}" {% if
-                                            user_review and user_review.rating==i|add:0 %}checked{% endif %} required>
+                                        <input type="radio" name="rating" id="rating{{ i }}" value="{{ i }}" {% if user_review and user_review.rating == i|add:0 %}checked{% endif %} required>
                                         <label for="rating{{ i }}">
                                             <i class="far fa-star"></i>
                                             <i class="fas fa-star"></i>
@@ -160,8 +155,7 @@
                                         required>{% if user_review %}{{ user_review.review }}{% endif %}</textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i> {% if user_review %}Update Review{% else %}Submit
-                                    Review{% endif %}
+                                    <i class="fas fa-paper-plane"></i> {% if user_review %}Update Review{% else %}Submit Review{% endif %}
                                 </button>
                             </form>
                         </div>
@@ -192,10 +186,10 @@
                             <div class="text-warning mb-1">
                                 {% for i in "12345" %}
                                 {% if forloop.counter <= review.rating %} <i class="fas fa-star"></i>
-                                    {% else %}
-                                    <i class="far fa-star"></i>
-                                    {% endif %}
-                                    {% endfor %}
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
                         <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>

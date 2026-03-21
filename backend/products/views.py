@@ -248,12 +248,14 @@ def add_to_cart(request, product_id):
         return redirect('products:product_detail', pk=product_id)
     
     quantity = int(request.POST.get('quantity', 1))
+    size = request.POST.get('size', None)
     redirect_to = request.POST.get('redirect_to', 'cart')
     
-    # Check if item already in cart
+    # Check if item already in cart with same size
     cart_item, created = Cart.objects.get_or_create(
         user=request.user,
         product=product,
+        size=size,
         defaults={'quantity': quantity}
     )
     
@@ -453,6 +455,7 @@ def checkout(request):
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
+                size=item.size,
                 quantity=item.quantity,
                 unit_price=item.product.price,
             )
@@ -481,6 +484,30 @@ def checkout(request):
             # Cash on Delivery - Order is pending
             order.payment_status = 'pending'
             order.save()
+            
+            from .models import Payment
+            Payment.objects.create(
+                order=order,
+                user=request.user,
+                transaction_id=f"COD-{order.order_number}",
+                payment_method='cod',
+                amount=order.total_amount,
+                status='pending',
+            )
+            
+            # Send email confirmation
+            from django.core.mail import send_mail
+            from django.conf import settings
+            subject = f"Order Confirmed: #{order.order_number}"
+            message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
+                      f"Your order #{order.order_number} has been placed successfully!\n" \
+                      f"Total amount to pay on delivery: Rs. {order.total_amount}.\n\n" \
+                      f"Thank you for shopping with Himalayan Pet Studio!"
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+            except Exception as e:
+                pass
+            
             messages.success(request, f'Order placed successfully! Order Number: {order.order_number}')
             return redirect('products:order_detail', order_number=order.order_number)
         
@@ -615,8 +642,17 @@ def khalti_verify(request):
                     payment_response=data
                 )
                 
-                # Create Sale records if not already created (depending on how you track sales)
-                # (Existing logic in checkout created them, but we might want to flag them as paid here)
+                # Send email confirmation
+                from django.core.mail import send_mail
+                subject = f"Payment Confirmed: Order #{order.order_number}"
+                message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
+                          f"Your Khalti payment of Rs. {order.total_amount} for order #{order.order_number} was successful!\n" \
+                          f"Your order is now being processed.\n\n" \
+                          f"Thank you for shopping with Himalayan Pet Studio!"
+                try:
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                except Exception as e:
+                    pass
                 
                 # Cleanup session
                 if 'pending_order_number' in request.session: del request.session['pending_order_number']
@@ -718,15 +754,46 @@ def update_order_status(request, order_number):
     if request.method == 'POST':
         new_status = request.POST.get('status')
         new_payment_status = request.POST.get('payment_status')
+        status_changed = False
         
         if new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
+            status_changed = True
         
         if new_payment_status in dict(Order.PAYMENT_STATUS_CHOICES):
             order.payment_status = new_payment_status
+            status_changed = True
+            
+            # Sync corresponding Payment object
+            from .models import Payment
+            payment = Payment.objects.filter(order=order).first()
+            if payment:
+                if new_payment_status == 'paid' and payment.status != 'completed':
+                    payment.status = 'completed'
+                    payment.save()
+                elif new_payment_status == 'pending' and payment.status != 'pending':
+                    payment.status = 'pending'
+                    payment.save()
+                elif new_payment_status == 'failed' and payment.status != 'failed':
+                    payment.status = 'failed'
+                    payment.save()
+            elif new_payment_status == 'paid':
+                # If no payment object exists (e.g. COD) but admin marks as paid, create one
+                from django.utils import timezone
+                Payment.objects.create(
+                    order=order,
+                    user=order.user,
+                    transaction_id=f"SHOP-ORDER-{order.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}",
+                    payment_method=order.payment_method or 'cod',
+                    amount=order.total_amount,
+                    status='completed',
+                    payment_response={'source': 'Admin Status Update', 'recorded_by': request.user.username}
+                )
         
-        order.save()
-        messages.success(request, f'Order #{order.order_number} updated successfully!')
+        if status_changed:
+            order.save()
+            messages.success(request, f'Order #{order.order_number} updated successfully!')
+        
         return redirect('products:admin_order_detail', order_number=order.order_number)
     
     return redirect('products:admin_order_list')

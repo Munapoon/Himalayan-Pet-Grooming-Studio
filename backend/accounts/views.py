@@ -335,14 +335,35 @@ def user_list(request):
 @login_required
 @admin_required
 def user_detail(request, pk):
-    user_obj = get_object_or_404(User, pk=pk)
-    return render(request, 'accounts/user_detail.html', {'user_obj': user_obj})
+    user_profile = get_object_or_404(User, pk=pk)
+    
+    # Get user appointments
+    user_appointments = Appointment.objects.filter(user=user_profile).order_by('-created_at')
+    
+    # Calculate stats
+    total_appointments = user_appointments.count()
+    pending_appointments = user_appointments.filter(status='pending').count()
+    completed_appointments = user_appointments.filter(status='completed').count()
+    cancelled_appointments = user_appointments.filter(status='cancelled').count()
+    
+    context = {
+        'user_profile': user_profile,
+        'user_appointments': user_appointments,
+        'total_appointments': total_appointments,
+        'pending_appointments': pending_appointments,
+        'completed_appointments': completed_appointments,
+        'cancelled_appointments': cancelled_appointments,
+    }
+    
+    return render(request, 'accounts/user_detail.html', context)
 
 
 @login_required
 @admin_required
 def reports(request):
-    from products.models import Sale
+    from products.models import Payment, OrderItem
+    from accounts.models import Contact
+    from appointments.models import Appointment
     from django.db.models import Sum
     import calendar
     from datetime import datetime
@@ -353,24 +374,70 @@ def reports(request):
     selected_year = int(request.GET.get('year', now.year))
 
     # Get all sales for filtering
-    all_sales = Sale.objects.all()
+    # Use Payment instead of Sale
+    all_sales = Payment.objects.filter(status='completed')
+    all_appointments = Appointment.objects.exclude(status='cancelled') # Base valid appointments
 
-    # Monthly Stats
+    # Monthly Stats for Products
     monthly_sales = all_sales.filter(
-        sale_date__month=selected_month,
-        sale_date__year=selected_year
+        created_at__month=selected_month,
+        created_at__year=selected_year
     )
-    monthly_revenue = monthly_sales.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    product_monthly_revenue = monthly_sales.aggregate(Sum('amount'))['amount__sum'] or 0
     monthly_sales_count = monthly_sales.count()
 
+    # Monthly Stats for Appointments
+    monthly_appointments = all_appointments.filter(
+        created_at__month=selected_month,
+        created_at__year=selected_year
+    )
+    appt_monthly_revenue = monthly_appointments.aggregate(Sum('paid_amount'))['paid_amount__sum'] or 0
+
+    monthly_revenue = float(product_monthly_revenue) + float(appt_monthly_revenue)
+
     # Yearly Stats
-    yearly_sales = all_sales.filter(sale_date__year=selected_year)
-    yearly_revenue = yearly_sales.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    yearly_sales = all_sales.filter(created_at__year=selected_year)
+    product_yearly_revenue = yearly_sales.aggregate(Sum('amount'))['amount__sum'] or 0
     yearly_sales_count = yearly_sales.count()
 
+    yearly_appointments = all_appointments.filter(created_at__year=selected_year)
+    appt_yearly_revenue = yearly_appointments.aggregate(Sum('paid_amount'))['paid_amount__sum'] or 0
+
+    yearly_revenue = float(product_yearly_revenue) + float(appt_yearly_revenue)
+
     # Sales list for the selected month/year with pagination
-    sales_list = monthly_sales.order_by('-sale_date')
-    paginator = Paginator(sales_list, 10)
+    sales_qs = monthly_sales.select_related('order', 'appointment', 'user').prefetch_related('order__items__product').order_by('-created_at')
+    
+    enriched_sales = []
+    for p in sales_qs:
+        name = "Direct / Misc"
+        quantity = 1
+        unit_price = float(p.amount)
+        category_name = "Revenue"
+        
+        if p.order:
+            items = list(p.order.items.all()[:2])
+            item_names = ", ".join([it.product.name for it in items])
+            if p.order.items.count() > 2: item_names += " ..."
+            name = f"Order #{p.order.order_number} ({item_names})"
+            quantity = sum([it.quantity for it in p.order.items.all()])
+            if quantity > 0: unit_price = float(p.amount) / quantity
+            category_name = "E-Commerce"
+        elif p.appointment:
+            name = f"Service: {p.appointment.service.name} ({p.appointment.pet_name})"
+            category_name = "Grooming"
+        
+        enriched_sales.append({
+            'id': p.id,
+            'product': {'name': name, 'category': {'name': category_name}},
+            'customer': p.user,
+            'quantity': quantity,
+            'unit_price': unit_price,
+            'total_amount': float(p.amount),
+            'payment_method': p.payment_method,
+            'sale_date': p.created_at
+        })
+    paginator = Paginator(enriched_sales, 10)
     page_number = request.GET.get('page')
     sales_page = paginator.get_page(page_number)
 
@@ -378,7 +445,7 @@ def reports(request):
     months = [(i, calendar.month_name[i]) for i in range(1, 13)]
     
     # Get range of years from sales or at least last 5 years
-    min_year = all_sales.aggregate(Min('sale_date'))['sale_date__min']
+    min_year = all_sales.aggregate(Min('created_at'))['created_at__min']
     if min_year:
         start_year = min_year.year
     else:
@@ -405,7 +472,7 @@ def reports(request):
 def export_sales_csv(request):
     import csv
     from django.http import HttpResponse
-    from products.models import Sale
+    from products.models import Payment
     from datetime import datetime
     import calendar
 
@@ -423,16 +490,45 @@ def export_sales_csv(request):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     writer = csv.writer(response)
-    writer.writerow(['Sale ID', 'Product', 'Customer', 'Quantity', 'Unit Price', 'Total Amount', 'Payment Method', 'Date'])
+    writer.writerow(['ID', 'Source', 'Detail', 'Customer', 'Amount', 'Method', 'Date', 'Time'])
 
     # Get data
-    sales = Sale.objects.filter(
-        sale_date__month=selected_month,
-        sale_date__year=selected_year
-    ).order_by('-sale_date')
+    payments = Payment.objects.filter(
+        status='completed',
+        created_at__month=selected_month,
+        created_at__year=selected_year
+    ).select_related('order', 'appointment', 'user').order_by('-created_at')
 
-    for sale in sales:
-        customer_name = sale.customer.get_full_name() or sale.customer.username if sale.customer else "Walk-in"
+
+
+
+    for p in payments:
+        source = "Misc"
+        detail = "N/A"
+        if p.order:
+            source = f"Order #{p.order.order_number}"
+            # Show top 3 products in details
+            items = list(p.order.items.all()[:3])
+            detail = ", ".join([it.product.name for it in items])
+            if p.order.items.count() > 3:
+                detail += " ..."
+        elif p.appointment:
+            source = "Service"
+            detail = f"{p.appointment.service.name} ({p.appointment.pet_name})"
+            
+        customer_p = p.user.get_full_name() or p.user.username if p.user else "Walk-in"
+        
+        writer.writerow([
+            p.id,
+            source,
+            detail,
+            customer_p,
+            p.amount,
+            p.get_payment_method_display(),
+            p.created_at.strftime('%Y-%m-%d'),
+            p.created_at.strftime('%H:%M')
+        ])
+        pass
         writer.writerow([
             sale.id,
             sale.product.name,
@@ -522,3 +618,41 @@ def my_contact_requests(request):
     return render(request, 'accounts/my_contact_request.html', {
         'messages_list': messages_list
     })
+
+@login_required
+@admin_required
+def user_toggle_status(request, pk):
+    if request.method == 'POST':
+        user_obj = get_object_or_404(User, pk=pk)
+        if user_obj.is_superuser:
+            messages.error(request, "Cannot deactivate a superuser.")
+        else:
+            user_obj.is_active = not user_obj.is_active
+            user_obj.save()
+            status_text = "activated" if user_obj.is_active else "deactivated"
+            messages.success(request, f"User {user_obj.username} has been {status_text}.")
+    return redirect('user_detail', pk=pk)
+
+@login_required
+@admin_required
+def user_delete(request, pk):
+    if request.method == 'POST':
+        user_obj = get_object_or_404(User, pk=pk)
+        if user_obj.is_superuser:
+            messages.error(request, "Cannot delete a superuser.")
+            return redirect('user_detail', pk=pk)
+        username = user_obj.username
+        user_obj.delete()
+        messages.success(request, f"User {username} deleted successfully.")
+        return redirect('user_list')
+    return redirect('user_detail', pk=pk)
+
+@login_required
+@admin_required
+def mark_contact_read(request, pk):
+    message = get_object_or_404(Contact, pk=pk)
+    if not message.is_read:
+        message.is_read = True
+        message.save()
+    from django.http import JsonResponse
+    return JsonResponse({'status': 'success'})

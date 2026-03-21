@@ -205,5 +205,5 @@ def _fixed_ssl_init(self, *args, **kwargs):
     kwargs.pop('certfile', None)
     return _original_ssl_init(self, *args, **kwargs)
 
-smtplib.SMTP.starttls = _fixed_starttls
-smtplib.SMTP_SSL.__init__ = _fixed_ssl_init
+smtplib.SMTP.starttls = _fixed_starttls  # type: ignore
+smtplib.SMTP_SSL.__init__ = _fixed_ssl_init  # type: ignore

@@ -8,9 +8,13 @@ function incrementCartQty(itemId, maxQty) {
     const form = document.getElementById('update-form-' + itemId);
     if (qtyInput && form) {
         const currentQty = parseInt(qtyInput.value) || 0;
-        if (currentQty < parseInt(maxQty)) {
+        const max = parseInt(maxQty);
+        
+        if (currentQty < max) {
             qtyInput.value = currentQty + 1;
             form.submit();
+        } else {
+            alert('Cannot exceed available stock limit (' + max + ' items)');
         }
     }
 }

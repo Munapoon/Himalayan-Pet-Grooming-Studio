@@ -188,4 +188,59 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const messageId = this.id.replace('messageModal', '');
+                const readUrl = `/admin-dashboard/contact-messages/${messageId}/read/`;
+
+                // If badge is NEW, mark it as read via ajax
+                const row = document.querySelector(`tr:has(button[data-bs-target="#${this.id}"])`);
+                if (row && row.classList.contains('unread-row')) {
+                    fetch(readUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            row.classList.remove('unread-row');
+                            const badge = row.querySelector('.status-badge');
+                            if (badge) {
+                                badge.classList.replace('bg-danger', 'bg-light');
+                                badge.classList.add('text-secondary');
+                                badge.textContent = 'READ';
+                            }
+                            // Update total unread count badge in header
+                            const countBadge = document.querySelector('.badge.bg-primary');
+                            if (countBadge) {
+                                let match = countBadge.textContent.match(/\d+/);
+                                if (match) {
+                                    let newCount = parseInt(match[0]) - 1;
+                                    if (newCount >= 0) {
+                                        countBadge.innerHTML = `<i class=\"fas fa-inbox me-2\"></i> ${newCount} New Messages`;
+                                        // Update sidebar badge if it exists
+                                        const sidebarBadge = document.querySelector('.nav-link[href=\"/admin-dashboard/contact-messages/\"] .badge');
+                                        if (sidebarBadge) {
+                                            sidebarBadge.textContent = newCount;
+                                            if (newCount === 0) sidebarBadge.remove();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

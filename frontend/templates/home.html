@@ -102,7 +102,9 @@
             {% for service in services %}
             <div class="service-card" data-url="{% url 'service_detail' service.slug %}">
                 <div class="card-image">
-                    {% if service.image_url %}
+                    {% if service.image %}
+                    <img src="{{ service.image.url }}" alt="{{ service.name }}" style="object-fit: cover;">
+                    {% elif service.image_url %}
                     <img src="{{ service.image_url }}" alt="{{ service.name }}">
                     {% else %}
                     <img src="https://images.unsplash.com/photo-1591769225440-811ad7d6eab3?w=400"

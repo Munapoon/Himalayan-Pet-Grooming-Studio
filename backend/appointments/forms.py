@@ -25,7 +25,7 @@ class AppointmentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Dynamically set service choices from Service model
-        active_services = Service.objects.filter(is_active=True).order_by('order')
+        active_services = Service.objects.filter(is_active=True).only('slug', 'name').order_by('order')
         if active_services.exists():
             choices = [(s.slug, s.name) for s in active_services]
             self.fields['service'].choices = choices
@@ -87,7 +87,7 @@ class ServiceForm(forms.ModelForm):
         model = Service
         fields = [
             'name', 'slug', 'short_description', 'description', 
-            'price', 'duration', 'image_url', 'features_json', 
+            'price', 'duration', 'image_url', 'image', 'features_json', 
             'badge', 'badge_color', 'is_active', 'order'
         ]
         widgets = {
@@ -98,6 +98,7 @@ class ServiceForm(forms.ModelForm):
             'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Rs. 1500'}),
             'duration': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 60-90 min'}),
             'image_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
             'features_json': forms.Textarea(attrs={
                 'class': 'form-control', 
                 'rows': 3, 
