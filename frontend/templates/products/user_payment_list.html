@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}My Payments - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="fas fa-credit-card me-2"></i>My Payment History
+                </h2>
+                <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-muted">Total Payments</h5>
+                            <h2 class="fw-bold text-primary">{{ total_payments }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-muted">Total Amount Paid</h5>
+                            <h2 class="fw-bold text-success">Rs. {{ total_amount|floatformat:2 }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Table -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Transaction ID</th>
+                                        <th>Order Number</th>
+                                        <th>Payment Method</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in page_obj %}
+                                    <tr>
+                                        <td><code>{{ payment.transaction_id|slice:":20" }}</code></td>
+                                        <td>
+                                            <a href="{% url 'products:order_detail' payment.order.order_number %}" class="text-decoration-none">
+                                                {{ payment.order.order_number }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {% if payment.payment_method == 'khalti' %}
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-wallet"></i> Khalti
+                                                </span>
+                                            {% elif payment.payment_method == 'stripe' %}
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-credit-card"></i> Stripe
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-money-bill"></i> {{ payment.get_payment_method_display }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="fw-bold">Rs. {{ payment.amount|floatformat:2 }}</td>
+                                        <td>
+                                            {% if payment.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif payment.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif payment.status == 'failed' %}
+                                                <span class="badge bg-danger">Failed</span>
+                                            {% elif payment.status == 'refunded' %}
+                                                <span class="badge bg-info">Refunded</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ payment.created_at|date:"M d, Y - h:i A" }}</td>
+                                        <td>
+                                            <a href="{% url 'products:order_detail' payment.order.order_number %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View Order
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Payment pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                            <h4>No Payment History</h4>
+                            <p class="text-muted">You haven't made any payments yet.</p>
+                            <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart"></i> Start Shopping
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

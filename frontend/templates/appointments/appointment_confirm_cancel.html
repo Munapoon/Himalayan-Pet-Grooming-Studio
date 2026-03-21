@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Appointment - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-white border-0 pt-4 text-center">
+                    <div class="mb-3 text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    </div>
+                    <h3 class="fw-bold">Cancel Appointment?</h3>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <p class="text-center text-muted mb-4">
+                        Are you sure you want to cancel the appointment for <strong>{{ appointment.pet_name }}</strong> on 
+                        <strong>{{ appointment.appointment_date|date:"F d" }}</strong> at <strong>{{ appointment.appointment_time|time:"g:i A" }}</strong>?
+                    </p>
+
+                    <div class="alert {% if appointment.is_refund_eligible %}alert-success{% else %}alert-warning{% endif %} d-flex align-items-center mb-4 border-0 rounded-lg">
+                        <div class="me-3">
+                            {% if appointment.is_refund_eligible %}
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="alert-heading mb-1 fw-bold">
+                                {% if appointment.is_refund_eligible %}
+                                    Refund Eligible
+                                {% else %}
+                                    Policy Notice
+                                {% endif %}
+                            </h6>
+                            <p class="mb-0 small">
+                                {% if appointment.is_refund_eligible %}
+                                    You are cancelling more than 24 hours in advance. Your advance payment of Rs. {{ appointment.advance_amount }} will be fully refunded.
+                                {% else %}
+                                    Cancellations within 24 hours are non-refundable. Your advance payment of Rs. {{ appointment.advance_amount }} will be retained as a late cancellation fee.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill py-3">
+                                <i class="fas fa-times-circle"></i> Confirm Cancellation
+                            </button>
+                            <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-outline-secondary btn-lg rounded-pill py-3">
+                                Keep Appointment
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p class="text-muted small">Need to reschedule instead? <a href="{% url 'appointment_update' appointment.id %}" class="text-decoration-underline text-primary">Click here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

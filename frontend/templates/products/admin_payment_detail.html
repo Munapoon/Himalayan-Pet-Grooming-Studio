@@ -1,0 +1,97 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Payment #{{ payment.transaction_id }} - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
+        <a href="{% url 'products:admin_payment_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Payments
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Transaction ID</th>
+                            <td><code>{{ payment.transaction_id }}</code></td>
+                        </tr>
+                        <tr>
+                            <th>Order</th>
+                            <td>
+                                <a href="{% url 'products:admin_order_detail' payment.order.order_number %}">
+                                    #{{ payment.order.order_number }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>User</th>
+                            <td>{{ payment.user.get_full_name|default:payment.user.username }}<br>
+                                <small class="text-muted">{{ payment.user.email }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Amount</th>
+                            <td><strong class="text-success fs-5">Rs. {{ payment.amount }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Payment Method</th>
+                            <td>
+                                {% if payment.payment_method == 'khalti' %}
+                                <span class="badge bg-purple" style="background:#5c2d91;">Khalti</span>
+                                {% elif payment.payment_method == 'stripe' %}
+                                <span class="badge bg-primary">Stripe</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Cash on Delivery</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                {% if payment.status == 'completed' %}
+                                <span class="badge bg-success fs-6">Completed</span>
+                                {% elif payment.status == 'pending' %}
+                                <span class="badge bg-warning text-dark fs-6">Pending</span>
+                                {% elif payment.status == 'failed' %}
+                                <span class="badge bg-danger fs-6">Failed</span>
+                                {% else %}
+                                <span class="badge bg-info fs-6">Refunded</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ payment.created_at|date:"F d, Y g:i A" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated</th>
+                            <td>{{ payment.updated_at|date:"F d, Y g:i A" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if payment.payment_response %}
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-code"></i> Gateway Response</h5>
+                </div>
+                <div class="card-body">
+                    <pre style="background:#f8f9fa;padding:15px;border-radius:8px;font-size:0.85rem;overflow-x:auto;">{{ payment.payment_response }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,8 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.urls import reverse
+from django.core.paginator import Paginator
+from django.db.models import Q
+import requests as http_requests
+
 from accounts.decorators import admin_required
-from .models import ProductCategory, Product, Cart, Sale, Order, OrderItem
+from .models import ProductCategory, Product, Cart, Sale, Order, OrderItem, Payment
 from .forms import ProductCategoryForm, ProductForm
 
 
@@ -76,8 +82,7 @@ def product_list(request):
     
     if request.user.is_authenticated and request.user.is_admin_user():
         products = Product.objects.all()
-        # Note: If product_list_admin.html doesn't exist, we use product_list.html
-        template_name = 'products/product_list.html'
+        template_name = 'products/product_list_admin.html'
     else:
         products = Product.objects.filter(is_active=True)
         template_name = 'products/product_list.html'
@@ -480,21 +485,50 @@ def checkout(request):
             return redirect('products:order_detail', order_number=order.order_number)
         
         elif payment_method == 'khalti':
-            # Khalti payment - Store order in session and redirect to Khalti verification
+            # Khalti payment - Initiate KPG-2
+            import requests as http_requests
+            from django.urls import reverse
+            
             order.payment_status = 'pending'
             order.save()
             
-            # Store order number in session for verification
-            request.session['pending_order'] = order.order_number
+            url = f"{settings.KHALTI_BASE_URL}epayment/initiate/"
+            return_url = request.build_absolute_uri(reverse('products:khalti_verify'))
             
-            # Return checkout page with Khalti payment widget
-            context = {
-                'cart_items': cart_items,
-                'total': total,
-                'order': order,
-                'show_khalti': True,
+            payload = {
+                "return_url": return_url,
+                "website_url": request.build_absolute_uri('/'),
+                "amount": int(order.total_amount * 100),
+                "purchase_order_id": f"order-{order.order_number}",
+                "purchase_order_name": f"Himalayan Pet Studio Order #{order.order_number}",
+                "customer_info": {
+                    "name": request.user.get_full_name() or request.user.username,
+                    "email": request.user.email or "customer@example.com",
+                    "phone": phone_number
+                }
             }
-            return render(request, 'products/checkout.html', context)
+            
+            headers = {
+                'Authorization': f"Key {settings.KHALTI_SECRET_KEY}",
+                'Content-Type': 'application/json',
+            }
+
+            try:
+                response = http_requests.post(url, json=payload, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    # Store pidx in session or order (if you have a field for it)
+                    # Let's use the session or just pass it in return_url if needed, 
+                    # but Khalti sends it back in GET params.
+                    request.session['pending_order_pidx'] = data.get('pidx')
+                    request.session['pending_order_number'] = order.order_number
+                    return redirect(data.get('payment_url'))
+                else:
+                    messages.error(request, f"Khalti initiation failed: {response.text}")
+                    return redirect('products:order_detail', order_number=order.order_number)
+            except Exception as e:
+                messages.error(request, f"Payment error: {str(e)}")
+                return redirect('products:order_detail', order_number=order.order_number)
     
     context = {
         'cart_items': cart_items,
@@ -535,62 +569,70 @@ def order_list(request):
 
 @login_required
 def khalti_verify(request):
-    """Khalti payment verification callback"""
-    import requests
+    """
+    KPG-2 Callback: Handles return from Khalti and verifies status using lookup API.
+    """
+    import requests as http_requests
+    from .models import Order, Payment
     from django.conf import settings
     
-    if request.method == 'POST':
-        token = request.POST.get('token')
-        amount = request.POST.get('amount')
-        
-        # Verify payment with Khalti
-        url = "https://khalti.com/api/v2/payment/verify/"
-        payload = {
-            "token": token,
-            "amount": amount
-        }
-        headers = {
-            "Authorization": f"Key {settings.KHALTI_SECRET_KEY}"
-        }
-        
-        try:
-            response = requests.post(url, payload, headers=headers)
-            
-            if response.status_code == 200:
-                # Payment verified successfully
-                order_number = request.session.get('pending_order')
-                if order_number:
-                    from .models import Order, Payment
-                    order = Order.objects.get(order_number=order_number)
-                    order.payment_status = 'paid'
-                    order.payment_method = 'khalti'
-                    order.save()
-                    
-                    # Create payment record
-                    payment_data = response.json()
-                    Payment.objects.create(
-                        order=order,
-                        user=request.user,
-                        transaction_id=payment_data.get('idx', token),
-                        payment_method='khalti',
-                        amount=order.total_amount,
-                        status='completed',
-                        payment_response=payment_data
-                    )
-                    
-                    # Clear session
-                    del request.session['pending_order']
-                    
-                    messages.success(request, f'Payment successful! Order Number: {order.order_number}')
-                    return redirect('products:order_detail', order_number=order.order_number)
+    pidx = request.GET.get('pidx')
+    if not pidx:
+        messages.error(request, "Invalid payment callback.")
+        return redirect('products:cart')
+
+    # Get order from session or verify against returned data
+    order_number = request.session.get('pending_order_number')
+    if not order_number:
+        # Fallback/Security: Check if we can find an order with this pidx if stored
+        messages.error(request, "Session expired or order not found.")
+        return redirect('products:cart')
+
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+
+    # Call lookup to verify
+    url = f"{settings.KHALTI_BASE_URL}epayment/lookup/"
+    payload = {"pidx": pidx}
+    headers = {"Authorization": f"Key {settings.KHALTI_SECRET_KEY}"}
+
+    try:
+        response = http_requests.post(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('status') == 'Completed':
+                order.payment_status = 'paid'
+                order.payment_method = 'khalti'
+                order.save()
+                
+                # Create payment record
+                Payment.objects.create(
+                    order=order,
+                    user=request.user,
+                    transaction_id=pidx,
+                    payment_method='khalti',
+                    amount=order.total_amount,
+                    status='completed',
+                    payment_response=data
+                )
+                
+                # Create Sale records if not already created (depending on how you track sales)
+                # (Existing logic in checkout created them, but we might want to flag them as paid here)
+                
+                # Cleanup session
+                if 'pending_order_number' in request.session: del request.session['pending_order_number']
+                if 'pending_order_pidx' in request.session: del request.session['pending_order_pidx']
+                
+                messages.success(request, f"Payment successful! Your order #{order.order_number} is processing.")
+                return redirect('products:order_detail', order_number=order.order_number)
             else:
-                messages.error(request, 'Payment verification failed. Please contact support.')
-                return redirect('products:cart')
-        except Exception as e:
-            messages.error(request, f'Payment verification error: {str(e)}')
+                messages.warning(request, f"Payment status: {data.get('status')}")
+                return redirect('products:order_detail', order_number=order.order_number)
+        else:
+            messages.error(request, "Verification failed on Khalti's server.")
             return redirect('products:cart')
-    
-    return redirect('products:cart')
+    except Exception as e:
+        messages.error(request, f"Verification error: {str(e)}")
+        return redirect('products:cart')
 
 
 # Admin Order Management Views

@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Min
 from django.utils import timezone
 from datetime import timedelta
 import random
@@ -245,30 +245,42 @@ def user_logout(request):
 @login_required
 @admin_required
 def admin_dashboard(request):
-    # Calculate Earnings (Paid Orders)
-    total_earnings = Order.objects.filter(
-        Q(payment_status='paid') | Q(status='completed')
-    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    from django.utils import timezone
+    from appointments.models import Appointment
+    from products.models import Sale
+    from accounts.models import Contact
 
-    # Pending Requests (Pending Appointments + Unread Messages)
-    pending_appointments = Appointment.objects.filter(status='pending').count()
-    unread_messages = Contact.objects.filter(is_read=False).count()
-    pending_requests = pending_appointments + unread_messages
+    # 1. Total Users (Blue)
+    total_users = User.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
 
-    # Tasks Progress (Completed vs Total Appointments)
-    total_appointments = Appointment.objects.count()
+    # 2. Total Bookings (Green)
+    total_bookings = Appointment.objects.count()
+    today_bookings = Appointment.objects.filter(appointment_date=timezone.now().date()).count()
+
+    # 3. Tasks Completion (Cyan ProgressBar)
     completed_appointments = Appointment.objects.filter(status='completed').count()
-    
-    if total_appointments > 0:
-        tasks_percentage = int((completed_appointments / total_appointments) * 100)
-    else:
-        tasks_percentage = 0
+    tasks_percentage = 0
+    if total_bookings > 0:
+        tasks_percentage = int((completed_appointments / total_bookings) * 100)
+
+    # 4. Pending Appointments (Orange)
+    pending_appointments = Appointment.objects.filter(status='pending').count()
+
+    # History Data
+    recent_appointments = Appointment.objects.select_related('user').all().order_by('-created_at')[:5]
+    from products.models import Product
+    low_stock_products = Product.objects.filter(stock_quantity__lt=10).order_by('stock_quantity')[:5]
 
     context = {
-        'total_earnings': total_earnings,
-        'annual_earnings': total_earnings, # For now, same as total. Can filter by year later.
-        'pending_requests': pending_requests,
+        'total_users': total_users,
+        'active_users': active_users,
+        'total_bookings': total_bookings,
+        'today_bookings': today_bookings,
         'tasks_percentage': tasks_percentage,
+        'pending_appointments': pending_appointments,
+        'recent_appointments': recent_appointments,
+        'low_stock_products': low_stock_products,
     }
     return render(request, 'accounts/admin_dashboard.html', context)
 
@@ -330,7 +342,109 @@ def user_detail(request, pk):
 @login_required
 @admin_required
 def reports(request):
-    return render(request, 'accounts/reports.html')
+    from products.models import Sale
+    from django.db.models import Sum
+    import calendar
+    from datetime import datetime
+
+    # Get filter parameters
+    now = datetime.now()
+    selected_month = int(request.GET.get('month', now.month))
+    selected_year = int(request.GET.get('year', now.year))
+
+    # Get all sales for filtering
+    all_sales = Sale.objects.all()
+
+    # Monthly Stats
+    monthly_sales = all_sales.filter(
+        sale_date__month=selected_month,
+        sale_date__year=selected_year
+    )
+    monthly_revenue = monthly_sales.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    monthly_sales_count = monthly_sales.count()
+
+    # Yearly Stats
+    yearly_sales = all_sales.filter(sale_date__year=selected_year)
+    yearly_revenue = yearly_sales.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    yearly_sales_count = yearly_sales.count()
+
+    # Sales list for the selected month/year with pagination
+    sales_list = monthly_sales.order_by('-sale_date')
+    paginator = Paginator(sales_list, 10)
+    page_number = request.GET.get('page')
+    sales_page = paginator.get_page(page_number)
+
+    # Context data for filters
+    months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+    
+    # Get range of years from sales or at least last 5 years
+    min_year = all_sales.aggregate(Min('sale_date'))['sale_date__min']
+    if min_year:
+        start_year = min_year.year
+    else:
+        start_year = now.year - 4
+    
+    years = range(start_year, now.year + 1)
+
+    context = {
+        'months': months,
+        'years': years,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
+        'monthly_revenue': monthly_revenue,
+        'monthly_sales_count': monthly_sales_count,
+        'yearly_revenue': yearly_revenue,
+        'yearly_sales_count': yearly_sales_count,
+        'sales_page': sales_page,
+    }
+    return render(request, 'accounts/reports.html', context)
+
+
+@login_required
+@admin_required
+def export_sales_csv(request):
+    import csv
+    from django.http import HttpResponse
+    from products.models import Sale
+    from datetime import datetime
+    import calendar
+
+    # Get filter parameters
+    now = datetime.now()
+    selected_month = int(request.GET.get('month', now.month))
+    selected_year = int(request.GET.get('year', now.year))
+
+    # Filename
+    month_name = calendar.month_name[selected_month]
+    filename = f"Sales_Report_{month_name}_{selected_year}.csv"
+
+    # Create response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Sale ID', 'Product', 'Customer', 'Quantity', 'Unit Price', 'Total Amount', 'Payment Method', 'Date'])
+
+    # Get data
+    sales = Sale.objects.filter(
+        sale_date__month=selected_month,
+        sale_date__year=selected_year
+    ).order_by('-sale_date')
+
+    for sale in sales:
+        customer_name = sale.customer.get_full_name() or sale.customer.username if sale.customer else "Walk-in"
+        writer.writerow([
+            sale.id,
+            sale.product.name,
+            customer_name,
+            sale.quantity,
+            sale.unit_price,
+            sale.total_amount,
+            sale.get_payment_method_display(),
+            sale.sale_date.strftime('%Y-%m-%d %H:%M')
+        ])
+
+    return response
 
 
 @login_required

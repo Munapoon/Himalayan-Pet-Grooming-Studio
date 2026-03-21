@@ -115,6 +115,44 @@
 
                     <hr>
 
+                    <!-- Payment & Settlement Section -->
+                    <h5 class="mb-3 text-success"><i class="fas fa-money-bill-wave"></i> Payment & Settlement</h5>
+                    <div class="row mb-3 bg-light p-3 rounded">
+                        <div class="col-md-3">
+                            <h6 class="text-muted small">Advance Paid</h6>
+                            <p class="h6 text-success">Rs. {{ appointment.advance_amount }} ({{ appointment.payment_status|title }})</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted small">Total Price</h6>
+                            <p class="h6">Rs. {{ appointment.total_price }}</p>
+                        </div>
+                        <div class="col-md-3 border-start">
+                            <h6 class="text-muted small">Remaining Balance</h6>
+                            <p class="h5 text-danger fw-bold">Rs. {{ appointment.pending_amount }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            {% if appointment.paid_amount < appointment.total_price or appointment.total_price == 0 %}
+                            <form method="POST" action="{% url 'admin_appointment_pay_shop' appointment.id %}">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm mb-2">
+                                    <span class="input-group-text">Rs.</span>
+                                    <input type="number" name="total_price" class="form-control" placeholder="Set Total Price" value="{{ appointment.total_price|floatformat:0 }}">
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-success w-100">
+                                    <i class="fas fa-cash-register"></i> Update & Pay in Shop
+                                </button>
+                                <small class="text-muted smaller d-block mt-1">Updates total price and clears the current balance.</small>
+                            </form>
+                            {% else %}
+                            <div class="text-success small fw-bold mt-2">
+                                <i class="fas fa-check-circle"></i> Fully Paid
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+
                     <!-- Timestamps Section -->
                     <div class="row">
                         <div class="col-md-6">

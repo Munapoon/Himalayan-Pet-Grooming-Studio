@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin-dashboard/users/', views.user_list, name='user_list'),
     path('admin-dashboard/users/<int:pk>/', views.user_detail, name='user_detail'),
     path('admin-dashboard/reports/', views.reports, name='reports'),
+    path('admin-dashboard/reports/export-csv/', views.export_sales_csv, name='export_sales_csv'),
     
     # Password Reset & Change
     path('accounts/forgot-password/', views.forgot_password, name='forgot_password'),

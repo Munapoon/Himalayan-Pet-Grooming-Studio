@@ -1,100 +1,198 @@
 {% extends 'admin_base.html' %}
+{% load static %}
 
 {% block title %}Admin Dashboard - Himalayan Pet Studio{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/accounts/dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-dark">Dashboard Overview</h1>
-        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="welcome-header d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1>
+                <i class="fas fa-home text-primary"></i> 
+                Welcome back, {{ request.user.get_full_name|default:request.user.username }}!
+            </h1>
+            <p>Here's what's happening with your pet studio today.</p>
+        </div>
+        <a href="{% url 'export_sales_csv' %}" class="btn btn-generate shadow-sm">
+            <i class="fas fa-download me-2"></i> Generate Report
+        </a>
     </div>
 
-    <!-- Content Row -->
+    <!-- Stat Cards Row -->
+    <div class="row mb-5">
+        <!-- Total Users Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card accent-blue">
+                <div class="card-body">
+                    <div class="w-100">
+                        <div class="stat-card-title text-blue">Total Users</div>
+                        <div class="stat-card-value text-dark">{{ total_users }}</div>
+                    </div>
+                    <div class="stat-card-icon text-dark">
+                        <i class="fas fa-users fa-2x text-gray-800"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Bookings Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card accent-green">
+                <div class="card-body">
+                    <div class="w-100">
+                        <div class="stat-card-title text-green">Total Bookings</div>
+                        <div class="stat-card-value text-dark">{{ total_bookings }}</div>
+                    </div>
+                    <div class="stat-card-icon text-dark">
+                        <i class="fas fa-calendar-alt fa-2x text-gray-800"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Completion Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card accent-info">
+                <div class="card-body">
+                    <div class="w-100 pe-3">
+                        <div class="stat-card-title text-info">Tasks Completion</div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="stat-card-value text-dark me-3">{{ tasks_percentage }}%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2 dashboard-progress">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ tasks_percentage }}%;" aria-valuenow="{{ tasks_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card-icon text-dark">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-800"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card accent-orange">
+                <div class="card-body">
+                    <div class="w-100">
+                        <div class="stat-card-title text-orange">Pending Appointments</div>
+                        <div class="stat-card-value text-dark">{{ pending_appointments }}</div>
+                    </div>
+                    <div class="stat-card-icon text-dark">
+                        <i class="fas fa-hourglass-half fa-2x text-gray-800"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
     <div class="row">
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2 bg-white border-0">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Earnings</div>
-                            <div class="h5 mb-0 font-weight-bold text-dark">Rs. {{ total_earnings|floatformat:0 }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                        </div>
+        <!-- Recent Appointments Column -->
+        <div class="col-xl-8 col-lg-7 mb-4">
+            <div class="card dashboard-section-card shadow-sm h-100">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-history text-primary"></i> Recent Appointments
+                    </div>
+                    <a href="{% url 'admin_appointment_list' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive dashboard-table-container">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Pet Name</th>
+                                    <th>Owner</th>
+                                    <th>Service</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_appointments %}
+                                    {% for appointment in recent_appointments %}
+                                    <tr>
+                                        <td><a href="{% url 'admin_appointment_detail' appointment.id %}" class="text-primary fw-bold">#{{ appointment.id }}</a></td>
+                                        <td class="fw-bold">
+                                            <a href="{% url 'admin_appointment_detail' appointment.id %}" class="text-dark">{{ appointment.pet_name }}</a>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user-circle text-primary me-1"></i> 
+                                            {{ appointment.user.get_full_name|default:appointment.user.username }}
+                                        </td>
+                                        <td>{{ appointment.get_service_display }}</td>
+                                        <td>
+                                            <div class="text-dark small">{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                                            <div class="text-muted smaller">{{ appointment.appointment_time|time:"h:i A" }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="status-pill 
+                                                 {% if appointment.status == 'completed' %}status-completed
+                                                 {% elif appointment.status == 'pending' %}status-pending
+                                                 {% elif appointment.status == 'confirmed' %}status-confirmed
+                                                 {% else %}status-cancelled{% endif %}">
+                                                 {{ appointment.status|title }}
+                                             </span>
+                                         </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            No recent appointments found.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Earnings (Annual) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2 bg-white border-0">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Annual Earnings</div>
-                            <div class="h5 mb-0 font-weight-bold text-dark">Rs. {{ annual_earnings|floatformat:0 }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                        </div>
+        <!-- Low Stock Alerts Column -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card dashboard-section-card shadow-sm h-100">
+                <div class="section-header">
+                    <div class="section-title text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Low Stock Alert
                     </div>
+                    <a href="{% url 'products:product_list' %}" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                        View All
+                    </a>
                 </div>
-            </div>
-        </div>
-
-        <!-- Tasks Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2 bg-white border-0">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks Completion
+                <div class="card-body p-0">
+                    {% if low_stock_products %}
+                        {% for product in low_stock_products %}
+                        <div class="stock-item">
+                            <div class="stock-info">
+                                <h6>{{ product.name }}</h6>
+                                <p>{{ product.category.name|default:"Product" }}</p>
                             </div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h5 mb-0 mr-3 font-weight-bold text-dark">{{ tasks_percentage }}%
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="progress progress-sm mr-2">
-                                        <div class="progress-bar bg-info" role="progressbar"
-                                            style="width: {{ tasks_percentage }}%"
-                                            aria-valuenow="{{ tasks_percentage }}" aria-valuemin="0"
-                                            aria-valuemax="100"></div>
-                                    </div>
-                                </div>
+                            <div class="stock-badge badge-low">
+                                {{ product.stock_quantity }} left
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-check-circle text-success fs-1 mb-3"></i>
+                            <p>Inventory is in good shape!</p>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Requests Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2 bg-white border-0">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Requests</div>
-                            <div class="h5 mb-0 font-weight-bold text-dark">{{ pending_requests }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -8,168 +8,204 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-chart-line"></i> Sales Reports & Analytics</h2>
+<div class="container-fluid py-4">
+    <!-- Page Title Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5 report-header">
+        <h2>
+            <i class="fas fa-chart-line text-primary me-2"></i> 
+            Sales Reports & Analytics
+        </h2>
+        <a href="{% url 'export_sales_csv' %}?month={{ selected_month }}&year={{ selected_year }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-download me-2"></i> Generate Report
+        </a>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Month</label>
-                    <select name="month" class="form-select">
-                        {% for month_num, month_name in months %}
-                        <option value="{{ month_num }}" {% if month_num==selected_month %}selected{% endif %}>
-                            {{ month_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
+    <!-- Filter Card Section -->
+    <div class="card filter-card mb-5">
+        <div class="card-body p-4">
+            <form method="get" class="row align-items-end g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Search Period (Month)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-calendar-alt text-muted"></i></span>
+                        <select name="month" class="form-select border-start-0">
+                            {% for month_num, month_name in months %}
+                            <option value="{{ month_num }}" {% if month_num == selected_month %}selected{% endif %}>
+                                {{ month_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Year</label>
-                    <select name="year" class="form-select">
-                        {% for year_option in years %}
-                        <option value="{{ year_option }}" {% if year_option==selected_year %}selected{% endif %}>
-                            {{ year_option }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                <div class="col-md-5">
+                    <label class="form-label">Search Period (Year)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fas fa-history text-muted"></i></span>
+                        <select name="year" class="form-select border-start-0">
+                            {% for year_option in years %}
+                            <option value="{{ year_option }}" {% if year_option == selected_year %}selected{% endif %}>
+                                {{ year_option }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary d-block w-100">
-                        <i class="fas fa-filter"></i> Apply Filter
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark d-block w-100 py-2 rounded-3">
+                        <i class="fas fa-filter me-2"></i> Filter
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Revenue Cards -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card text-white revenue-card-monthly">
+    <!-- SB Admin Style Result Cards Section -->
+    <div class="row mb-5">
+        <!-- Monthly Revenue Card -->
+        <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card premium-card card-monthly h-100">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-calendar-alt"></i> Monthly Revenue</h5>
-                    <h2 class="mb-2">Rs. {{ monthly_revenue|floatformat:2 }}</h2>
-                    <p class="mb-0"><i class="fas fa-shopping-cart"></i> {{ monthly_sales_count }} Sales</p>
-                    <small>For Month {{ selected_month }}/{{ selected_year }}</small>
+                    <div>
+                        <div class="card-subtitle">Monthly Revenue ({{ selected_month }}/{{ selected_year }})</div>
+                        <div class="card-value">Rs. {{ monthly_revenue|floatformat:2 }}</div>
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-shopping-cart"></i> {{ monthly_sales_count }} Total Sales
+                        </div>
+                    </div>
+                    <div class="card-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card text-white revenue-card-yearly">
+
+        <!-- Yearly Revenue Card -->
+        <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card premium-card card-yearly h-100">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-chart-bar"></i> Yearly Revenue</h5>
-                    <h2 class="mb-2">Rs. {{ yearly_revenue|floatformat:2 }}</h2>
-                    <p class="mb-0"><i class="fas fa-shopping-cart"></i> {{ yearly_sales_count }} Sales</p>
-                    <small>For Year {{ selected_year }}</small>
+                    <div>
+                        <div class="card-subtitle">Annual Revenue (Year {{ selected_year }})</div>
+                        <div class="card-value">Rs. {{ yearly_revenue|floatformat:2 }}</div>
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-chart-line"></i> {{ yearly_sales_count }} Total Sales
+                        </div>
+                    </div>
+                    <div class="card-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Sales List -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="fas fa-list"></i> Product Sales History</h5>
+    <!-- Product Sales History Section -->
+    <div class="card history-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-history me-2"></i> Detailed Sales History
+            </h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             {% if sales_page %}
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Sale ID</th>
-                            <th>Product</th>
-                            <th>Customer</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
+                            <th class="ps-4">Sale ID</th>
+                            <th>Product Details</th>
+                            <th>Customer Information</th>
+                            <th>Transaction</th>
                             <th>Total Amount</th>
                             <th>Payment</th>
-                            <th>Date</th>
+                            <th class="pe-4">Date & Time</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for sale in sales_page %}
                         <tr>
-                            <td><strong>#{{ sale.id }}</strong></td>
-                            <td>{{ sale.product.name }}</td>
+                            <td class="ps-4 text-muted">#{{ sale.id }}</td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ sale.product.name }}</div>
+                                <div class="smaller text-muted">{{ sale.product.category.name|default:"Product" }}</div>
+                            </td>
                             <td>
                                 {% if sale.customer %}
-                                <i class="fas fa-user text-primary"></i> {{
-                                sale.customer.get_full_name|default:sale.customer.username }}
+                                <div class="text-dark">
+                                    <i class="fas fa-user-circle text-primary me-1"></i> 
+                                    {{ sale.customer.get_full_name|default:sale.customer.username }}
+                                </div>
                                 {% else %}
-                                <i class="fas fa-user-times text-muted"></i> Walk-in Customer
+                                <div class="text-muted italic">
+                                    <i class="fas fa-walking me-1"></i> Walk-in Customer
+                                </div>
                                 {% endif %}
                             </td>
-                            <td>{{ sale.quantity }}</td>
-                            <td>Rs. {{ sale.unit_price }}</td>
-                            <td><strong>Rs. {{ sale.total_amount }}</strong></td>
                             <td>
-                                {% if sale.payment_method == 'cash' %}
-                                <span class="badge bg-success">Cash</span>
-                                {% elif sale.payment_method == 'card' %}
-                                <span class="badge bg-primary">Card</span>
-                                {% elif sale.payment_method == 'upi' %}
-                                <span class="badge bg-info">UPI</span>
-                                {% else %}
-                                <span class="badge bg-warning">Online</span>
-                                {% endif %}
+                                <div class="badge bg-light text-dark border">{{ sale.quantity }} Units</div>
+                                <div class="smaller text-muted">@ Rs. {{ sale.unit_price }}</div>
                             </td>
-                            <td>{{ sale.sale_date|date:"M d, Y h:i A" }}</td>
+                            <td>
+                                <div class="fw-bold text-primary">Rs. {{ sale.total_amount }}</div>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if sale.payment_method == 'cash' %}bg-success
+                                    {% elif sale.payment_method == 'online' %}bg-info
+                                    {% else %}bg-primary{% endif %} rounded-pill px-3">
+                                    {{ sale.payment_method|title }}
+                                </span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <span class="small">{{ sale.sale_date|date:"short" }}</span><br>
+                                <span class="smaller text-muted">{{ sale.sale_date|time:"H:i" }}</span>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center mt-4">
+            <!-- Enhanced Pagination -->
+            {% if sales_page.has_other_pages %}
+            <nav aria-label="Page navigation" class="py-4">
+                <ul class="pagination justify-content-center mb-0">
                     {% if sales_page.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1&month={{ selected_month }}&year={{ selected_year }}">
-                            <i class="fas fa-angle-double-left"></i> First
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link"
-                            href="?page={{ sales_page.previous_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
-                            <i class="fas fa-angle-left"></i> Previous
+                        <a class="page-link" href="?page={{ sales_page.previous_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
+                            <i class="fas fa-chevron-left"></i>
                         </a>
                     </li>
                     {% endif %}
 
-                    <li class="page-item active">
-                        <span class="page-link">
-                            Page {{ sales_page.number }} of {{ sales_page.paginator.num_pages }}
-                        </span>
-                    </li>
+                    {% for i in sales_page.paginator.page_range %}
+                        {% if sales_page.number == i %}
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}&month={{ selected_month }}&year={{ selected_year }}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
 
                     {% if sales_page.has_next %}
                     <li class="page-item">
-                        <a class="page-link"
-                            href="?page={{ sales_page.next_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
-                            Next <i class="fas fa-angle-right"></i>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link"
-                            href="?page={{ sales_page.paginator.num_pages }}&month={{ selected_month }}&year={{ selected_year }}">
-                            Last <i class="fas fa-angle-double-right"></i>
+                        <a class="page-link" href="?page={{ sales_page.next_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
+                            <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>
                     {% endif %}
                 </ul>
             </nav>
+            {% endif %}
+
             {% else %}
-            <p class="text-center text-muted py-4">
-                <i class="fas fa-shopping-cart fa-3x mb-3"></i><br>
-                No sales records found.
-            </p>
+            <div class="text-center py-5">
+                <div class="display-1 text-light mb-3"><i class="fas fa-envelope-open"></i></div>
+                <h5 class="text-muted">No sales records discovered for this period.</h5>
+                <p class="small text-muted">Try adjusting your filters or checking a different month.</p>
+            </div>
             {% endif %}
         </div>
     </div>

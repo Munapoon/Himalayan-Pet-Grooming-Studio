@@ -59,11 +59,14 @@
                     </p>
                 </div>
 
-                <!-- Khalti Pay Button -->
-                <button id="payment-button" class="btn-khalti">
-                    <i class="fas fa-wallet"></i>
-                    Pay Rs. {{ advance_amount }} via Khalti
-                </button>
+                <!-- Khalti Pay Form (KPG-2) -->
+                <form method="post" action="{% url 'appointment_khalti_initiate' appointment.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-khalti">
+                        <i class="fas fa-wallet"></i>
+                        Pay Rs. {{ advance_amount }} via Khalti
+                    </button>
+                </form>
 
                 <!-- Cancel -->
                 <form method="post" action="{% url 'appointment_delete' appointment.pk %}">
@@ -82,49 +85,4 @@
         </div>
     </div>
 </div>
-
-<!-- Hidden form for Khalti verification -->
-<form id="khalti-verify-form" method="post" action="{% url 'appointment_khalti_verify' %}" style="display:none;">
-    {% csrf_token %}
-    <input type="hidden" name="token" id="khalti-token">
-    <input type="hidden" name="amount" id="khalti-amount">
-    <input type="hidden" name="appointment_id" value="{{ appointment.pk }}">
-</form>
-
-{% block extra_js %}
-<!-- Khalti Checkout SDK -->
-<script
-    src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.17.0.0.0/khalti-checkout.compat.min.js"></script>
-<script>
-    var advancePaisa = parseInt("{{ advance_paisa|default:'0' }}", 10);
-
-    var config = {
-        publicKey: "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
-        productIdentity: "appt-{{ appointment.pk }}",
-        productName: "Grooming Appointment - {{ appointment.get_service_display }}",
-        productUrl: window.location.href,
-        paymentPreference: ["KHALTI", "EBANKING", "MOBILE_BANKING", "CONNECT_IPS", "SCT"],
-        eventHandler: {
-            onSuccess(payload) {
-                document.getElementById('khalti-token').value = payload.token;
-                document.getElementById('khalti-amount').value = payload.amount;
-                document.getElementById('khalti-verify-form').submit();
-            },
-            onError(error) {
-                console.error(error);
-                alert('Payment failed. Please try again.');
-            },
-            onClose() {
-                console.log('Khalti widget closed.');
-            }
-        }
-    };
-
-    var checkout = new KhaltiCheckout(config);
-
-    document.getElementById('payment-button').addEventListener('click', function () {
-        checkout.show({ amount: advancePaisa });
-    });
-</script>
-{% endblock %}
-{% endblock %}
+{% endblock %}

@@ -94,7 +94,11 @@ class Appointment(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     # Advance payment fields
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     advance_amount = models.DecimalField(max_digits=10, decimal_places=2, default=200.00)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    balance_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
     khalti_transaction_id = models.CharField(max_length=255, blank=True, null=True)
@@ -108,6 +112,47 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.pet_name} - {self.service} ({self.appointment_date})"
+
+    @property
+    def is_refund_eligible(self):
+        """Refund eligible ONLY if cancelled more than 24 hours before."""
+        import datetime
+        now = timezone.now()
+        # Combine date and time then make it timezone aware
+        naive_dt = datetime.datetime.combine(self.appointment_date, self.appointment_time)
+        appointment_datetime = timezone.make_aware(naive_dt)
+        time_diff = appointment_datetime - now
+        return time_diff.total_seconds() > 24 * 3600
+
+    @property
+    def pending_amount(self):
+        """Calculates remaining amount if total_price is set, or uses service price as estimate."""
+        target_price = self.total_price  # This is a DecimalField, always numeric
+        
+        # If admin hasn't set a custom total_price yet, try to get the base service price
+        if target_price == 0:
+            service_obj = Service.objects.filter(slug=self.service).first()
+            if service_obj and service_obj.price:
+                # Service.price is a CharField (e.g. "950" or "Rs. 950 - 1500")
+                # Clean the string to find the first numeric value
+                import re
+                try:
+                    # Find all numbers (including decimals) in the string
+                    nums = re.findall(r"[-+]?\d*\.\d+|\d+", service_obj.price.replace(',', ''))
+                    if nums:
+                        target_price = float(nums[0])
+                except (ValueError, IndexError):
+                    target_price = 0
+        
+        # Ensure we are comparing numeric types
+        try:
+            numeric_price = float(target_price)
+            if numeric_price > 0:
+                return max(0, numeric_price - float(self.paid_amount))
+        except (ValueError, TypeError):
+            pass
+            
+        return 0
 
     def get_service_display(self):
         """Look up the human-readable service name from the Service table."""
