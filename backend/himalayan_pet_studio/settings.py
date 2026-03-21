@@ -175,8 +175,10 @@ LOGIN_REDIRECT_URL = 'user_dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Khalti Payment Gateway Configuration
-KHALTI_PUBLIC_KEY = os.environ.get('KHALTI_PUBLIC_KEY', 'test_public_key_your_key_here')
-KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', 'test_secret_key_your_key_here')
+KHALTI_PUBLIC_KEY = os.environ.get('KHALTI_PUBLIC_KEY', '87ebfe01e2f24a0091a8ef2831e96b91')
+KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', 'ec1855a02a0d42ea95d3dc36b0cf0c39')
+KHALTI_BASE_URL = "https://khalti.com/api/v2/" if KHALTI_SECRET_KEY.startswith('live_') else "https://a.khalti.com/api/v2/"
+
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

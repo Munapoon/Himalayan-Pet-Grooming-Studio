@@ -1,76 +1,145 @@
 {% extends 'admin_base.html' %}
+{% load static %}
 
 {% block title %}Contact Messages - Himalayan Pet Studio{% endblock %}
 
+{% block extra_css %}
+<style>
+    .message-card {
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .table thead th {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-top: none;
+        padding: 15px 20px;
+    }
+    .table tbody td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        color: #1e293b;
+    }
+    .unread-row {
+        background-color: rgba(29, 78, 216, 0.02) !important;
+    }
+    .unread-row:hover {
+        background-color: rgba(29, 78, 216, 0.05) !important;
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+    .btn-view {
+        background-color: #f1f5f9;
+        color: #1d4ed8;
+        border: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-view:hover {
+        background-color: #1d4ed8;
+        color: white;
+        transform: translateY(-1px);
+    }
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .message-body-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        color: #334155;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-white">Contact Messages</h1>
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-dark fw-bold">Contact Messages</h1>
+        <div class="badge bg-primary rounded-pill px-3 py-2">
+            <i class="fas fa-inbox me-2"></i> {{ unread_count }} New Messages
+        </div>
     </div>
 
-    <div class="card shadow mb-4 bg-dark border-0">
-        <div class="card-header py-3 bg-secondary">
-            <h6 class="m-0 font-weight-bold text-white">Inbox</h6>
+    <div class="card message-card">
+        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+            <h6 class="m-0 fw-bold text-primary"><i class="fas fa-mail-bulk me-2"></i>Inbox</h6>
         </div>
-        <div class="card-body bg-dark">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-dark table-hover" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-hover mb-0" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Status</th>
                             <th>Name</th>
                             <th>Subject</th>
                             <th>Date</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for message in messages %}
-                        <tr class="{% if not message.is_read %}fw-bold{% endif %}">
+                        <tr class="{% if not message.is_read %}unread-row{% endif %}">
                             <td>
                                 {% if not message.is_read %}
-                                <span class="badge bg-danger">New</span>
+                                <span class="badge bg-danger status-badge">NEW</span>
                                 {% else %}
-                                <span class="badge bg-secondary">Read</span>
+                                <span class="badge bg-light text-secondary status-badge">READ</span>
                                 {% endif %}
                             </td>
-                            <td>{{ message.name }}</td>
-                            <td>{{ message.subject|truncatechars:30 }}</td>
+                            <td class="fw-semibold">{{ message.name }}</td>
+                            <td class="text-muted">{{ message.subject|truncatechars:40 }}</td>
                             <td>{{ message.created_at|date:"M d, Y" }}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-view px-3" data-bs-toggle="modal"
                                     data-bs-target="#messageModal{{ message.id }}">
-                                    <i class="fas fa-eye"></i> View
+                                    <i class="fas fa-eye me-1"></i> View
                                 </button>
                             </td>
                         </tr>
 
                         <!-- Message Modal -->
                         <div class="modal fade" id="messageModal{{ message.id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content bg-dark text-white">
-                                    <div class="modal-header border-secondary">
-                                        <h5 class="modal-title">{{ message.subject }}</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header border-bottom-0 pb-0">
+                                        <h5 class="modal-title fw-bold text-primary">{{ message.subject }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <div class="mb-3">
-                                            <strong>From:</strong> {{ message.name }} &lt;{{ message.email }}&gt;<br>
-                                            <strong>Phone:</strong> {{ message.phone|default:"Not provided" }}<br>
-                                            <strong>Date:</strong> {{ message.created_at|date:"F d, Y H:i" }}
+                                        <div class="d-flex flex-wrap gap-4 mb-4 text-muted small">
+                                            <div><i class="fas fa-user me-1"></i> From: <span class="text-dark fw-bold">{{ message.name }}</span></div>
+                                            <div><i class="fas fa-envelope me-1"></i> <span class="text-dark">{{ message.email }}</span></div>
+                                            {% if message.phone %}
+                                            <div><i class="fas fa-phone me-1"></i> <span class="text-dark">{{ message.phone }}</span></div>
+                                            {% endif %}
+                                            <div><i class="fas fa-calendar me-1"></i> <span class="text-dark">{{ message.created_at|date:"F d, Y H:i" }}</span></div>
                                         </div>
-                                        <hr class="border-secondary">
-                                        <div class="p-3 bg-secondary rounded">
+                                        <div class="p-4 message-body-box">
                                             {{ message.message|linebreaks }}
                                         </div>
                                     </div>
-                                    <div class="modal-footer border-secondary">
-                                        <button type="button" class="btn btn-secondary"
+                                    <div class="modal-footer border-top-0 pt-0 justify-content-between">
+                                        <button type="button" class="btn btn-light px-4"
                                             data-bs-dismiss="modal">Close</button>
                                         <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}"
-                                            class="btn btn-primary">
-                                            <i class="fas fa-reply"></i> Reply via Email
+                                            class="btn btn-primary px-4 rounded-pill">
+                                            <i class="fas fa-reply me-2"></i>Reply via Email
                                         </a>
                                     </div>
                                 </div>
@@ -78,7 +147,10 @@
                         </div>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No messages found.</td>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-envelope-open fa-3x mb-3 opacity-25"></i>
+                                <p class="mb-0">No messages found in your inbox.</p>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -87,31 +159,33 @@
 
             <!-- Pagination -->
             {% if is_paginated %}
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link bg-dark border-secondary text-white"
-                            href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                    </li>
-                    {% endif %}
+            <div class="px-4 py-3 border-top">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                        {% endif %}
 
-                    {% for num in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                        <a class="page-link bg-dark border-secondary text-white" href="?page={{ num }}">{{ num }}</a>
-                    </li>
-                    {% endfor %}
+                        {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
 
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link bg-dark border-secondary text-white"
-                            href="?page={{ page_obj.next_page_number }}">Next</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %}

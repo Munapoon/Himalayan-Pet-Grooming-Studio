@@ -1,7 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings as django_settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Appointment, Service
+from django.urls import reverse
+from django.core.paginator import Paginator
+from django.db.models import Q
+import requests as http_requests
+import json
+import decimal
+
+from .models import Appointment, Service, ServiceReview
 from .forms import AppointmentForm
 from accounts.decorators import admin_required
 
@@ -9,7 +17,6 @@ from accounts.decorators import admin_required
 @login_required
 def appointment_list(request):
     """List all appointments for the logged-in user"""
-    from django.core.paginator import Paginator
     
     # Always show user's own appointments from navbar
     # Admin will use separate admin panel navigation
@@ -100,62 +107,120 @@ def appointment_create(request):
 
 @login_required
 def appointment_payment(request, pk):
-    """Show advance payment page for a booked appointment"""
+    """Show advance payment summary before redirecting to Khalti"""
     appointment = get_object_or_404(Appointment, pk=pk, user=request.user)
 
-    # Already paid — go to list
     if appointment.payment_status == 'paid':
-        messages.success(request, 'Your appointment is already paid and booked!')
+        messages.success(request, 'Your appointment is already paid!')
         return redirect('appointment_list')
 
     context = {
         'appointment': appointment,
         'advance_amount': appointment.advance_amount,
-        'advance_paisa': int(appointment.advance_amount * 100),  # Khalti uses paisa
     }
     return render(request, 'appointments/appointment_payment.html', context)
 
 
 @login_required
-def appointment_khalti_verify(request):
-    """Verify Khalti payment for appointment advance"""
-    import requests as http_requests
-    from django.conf import settings as django_settings
+def appointment_khalti_initiate(request, pk):
+    """
+    KPG-2 Initiate: Called when user clicks 'Pay' button.
+    Redirects to Khalti.
+    """
+    appointment = get_object_or_404(Appointment, pk=pk, user=request.user)
 
-    if request.method == 'POST':
-        token = request.POST.get('token')
-        amount = request.POST.get('amount')
-        appointment_pk = request.POST.get('appointment_id')
+    url = f"{django_settings.KHALTI_BASE_URL}epayment/initiate/"
+    return_url = request.build_absolute_uri(reverse('appointment_khalti_verify'))
+    
+    payload = {
+        "return_url": return_url,
+        "website_url": request.build_absolute_uri('/'),
+        "amount": int(appointment.advance_amount * 100),
+        "purchase_order_id": f"appt-{appointment.pk}",
+        "purchase_order_name": f"Grooming Advance for {appointment.pet_name}",
+        "customer_info": {
+            "name": request.user.get_full_name() or request.user.username,
+            "email": request.user.email or "customer@example.com",
+            # Fallback phone if model doesn't have it
+            "phone": getattr(request.user, 'phone', '9800000000') or '9800000000'
+        }
+    }
+    
+    headers = {
+        'Authorization': f"Key {getattr(django_settings, 'KHALTI_SECRET_KEY', '')}",
+        'Content-Type': 'application/json',
+    }
 
-        appointment = get_object_or_404(Appointment, pk=appointment_pk, user=request.user)
-
-        # Verify with Khalti
-        url = "https://khalti.com/api/v2/payment/verify/"
-        payload = {"token": token, "amount": amount}
-        headers = {"Authorization": f"Key {getattr(django_settings, 'KHALTI_SECRET_KEY', '')}"}
-
-        try:
-            response = http_requests.post(url, payload, headers=headers)
-            if response.status_code == 200:
-                data = response.json()
-                appointment.payment_status = 'paid'
-                appointment.payment_method = 'khalti'
-                appointment.khalti_transaction_id = data.get('idx', token)
-                appointment.save()
-                messages.success(
-                    request,
-                    f'Advance payment of Rs. {appointment.advance_amount} received! '
-                    f'Your appointment is confirmed pending admin approval.'
-                )
-                return redirect('appointment_detail', pk=appointment.pk)
-            else:
-                messages.error(request, 'Payment verification failed. Please try again or contact us.')
-                return redirect('appointment_payment', pk=appointment.pk)
-        except Exception as e:
-            messages.error(request, f'Payment error: {str(e)}')
+    try:
+        response = http_requests.post(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            appointment.khalti_transaction_id = data.get('pidx')
+            appointment.save()
+            # Store ID for return
+            request.session['pending_appointment_id'] = appointment.pk
+            return redirect(data.get('payment_url'))
+        else:
+            messages.error(request, f"Khalti initiation failed: {response.text}")
             return redirect('appointment_payment', pk=appointment.pk)
+    except Exception as e:
+        messages.error(request, f"Payment error: {str(e)}")
+        return redirect('appointment_payment', pk=appointment.pk)
 
-    return redirect('appointment_list')
+
+@login_required
+def appointment_khalti_verify(request):
+    """
+    KPG-2 Callback: Handles return from Khalti and verifies status using lookup API.
+    """
+    pidx = request.GET.get('pidx')
+    if not pidx:
+        messages.error(request, "Invalid payment callback.")
+        return redirect('appointment_list')
+
+    # Since we redirected the user from initiate, we might not have the pk readily,
+    # but Khalti sends back some info OR we can use the order/appointment ID we passed in initiate.
+    # For now, let's find the appointment linked to this user with a status of 'pending' OR check session.
+    # Actually, a better way is to pass the pk in the return URL or use purchase_order_id
+    
+    # Check if we can find the appointment from the session (set in initiate)
+    # Actually, I'll update initiate to pass the info
+    
+    appointment_id = request.session.get('pending_appointment_id')
+    if not appointment_id:
+        messages.error(request, "Session expired or appointment not found.")
+        return redirect('appointment_list')
+
+    appointment = get_object_or_404(Appointment, pk=appointment_id, user=request.user)
+
+    # Call lookup to verify
+    url = f"{django_settings.KHALTI_BASE_URL}epayment/lookup/"
+    payload = {"pidx": pidx}
+    headers = {"Authorization": f"Key {django_settings.KHALTI_SECRET_KEY}"}
+
+    try:
+        response = http_requests.post(url, json=payload, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('status') == 'Completed':
+                appointment.paid_amount = appointment.advance_amount
+                appointment.payment_status = 'advance_paid'
+                appointment.save()
+                
+                # Cleanup session
+                if 'pending_appointment_id' in request.session: del request.session['pending_appointment_id']
+                
+                messages.success(request, f"Payment successful! Your appointment for {appointment.pet_name} is confirmed.")
+                return redirect('appointment_list')
+            else:
+                messages.warning(request, f"Payment status: {data.get('status')}")
+                return redirect('appointment_list')
+        else:
+            messages.error(request, "Verification failed on Khalti's server.")
+            return redirect('appointment_list')
+    except Exception as e:
+        messages.error(request, f"Verification error: {str(e)}")
+        return redirect('appointment_list')
 
 
 @login_required
@@ -199,20 +264,61 @@ def appointment_delete(request, pk):
 
 
 @login_required
+def appointment_cancel(request, pk):
+    """User can cancel an appointment - 24h refund rule applied."""
+    appointment = get_object_or_404(Appointment, pk=pk, user=request.user)
+
+    if appointment.status in ['cancelled', 'completed']:
+        messages.warning(request, f'This appointment is already {appointment.status}.')
+        return redirect('appointment_detail', pk=appointment.pk)
+
+    if request.method == 'POST':
+        is_eligible = appointment.is_refund_eligible
+        appointment.status = 'cancelled'
+        
+        if appointment.payment_status == 'paid':
+            if is_eligible:
+                appointment.payment_status = 'refunded'
+                messages.success(request, 'Appointment cancelled. Your advance payment will be refunded shortly (eligible for refund).')
+            else:
+                messages.warning(request, 'Appointment cancelled. Note: Cancellation is within 24 hours of appointment, so advance payment is non-refundable.')
+        else:
+            messages.success(request, 'Appointment successfully cancelled.')
+            
+        appointment.save()
+        return redirect('appointment_list')
+
+    return render(request, 'appointments/appointment_confirm_cancel.html', {'appointment': appointment})
+
+
+@login_required
 @admin_required
-def appointment_update_status(request, pk):
-    """Admin can update appointment status"""
+def admin_appointment_pay_shop(request, pk):
+    """Admin records a cash payment at the shop (remaining balance)."""
     appointment = get_object_or_404(Appointment, pk=pk)
     
     if request.method == 'POST':
-        status = request.POST.get('status')
-        if status in dict(Appointment.STATUS_CHOICES):
-            appointment.status = status
-            appointment.save()
-            messages.success(request, f'Appointment status updated to {appointment.get_status_display()}!')
-        return redirect('admin_dashboard')
-    
-    return redirect('appointment_list')
+        try:
+            full_price = request.POST.get('total_price')
+            if full_price:
+                appointment.total_price = decimal.Decimal(str(full_price))
+            
+            # Record remaining payment
+            remaining = appointment.pending_amount
+            if remaining > 0:
+                appointment.paid_amount += remaining
+                appointment.payment_status = 'paid'
+                appointment.save()
+                messages.success(request, f'Payment of Rs. {remaining} recorded for {appointment.pet_name}. Balance is now 0.')
+            else:
+                messages.info(request, 'This appointment is already fully paid or total price not set.')
+                
+        except ValueError:
+            messages.error(request, 'Invalid price format.')
+            
+        return redirect('admin_appointment_detail', pk=appointment.pk)
+
+    return redirect('admin_appointment_detail', pk=appointment.pk)
 
 
 @login_required

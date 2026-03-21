@@ -29,6 +29,7 @@
                         <th>Pet Name</th>
                         <th>Date & Time</th>
                         <th>Status</th>
+                        <th>Payment</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -57,9 +58,18 @@
                                 {% if appointment.status == 'pending' %}bg-warning text-dark
                                 {% elif appointment.status == 'confirmed' %}bg-info
                                 {% elif appointment.status == 'completed' %}bg-success
-                                {% else %}bg-danger{% endif %}">
+                                {% else %}bg-danger{% endif %} text-uppercase small">
                                 {{ appointment.get_status_display }}
                             </span>
+                        </td>
+                        <td>
+                            {% if appointment.pending_amount > 0 %}
+                                <span class="text-danger fw-bold small">Bal: Rs. {{ appointment.pending_amount }}</span><br>
+                                <small class="text-muted">Paid: Rs. {{ appointment.paid_amount }}</small>
+                            {% else %}
+                                <span class="text-success fw-bold small"><i class="fas fa-check-circle"></i> Paid</span><br>
+                                <small class="text-muted">Total: Rs. {{ appointment.paid_amount }}</small>
+                            {% endif %}
                         </td>
                         <td style="white-space: nowrap;" onclick="event.stopPropagation();">
                             <a href="{% url 'admin_appointment_detail' appointment.id %}" class="btn btn-sm btn-info"

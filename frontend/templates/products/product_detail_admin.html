@@ -1,0 +1,75 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ product.name }} - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Product Details</h2>
+        <div>
+            <a href="{% url 'products:product_update' product.id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'products:product_delete' product.id %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+            <a href="{% url 'products:product_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded">
+                    {% else %}
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                        style="height: 300px;">
+                        <i class="fas fa-image fa-5x"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3>{{ product.name }}</h3>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Category:</strong> {{ product.category.name }}</p>
+                            <p><strong>Price:</strong> Rs. {{ product.price }}</p>
+                            <p><strong>Stock Quantity:</strong>
+                                {% if product.in_stock %}
+                                <span class="badge bg-success">{{ product.stock_quantity }}</span>
+                                {% else %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong>
+                                {% if product.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Created:</strong> {{ product.created_at|date:"M d, Y h:i A" }}</p>
+                            <p><strong>Last Updated:</strong> {{ product.updated_at|date:"M d, Y h:i A" }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h5>Description</h5>
+                    <p>{{ product.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+Starting migrations...
+Migrations for 'appointments':
+  appointments\migrations\0007_appointment_balance_amount_appointment_paid_amount_and_more.py
+    - Add field balance_amount to appointment
+    - Add field paid_amount to appointment
+    - Add field total_price to appointment
+Makemigrations status: 0
+Operations to perform:
+  Apply all migrations: appointments
+Running migrations:
+  Applying appointments.0007_appointment_balance_amount_appointment_paid_amount_and_more... OK
+Migrate status: 0
+Done!

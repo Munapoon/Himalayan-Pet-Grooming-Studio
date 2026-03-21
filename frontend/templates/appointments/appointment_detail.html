@@ -85,6 +85,28 @@
 
                     <hr>
 
+                    <!-- Payment & Service Value Section -->
+                    <h5 class="mb-3 text-info"><i class="fas fa-receipt"></i> Payment Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted"><i class="fas fa-wallet"></i> Advance Paid</h6>
+                            <p class="h5 text-success">Rs. {{ appointment.advance_amount }} ({{ appointment.payment_status|title }})</p>
+                            <small class="text-muted">Paid via {{ appointment.payment_method|title|default:"Pending" }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted"><i class="fas fa-hand-holding-usd"></i> Remaining Balance</h6>
+                            <p class="h5">
+                                {% if appointment.total_price > 0 %}
+                                    Rs. {{ appointment.pending_amount }} <small class="text-muted fs-6">(Pay at Shop)</small>
+                                {% else %}
+                                    <span class="text-muted fs-6 italic text-small">TBD (Pending Groomer Assessment)</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
                     <!-- Timestamps Section -->
                     <div class="row">
                         <div class="col-md-6">
@@ -100,37 +122,38 @@
                     </div>
                 </div>
                 <div class="card-footer bg-light">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex gap-2">
-                            <a href="{% url 'appointment_list' %}" class="btn btn-secondary">
-                                <i class="fas fa-list"></i> Back to List
-                            </a>
-                            <a href="{% url 'service_list' %}" class="btn btn-outline-primary">
-                                <i class="fas fa-arrow-left"></i> Back to Services
+                            <a href="{% url 'appointment_list' %}" class="btn btn-secondary shadow-sm">
+                                <i class="fas fa-list"></i> My Bookings
                             </a>
                         </div>
                         <div>
                             {% if appointment.status == 'completed' %}
-                            <a href="{% url 'service_detail' appointment.service %}" class="btn btn-success">
-                                <i class="fas fa-star"></i> Rate This Service
+                            <a href="{% url 'service_detail' appointment.service %}" class="btn btn-success shadow-sm">
+                                <i class="fas fa-star"></i> Review Service
                             </a>
-                            <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> Delete
+                            {% elif appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                            <a href="{% url 'appointment_update' appointment.id %}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-edit"></i> Reschedule
                             </a>
-                            {% elif appointment.status == 'pending' %}
-                            <a href="{% url 'appointment_update' appointment.id %}" class="btn btn-primary">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> Delete
-                            </a>
-                            {% else %}
-                            <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> Delete
+                            <a href="{% url 'appointment_cancel' appointment.id %}" class="btn btn-danger shadow-sm">
+                                <i class="fas fa-times-circle"></i> Cancel Booking
                             </a>
                             {% endif %}
                         </div>
                     </div>
+                    {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                    <div class="mt-2 text-center text-muted small">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Refund Policy:</strong> 
+                        {% if appointment.is_refund_eligible %}
+                            <span class="text-success">You are eligible for a full refund if you cancel now.</span>
+                        {% else %}
+                            <span class="text-danger">Advance payment is non-refundable (within 24 hours of appointment).</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -101,8 +101,8 @@
             <a class="nav-link {% if request.resolver_match.url_name == 'contact_messages' %}active{% endif %}"
                href="{% url 'contact_messages' %}">
                 <i class="fas fa-envelope"></i> <span>Contact Messages</span>
-                {% if unread_count > 0 %}
-                <span class="badge bg-danger ms-2">{{ unread_count }}</span>
+                {% if unread_contact_count > 0 %}
+                <span class="badge bg-danger ms-2">{{ unread_contact_count }}</span>
                 {% endif %}
             </a>
 
