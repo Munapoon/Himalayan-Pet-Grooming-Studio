@@ -24,11 +24,19 @@
                             <td><code>{{ payment.transaction_id }}</code></td>
                         </tr>
                         <tr>
-                            <th>Order</th>
+                            <th>{% if payment.order %}Order{% else %}Appointment{% endif %}</th>
                             <td>
+                                {% if payment.order %}
                                 <a href="{% url 'products:admin_order_detail' payment.order.order_number %}">
                                     #{{ payment.order.order_number }}
                                 </a>
+                                {% elif payment.appointment %}
+                                <a href="{% url 'admin_appointment_detail' payment.appointment.pk %}">
+                                    Appointment #{{ payment.appointment.id }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
@@ -45,11 +53,15 @@
                             <th>Payment Method</th>
                             <td>
                                 {% if payment.payment_method == 'khalti' %}
-                                <span class="badge bg-purple" style="background:#5c2d91;">Khalti</span>
-                                {% elif payment.payment_method == 'stripe' %}
-                                <span class="badge bg-primary">Stripe</span>
-                                {% else %}
+                                <span class="badge bg-purple" style="background:#5c2d91;">Khalti (Advance)</span>
+                                {% elif payment.payment_method == 'online' %}
+                                <span class="badge bg-info">Online (In Shop)</span>
+                                {% elif payment.payment_method == 'cash' %}
+                                <span class="badge bg-success">Cash in Hand</span>
+                                {% elif payment.payment_method == 'cod' %}
                                 <span class="badge bg-secondary">Cash on Delivery</span>
+                                {% else %}
+                                <span class="badge bg-dark">{{ payment.get_payment_method_display }}</span>
                                 {% endif %}
                             </td>
                         </tr>

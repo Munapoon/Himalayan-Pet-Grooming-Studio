@@ -8,7 +8,7 @@ from django.db.models import Q
 import requests as http_requests
 
 from accounts.decorators import admin_required
-from .models import ProductCategory, Product, Cart, Sale, Order, OrderItem, Payment
+from .models import ProductCategory, Product, Cart, Order, OrderItem, Payment, Sale
 from .forms import ProductCategoryForm, ProductForm
 
 
@@ -180,8 +180,17 @@ def product_detail(request, pk):
     if request.user.is_authenticated and not request.user.is_admin_user():
         user_review = Review.objects.filter(product=product, user=request.user).first()
     
-    # Get all reviews for this product
-    reviews = Review.objects.filter(product=product).select_related('user')
+    # Get all reviews for this product (Approved only, or owner's own)
+    reviews_qs = Review.objects.filter(product=product).select_related('user')
+    if not request.user.is_authenticated or not request.user.is_admin_user():
+        # Regular users see approved ones or their own
+        if request.user.is_authenticated:
+            reviews = reviews_qs.filter(Q(is_approved=True) | Q(user=request.user))
+        else:
+            reviews = reviews_qs.filter(is_approved=True)
+    else:
+        # Admins see everything
+        reviews = reviews_qs
     
     context = {
         'product': product,
@@ -497,7 +506,6 @@ def checkout(request):
             
             # Send email confirmation
             from django.core.mail import send_mail
-            from django.conf import settings
             subject = f"Order Confirmed: #{order.order_number}"
             message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
                       f"Your order #{order.order_number} has been placed successfully!\n" \
@@ -506,6 +514,7 @@ def checkout(request):
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
             except Exception as e:
+                print(f"DEBUG: Email confirmation error (COD): {e}")
                 pass
             
             messages.success(request, f'Order placed successfully! Order Number: {order.order_number}')
@@ -652,6 +661,7 @@ def khalti_verify(request):
                 try:
                     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
                 except Exception as e:
+                    print(f"DEBUG: Email confirmation error (Khalti): {e}")
                     pass
                 
                 # Cleanup session
@@ -901,8 +911,8 @@ def admin_payment_list(request):
     payment_method_filter = request.GET.get('payment_method', '')
     search_query = request.GET.get('search', '')
     
-    # Base queryset
-    payments = Payment.objects.all().select_related('order', 'user')
+    # Base queryset - include both order and appointment
+    payments = Payment.objects.all().select_related('order', 'appointment', 'user').order_by('-created_at')
     
     # Apply filters
     if status_filter:
@@ -916,7 +926,8 @@ def admin_payment_list(request):
             Q(transaction_id__icontains=search_query) |
             Q(user__username__icontains=search_query) |
             Q(user__email__icontains=search_query) |
-            Q(order__order_number__icontains=search_query)
+            Q(order__order_number__icontains=search_query) |
+            Q(appointment__id__icontains=search_query)
         )
     
     # Pagination
@@ -924,9 +935,12 @@ def admin_payment_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Calculate statistics
+    # Calculate statistics using DB aggregation for accuracy
+    from django.db.models import Sum
     all_payments = Payment.objects.all()
-    completed_payments = all_payments.filter(status='completed')
+    completed_payments_qs = all_payments.filter(status='completed')
+    
+    total_rev = completed_payments_qs.aggregate(total=Sum('amount'))['total'] or 0
     
     context = {
         'page_obj': page_obj,
@@ -934,8 +948,8 @@ def admin_payment_list(request):
         'payment_method_filter': payment_method_filter,
         'search_query': search_query,
         'total_payments': all_payments.count(),
-        'completed_payments': completed_payments.count(),
-        'total_revenue': sum(p.amount for p in completed_payments),
+        'completed_payments': completed_payments_qs.count(),
+        'total_revenue': total_rev,
         'status_choices': Payment.STATUS_CHOICES,
         'payment_method_choices': Payment.PAYMENT_METHOD_CHOICES,
     }
@@ -954,3 +968,5 @@ def admin_payment_detail(request, pk):
         'payment': payment,
     }
     return render(request, 'products/admin_payment_detail.html', context)
+
+

@@ -59,21 +59,23 @@
         </div>
     </div>
 
-    <!-- SB Admin Style Result Cards Section -->
     <div class="row mb-5">
         <!-- Monthly Revenue Card -->
         <div class="col-xl-6 col-md-12 mb-4">
             <div class="card premium-card card-monthly h-100">
                 <div class="card-body">
-                    <div>
-                        <div class="card-subtitle">Monthly Revenue ({{ selected_month }}/{{ selected_year }})</div>
-                        <div class="card-value">Rs. {{ monthly_revenue|floatformat:2 }}</div>
-                        <div class="small text-muted mt-2">
-                            <i class="fas fa-shopping-cart"></i> {{ monthly_sales_count }} Total Sales
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="card-subtitle">Monthly Revenue ({{ selected_month }}/{{ selected_year }})</div>
+                            <div class="card-value">Rs. {{ monthly_revenue|floatformat:2 }}</div>
+                            <div class="small mt-2">
+                                <span class="badge bg-light text-dark"><i class="fas fa-box me-1"></i> Products: Rs. {{ product_monthly_revenue|floatformat:2 }}</span>
+                                <span class="badge bg-light text-dark ms-2"><i class="fas fa-cut me-1"></i> Services: Rs. {{ service_monthly_revenue|floatformat:2 }}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-icon">
-                        <i class="fas fa-calendar-check"></i>
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -83,21 +85,65 @@
         <div class="col-xl-6 col-md-12 mb-4">
             <div class="card premium-card card-yearly h-100">
                 <div class="card-body">
-                    <div>
-                        <div class="card-subtitle">Annual Revenue (Year {{ selected_year }})</div>
-                        <div class="card-value">Rs. {{ yearly_revenue|floatformat:2 }}</div>
-                        <div class="small text-muted mt-2">
-                            <i class="fas fa-chart-line"></i> {{ yearly_sales_count }} Total Sales
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="card-subtitle">Annual Revenue (Year {{ selected_year }})</div>
+                            <div class="card-value">Rs. {{ yearly_revenue|floatformat:2 }}</div>
+                            <div class="small mt-2">
+                                <span class="badge bg-light text-dark"><i class="fas fa-box me-1"></i> Products: Rs. {{ product_yearly_revenue|floatformat:2 }}</span>
+                                <span class="badge bg-light text-dark ms-2"><i class="fas fa-cut me-1"></i> Services: Rs. {{ service_yearly_revenue|floatformat:2 }}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Daily Sales Summary -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Daily Summary ({{ selected_month }}/{{ selected_year }})</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted">
+                        <tr>
+                            <th class="ps-4">Date</th>
+                            <th>No. of Transactions</th>
+                            <th class="text-end pe-4">Total Revenue</th>
+                            <th style="width: 200px;">Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in daily_summary %}
+                        <tr>
+                            <td class="ps-4 fw-medium">{{ d.date }}</td>
+                            <td><span class="badge bg-soft-info text-info rounded-pill px-3">{{ d.count }}</span></td>
+                            <td class="text-end pe-4 fw-bold">Rs. {{ d.total|floatformat:2 }}</td>
+                            <td class="pe-4">
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ d.percentage }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <i class="fas fa-calendar-times fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted">No sales data for this month</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <!-- Product Sales History Section -->
     <div class="card history-card mb-4">
         <div class="card-header">

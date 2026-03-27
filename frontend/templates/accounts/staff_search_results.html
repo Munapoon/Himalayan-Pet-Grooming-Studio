@@ -1,0 +1,156 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Search Results for "{{ query }}" - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-search"></i> Search Results</h1>
+        <p class="text-muted">Found results for: <strong>{{ query }}</strong></p>
+    </div>
+
+    {% if not appointments and not orders and not users %}
+        <div class="card shadow-sm border-0 py-5 text-center">
+            <div class="card-body">
+                <i class="fas fa-search fa-4x text-light mb-3"></i>
+                <h3>No results found</h3>
+                <p class="text-muted">We couldn't find any appointments, orders, or users matching your search.</p>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-primary rounded-pill px-4 mt-3">Back to Dashboard</a>
+            </div>
+        </div>
+    {% else %}
+        <!-- Appointments Section -->
+        {% if appointments %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i> Appointments ({{ appointments|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Pet Name</th>
+                                <th>Owner</th>
+                                <th>Service</th>
+                                <th>Date/Time</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in appointments %}
+                            <tr>
+                                <td><span class="fw-bold">#{{ app.id }}</span></td>
+                                <td>{{ app.pet_name }}</td>
+                                <td>{{ app.user.get_full_name|default:app.user.username }}</td>
+                                <td>{{ app.get_service_display }}</td>
+                                <td>{{ app.appointment_date|date:"M d, Y" }} at {{ app.appointment_time|time:"h:i A" }}</td>
+                                <td>
+                                    <span class="badge {% if app.status == 'completed' %}bg-success{% elif app.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {{ app.status|title }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'admin_appointment_detail' app.id %}" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Orders Section -->
+        {% if orders %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0"><i class="fas fa-shopping-bag me-2"></i> Orders ({{ orders|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Payment</th>
+                                <th>Order Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td><span class="fw-bold text-success">#{{ order.order_number }}</span></td>
+                                <td>{{ order.user.get_full_name|default:order.user.username }}</td>
+                                <td>Rs. {{ order.total_amount }}</td>
+                                <td>
+                                    <span class="badge {% if order.payment_status == 'paid' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ order.payment_status|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-info{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'products:admin_order_detail' order.order_number %}" class="btn btn-sm btn-outline-success rounded-pill">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Users Section -->
+        {% if users %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i> Users ({{ users|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td class="fw-bold">{{ u.username }}</td>
+                                <td>{{ u.get_full_name }}</td>
+                                <td>{{ u.email }}</td>
+                                <td>
+                                    <span class="badge {% if u.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if u.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'user_detail' u.pk %}" class="btn btn-sm btn-outline-info rounded-pill">Profile</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

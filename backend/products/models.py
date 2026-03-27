@@ -135,6 +135,8 @@ class Order(models.Model):
     shipping_address = models.TextField()
     phone_number = models.CharField(max_length=15)
     notes = models.TextField(blank=True)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    estimated_delivery_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -159,6 +161,8 @@ class Payment(models.Model):
         ('khalti', 'Khalti'),
         ('stripe', 'Stripe'),
         ('cod', 'Cash on Delivery'),
+        ('cash', 'Cash in hand'),
+        ('online', 'Online'),
     ]
     
     STATUS_CHOICES = [
@@ -169,7 +173,7 @@ class Payment(models.Model):
     ]
     
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment', null=True, blank=True)
-    appointment = models.OneToOneField('appointments.Appointment', on_delete=models.CASCADE, related_name='payment', null=True, blank=True)
+    appointment = models.ForeignKey('appointments.Appointment', on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
     transaction_id = models.CharField(max_length=255, unique=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
@@ -221,6 +225,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     rating = models.IntegerField(choices=RATING_CHOICES)
     comment = models.TextField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     

@@ -37,9 +37,9 @@
                             </h6>
                             <p class="mb-0 small">
                                 {% if appointment.is_refund_eligible %}
-                                    You are cancelling more than 24 hours in advance. Your advance payment of Rs. {{ appointment.advance_amount }} will be fully refunded.
+                                    You are cancelling within 24 hours of booking. Your advance payment of Rs. {{ appointment.advance_amount }} will be fully refunded.
                                 {% else %}
-                                    Cancellations within 24 hours are non-refundable. Your advance payment of Rs. {{ appointment.advance_amount }} will be retained as a late cancellation fee.
+                                    Cancellations more than 24 hours after booking are non-refundable. Your advance payment of Rs. {{ appointment.advance_amount }} will be retained.
                                 {% endif %}
                             </p>
                         </div>

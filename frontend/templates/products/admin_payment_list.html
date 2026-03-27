@@ -111,11 +111,13 @@
                             <td>{{ payment.user.get_full_name|default:payment.user.username }}</td>
                             <td>
                                 {% if payment.payment_method == 'khalti' %}
-                                <span class="badge bg-purple" style="background:#5c2d91;">Khalti</span>
-                                {% elif payment.payment_method == 'stripe' %}
-                                <span class="badge bg-primary">Stripe</span>
+                                <span class="badge" style="background:#5c2d91;">Khalti</span>
+                                {% elif payment.payment_method == 'online' %}
+                                <span class="badge bg-info">Online (In Shop)</span>
+                                {% elif payment.payment_method == 'cash' %}
+                                <span class="badge bg-success">Cash</span>
                                 {% else %}
-                                <span class="badge bg-secondary">COD</span>
+                                <span class="badge bg-secondary">COH</span>
                                 {% endif %}
                             </td>
                             <td><strong>Rs. {{ payment.amount }}</strong></td>

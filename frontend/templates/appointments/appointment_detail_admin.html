@@ -140,8 +140,13 @@
                                     <span class="input-group-text">Rs.</span>
                                     <input type="number" name="total_price" class="form-control" placeholder="Set Total Price" value="{{ appointment.total_price|floatformat:0 }}">
                                 </div>
+                                <select name="payment_method" class="form-select form-select-sm mb-2" required>
+                                    <option value="" disabled selected>Select Payment Method</option>
+                                    <option value="cash">Cash in hand</option>
+                                    <option value="online">Online</option>
+                                </select>
                                 <button type="submit" class="btn btn-sm btn-success w-100">
-                                    <i class="fas fa-cash-register"></i> Update & Pay in Shop
+                                    <i class="fas fa-cash-register"></i> Update & Pay (Online/Cash)
                                 </button>
                                 <small class="text-muted smaller d-block mt-1">Updates total price and clears the current balance.</small>
                             </form>

@@ -82,7 +82,8 @@ class Appointment(models.Model):
 
     PAYMENT_METHOD_CHOICES = [
         ('khalti', 'Khalti'),
-        ('cash', 'Cash at Studio'),
+        ('cash', 'Cash in hand'),
+        ('online', 'Online'),
     ]
 
     # Fixed advance amount in NPR
@@ -119,14 +120,10 @@ class Appointment(models.Model):
 
     @property
     def is_refund_eligible(self):
-        """Refund eligible ONLY if cancelled more than 24 hours before."""
-        import datetime
+        """Refund eligible ONLY if cancelled within 24 hours of booking."""
         now = timezone.now()
-        # Combine date and time then make it timezone aware
-        naive_dt = datetime.datetime.combine(self.appointment_date, self.appointment_time)
-        appointment_datetime = timezone.make_aware(naive_dt)
-        time_diff = appointment_datetime - now
-        return time_diff.total_seconds() > 24 * 3600
+        time_diff = now - self.created_at
+        return time_diff.total_seconds() <= 24 * 3600
 
     @property
     def pending_amount(self):
@@ -175,6 +172,7 @@ class ServiceReview(models.Model):
     rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)])
     review = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'service_reviews'

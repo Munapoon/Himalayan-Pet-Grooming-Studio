@@ -239,6 +239,7 @@ def appointment_khalti_verify(request):
                 try:
                     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
                 except Exception as e:
+                    print(f"DEBUG: Appointment payment email error: {e}")
                     pass
                 
                 # Cleanup session
@@ -357,12 +358,12 @@ def appointment_cancel(request, pk):
         is_eligible = appointment.is_refund_eligible
         appointment.status = 'cancelled'
         
-        if appointment.payment_status == 'paid':
+        if appointment.payment_status == 'advance_paid' or appointment.payment_status == 'paid':
             if is_eligible:
                 appointment.payment_status = 'refunded'
-                messages.success(request, 'Appointment cancelled. Your advance payment will be refunded shortly (eligible for refund).')
+                messages.success(request, 'Appointment cancelled. Your advance payment will be refunded shortly since you cancelled within 24 hours of booking.')
             else:
-                messages.warning(request, 'Appointment cancelled. Note: Cancellation is within 24 hours of appointment, so advance payment is non-refundable.')
+                messages.warning(request, 'Appointment cancelled. Note: Cancellation is more than 24 hours after booking, so your advance payment is non-refundable.')
         else:
             messages.success(request, 'Appointment successfully cancelled.')
             
@@ -381,6 +382,8 @@ def admin_appointment_pay_shop(request, pk):
     if request.method == 'POST':
         try:
             full_price = request.POST.get('total_price')
+            payment_method = request.POST.get('payment_method', 'cash')
+            
             if full_price:
                 appointment.total_price = decimal.Decimal(str(full_price))
             
@@ -389,6 +392,7 @@ def admin_appointment_pay_shop(request, pk):
             if remaining > 0:
                 appointment.paid_amount += remaining
                 appointment.payment_status = 'paid'
+                appointment.payment_method = payment_method
                 appointment.save()
 
                 # Generate a SHOP payment record so it shows in the Payments list
@@ -396,18 +400,26 @@ def admin_appointment_pay_shop(request, pk):
                 from django.utils import timezone
                 import uuid
 
+                # Improved uniqueness: UUID + Timestamp
+                unique_suffix = f"{uuid.uuid4().hex[:6]}-{timezone.now().strftime('%M%S')}"
+                
+                method_display = "Online in Shop" if payment_method == 'online' else "Cash in Shop"
+
                 Payment.objects.create(
                     appointment=appointment,
                     user=appointment.user,
-                    # Unique transaction ID for in-shop payments
-                    transaction_id=f"SHOP-APT-{appointment.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}",
-                    payment_method='cod',  # Represents Cash / manual entry
+                    transaction_id=f"SHOP-{appointment.id}-{unique_suffix}",
+                    payment_method=payment_method,
                     amount=remaining,
                     status='completed',
-                    payment_response={'source': 'Update & Pay in Shop', 'recorded_by': request.user.username}
+                    payment_response={
+                        'source': method_display,
+                        'recorded_by': request.user.username,
+                        'total_price_set': str(full_price)
+                    }
                 )
 
-                messages.success(request, f'Payment of Rs. {remaining} recorded for {appointment.pet_name}. Balance is now 0.')
+                messages.success(request, f'Payment of Rs. {remaining} recorded via {method_display}. Balance is now 0.')
             else:
                 messages.info(request, 'This appointment is already fully paid or total price not set.')
                 
@@ -504,17 +516,6 @@ def add_service_review(request, service_type):
     """Add or update service review"""
     from .models import ServiceReview
     
-    # Check if user has completed this service
-    has_used_service = Appointment.objects.filter(
-        user=request.user,
-        service=service_type,
-        status='completed'
-    ).exists()
-    
-    if not has_used_service:
-        messages.error(request, 'You can only review services you have used.')
-        return redirect('service_detail', service_type=service_type)
-    
     if request.method == 'POST':
         rating = request.POST.get('rating')
         review_text = request.POST.get('review')
@@ -564,6 +565,7 @@ def appointment_confirm(request, pk):
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [appointment.user.email], fail_silently=True)
             except Exception as e:
+                print(f"DEBUG: Appointment confirm email error: {e}")
                 pass
                 
             messages.success(request, f'Appointment for {appointment.pet_name} has been confirmed and user notified!')

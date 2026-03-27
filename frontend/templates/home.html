@@ -103,7 +103,7 @@
             <div class="service-card" data-url="{% url 'service_detail' service.slug %}">
                 <div class="card-image">
                     {% if service.image %}
-                    <img src="{{ service.image.url }}" alt="{{ service.name }}" style="object-fit: cover;">
+                    <img src="{{ service.image.url }}" alt="{{ service.name }}">
                     {% elif service.image_url %}
                     <img src="{{ service.image_url }}" alt="{{ service.name }}">
                     {% else %}

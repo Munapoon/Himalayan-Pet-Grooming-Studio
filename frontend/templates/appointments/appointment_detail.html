@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+r{% extends 'base.html' %}
 
 {% block title %}Appointment Details - Himalayan Pet Studio{% endblock %}
 
@@ -89,9 +89,9 @@
                     <h5 class="mb-3 text-info"><i class="fas fa-receipt"></i> Payment Information</h5>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <h6 class="text-muted"><i class="fas fa-wallet"></i> Advance Paid</h6>
-                            <p class="h5 text-success">Rs. {{ appointment.advance_amount }} ({{ appointment.payment_status|title }})</p>
-                            <small class="text-muted">Paid via {{ appointment.payment_method|title|default:"Pending" }}</small>
+                            <h6 class="text-muted"><i class="fas fa-wallet"></i> Paid Amount</h6>
+                            <p class="h5 text-success">Rs. {{ appointment.paid_amount }} ({{ appointment.get_payment_status_display }})</p>
+                            <small class="text-muted">Balance Paid via: {{ appointment.get_payment_method_display|default:"N/A" }}</small>
                         </div>
                         <div class="col-md-6">
                             <h6 class="text-muted"><i class="fas fa-hand-holding-usd"></i> Remaining Balance</h6>
@@ -150,7 +150,7 @@
                         {% if appointment.is_refund_eligible %}
                             <span class="text-success">You are eligible for a full refund if you cancel now.</span>
                         {% else %}
-                            <span class="text-danger">Advance payment is non-refundable (within 24 hours of appointment).</span>
+                            <span class="text-danger">Advance payment is non-refundable (more than 24 hours since booking).</span>
                         {% endif %}
                     </div>
                     {% endif %}

@@ -120,21 +120,23 @@
                         </div>
                     </div>
 
-                    {% if has_used_service %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> You have used this service.
-                        {% if user_review %}
-                        You can update your review below.
-                        {% else %}
-                        Share your experience by leaving a review!
-                        {% endif %}
-                    </div>
-
+                    {% if user.is_authenticated %}
                     <div class="card mb-4">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">{% if user_review %}Update Your Review{% else %}Write a Review{% endif %}</h5>
                         </div>
                         <div class="card-body">
+                            {% if not has_used_service %}
+                            <div class="alert alert-light border-info mb-4">
+                                <i class="fas fa-info-circle text-info"></i> Haven't experienced this service yet? 
+                                <a href="{% url 'appointment_create' %}?service={{ service_type }}" class="fw-bold">Book now</a> to see why our customers love it!
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info py-2 mb-4">
+                                <i class="fas fa-check-circle"></i> Thanks for being our customer! You can share your experience below.
+                            </div>
+                            {% endif %}
+                            
                             <form method="post" action="{% url 'add_service_review' service_type %}">
                                 {% csrf_token %}
                                 <div class="mb-3">
@@ -162,12 +164,7 @@
                     </div>
                     {% else %}
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> You need to use this service before you can leave a
-                        review.
-                        <a href="{% url 'appointment_create' %}?service={{ service_type }}"
-                            class="btn btn-sm btn-primary ms-2">
-                            <i class="fas fa-calendar-check"></i> Book Now
-                        </a>
+                        <i class="fas fa-sign-in-alt"></i> Please <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link">login</a> to leave a review.
                     </div>
                     {% endif %}
                 </div>
