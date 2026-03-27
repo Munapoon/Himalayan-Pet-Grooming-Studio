@@ -5,17 +5,18 @@ from .models import ProductCategory, Product, Review
 class ProductCategoryForm(forms.ModelForm):
     class Meta:
         model = ProductCategory
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'created_at']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter category name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter category description'}),
+            'created_at': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
 
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'category', 'description', 'price', 'stock_quantity', 'image', 'is_active']
+        fields = ['name', 'category', 'description', 'price', 'stock_quantity', 'image', 'is_active', 'created_at']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter product name'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
@@ -24,6 +25,7 @@ class ProductForm(forms.ModelForm):
             'stock_quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'created_at': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
 
 

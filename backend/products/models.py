@@ -87,16 +87,18 @@ class Sale(models.Model):
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    size = models.CharField(max_length=20, null=True, blank=True)
     quantity = models.IntegerField(default=1)
     added_at = models.DateTimeField(default=timezone.now)
     
     class Meta:
         db_table = 'cart_items'
         ordering = ['-added_at']
-        unique_together = ('user', 'product')
+        unique_together = ('user', 'product', 'size')
     
     def __str__(self):
-        return f"{self.user.username} - {self.product.name} x {self.quantity}"
+        sz = f" ({self.size})" if self.size else ""
+        return f"{self.user.username} - {self.product.name}{sz} x {self.quantity}"
     
     @property
     def subtotal(self):
@@ -133,6 +135,8 @@ class Order(models.Model):
     shipping_address = models.TextField()
     phone_number = models.CharField(max_length=15)
     notes = models.TextField(blank=True)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    estimated_delivery_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -157,6 +161,8 @@ class Payment(models.Model):
         ('khalti', 'Khalti'),
         ('stripe', 'Stripe'),
         ('cod', 'Cash on Delivery'),
+        ('cash', 'Cash in hand'),
+        ('online', 'Online'),
     ]
     
     STATUS_CHOICES = [
@@ -166,7 +172,8 @@ class Payment(models.Model):
         ('refunded', 'Refunded'),
     ]
     
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment', null=True, blank=True)
+    appointment = models.ForeignKey('appointments.Appointment', on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
     transaction_id = models.CharField(max_length=255, unique=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
@@ -187,6 +194,7 @@ class Payment(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    size = models.CharField(max_length=20, null=True, blank=True)
     quantity = models.IntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
@@ -196,7 +204,8 @@ class OrderItem(models.Model):
         ordering = ['id']
     
     def __str__(self):
-        return f"{self.product.name} x {self.quantity}"
+        sz = f" ({self.size})" if self.size else ""
+        return f"{self.product.name}{sz} x {self.quantity}"
     
     def save(self, *args, **kwargs):
         self.subtotal = self.quantity * self.unit_price
@@ -216,6 +225,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     rating = models.IntegerField(choices=RATING_CHOICES)
     comment = models.TextField(blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     

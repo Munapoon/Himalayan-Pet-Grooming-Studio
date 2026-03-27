@@ -96,18 +96,28 @@
                             <td>{{ payment.id }}</td>
                             <td><code>{{ payment.transaction_id|truncatechars:20 }}</code></td>
                             <td>
+                                {% if payment.order %}
                                 <a href="{% url 'products:admin_order_detail' payment.order.order_number %}">
-                                    #{{ payment.order.order_number }}
+                                    <span class="badge bg-primary">Order #{{ payment.order.order_number }}</span>
                                 </a>
+                                {% elif payment.appointment %}
+                                <a href="{% url 'admin_appointment_detail' payment.appointment.id %}">
+                                    <span class="badge bg-info">Apt #{{ payment.appointment.id }}</span>
+                                </a>
+                                {% else %}
+                                -
+                                {% endif %}
                             </td>
                             <td>{{ payment.user.get_full_name|default:payment.user.username }}</td>
                             <td>
                                 {% if payment.payment_method == 'khalti' %}
-                                <span class="badge bg-purple" style="background:#5c2d91;">Khalti</span>
-                                {% elif payment.payment_method == 'stripe' %}
-                                <span class="badge bg-primary">Stripe</span>
+                                <span class="badge" style="background:#5c2d91;">Khalti</span>
+                                {% elif payment.payment_method == 'online' %}
+                                <span class="badge bg-info">Online (In Shop)</span>
+                                {% elif payment.payment_method == 'cash' %}
+                                <span class="badge bg-success">Cash</span>
                                 {% else %}
-                                <span class="badge bg-secondary">COD</span>
+                                <span class="badge bg-secondary">COH</span>
                                 {% endif %}
                             </td>
                             <td><strong>Rs. {{ payment.amount }}</strong></td>

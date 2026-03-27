@@ -6,11 +6,18 @@
 function incrementCartQty(itemId, maxQty) {
     const qtyInput = document.getElementById('qty-' + itemId);
     const form = document.getElementById('update-form-' + itemId);
+    const btn = document.querySelector(`.cart-increment[data-item-id="${itemId}"]`);
+    
     if (qtyInput && form) {
-        const currentQty = parseInt(qtyInput.value) || 0;
-        if (currentQty < parseInt(maxQty)) {
+        let currentQty = parseInt(qtyInput.value) || 1;
+        const max = parseInt(maxQty);
+        
+        if (currentQty < max) {
             qtyInput.value = currentQty + 1;
             form.submit();
+        } else {
+            if (btn) btn.disabled = false;
+            alert('Cannot exceed available stock limit (' + max + ' items)');
         }
     }
 }
@@ -121,7 +128,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Quantity increment buttons
     const incrementBtns = document.querySelectorAll('.cart-increment');
     incrementBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.disabled) return;
+            this.disabled = true;
             incrementCartQty(this.dataset.itemId, this.dataset.stock);
         });
     });
@@ -129,7 +140,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Quantity decrement buttons
     const decrementBtns = document.querySelectorAll('.cart-decrement');
     decrementBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.disabled) return;
+            this.disabled = true;
             decrementCartQty(this.dataset.itemId);
         });
     });

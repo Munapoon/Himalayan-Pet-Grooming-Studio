@@ -186,9 +186,9 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'munapoon89@gmail.com'  
-EMAIL_HOST_PASSWORD = 'esgi mamq ugga ozwc'  
-DEFAULT_FROM_EMAIL = 'munapoon89@gmail.com'
+EMAIL_HOST_USER = 'himalayanpetgrommingstudio12@gmail.com'  
+EMAIL_HOST_PASSWORD = 'motbmwzdcuwgfxda'  
+DEFAULT_FROM_EMAIL = 'himalayanpetgrommingstudio12@gmail.com'
 
 
 # Monkeypatch smtplib to fix compatibility between Django and Python 3.12+
@@ -205,5 +205,5 @@ def _fixed_ssl_init(self, *args, **kwargs):
     kwargs.pop('certfile', None)
     return _original_ssl_init(self, *args, **kwargs)
 
-smtplib.SMTP.starttls = _fixed_starttls
-smtplib.SMTP_SSL.__init__ = _fixed_ssl_init
+smtplib.SMTP.starttls = _fixed_starttls  # type: ignore
+smtplib.SMTP_SSL.__init__ = _fixed_ssl_init  # type: ignore

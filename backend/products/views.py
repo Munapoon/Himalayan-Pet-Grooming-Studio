@@ -8,7 +8,7 @@ from django.db.models import Q
 import requests as http_requests
 
 from accounts.decorators import admin_required
-from .models import ProductCategory, Product, Cart, Sale, Order, OrderItem, Payment
+from .models import ProductCategory, Product, Cart, Order, OrderItem, Payment, Sale
 from .forms import ProductCategoryForm, ProductForm
 
 
@@ -74,7 +74,7 @@ def product_list(request):
     from django.db.models import Q
     
     # Get search query, category filter, price range, and sort option
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get('search') or request.GET.get('q', '')
     category_id = request.GET.get('category', '')
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
@@ -180,8 +180,17 @@ def product_detail(request, pk):
     if request.user.is_authenticated and not request.user.is_admin_user():
         user_review = Review.objects.filter(product=product, user=request.user).first()
     
-    # Get all reviews for this product
-    reviews = Review.objects.filter(product=product).select_related('user')
+    # Get all reviews for this product (Approved only, or owner's own)
+    reviews_qs = Review.objects.filter(product=product).select_related('user')
+    if not request.user.is_authenticated or not request.user.is_admin_user():
+        # Regular users see approved ones or their own
+        if request.user.is_authenticated:
+            reviews = reviews_qs.filter(Q(is_approved=True) | Q(user=request.user))
+        else:
+            reviews = reviews_qs.filter(is_approved=True)
+    else:
+        # Admins see everything
+        reviews = reviews_qs
     
     context = {
         'product': product,
@@ -248,12 +257,14 @@ def add_to_cart(request, product_id):
         return redirect('products:product_detail', pk=product_id)
     
     quantity = int(request.POST.get('quantity', 1))
+    size = request.POST.get('size', None)
     redirect_to = request.POST.get('redirect_to', 'cart')
     
-    # Check if item already in cart
+    # Check if item already in cart with same size
     cart_item, created = Cart.objects.get_or_create(
         user=request.user,
         product=product,
+        size=size,
         defaults={'quantity': quantity}
     )
     
@@ -453,6 +464,7 @@ def checkout(request):
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
+                size=item.size,
                 quantity=item.quantity,
                 unit_price=item.product.price,
             )
@@ -481,6 +493,30 @@ def checkout(request):
             # Cash on Delivery - Order is pending
             order.payment_status = 'pending'
             order.save()
+            
+            from .models import Payment
+            Payment.objects.create(
+                order=order,
+                user=request.user,
+                transaction_id=f"COD-{order.order_number}",
+                payment_method='cod',
+                amount=order.total_amount,
+                status='pending',
+            )
+            
+            # Send email confirmation
+            from django.core.mail import send_mail
+            subject = f"Order Confirmed: #{order.order_number}"
+            message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
+                      f"Your order #{order.order_number} has been placed successfully!\n" \
+                      f"Total amount to pay on delivery: Rs. {order.total_amount}.\n\n" \
+                      f"Thank you for shopping with Himalayan Pet Studio!"
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+            except Exception as e:
+                print(f"DEBUG: Email confirmation error (COD): {e}")
+                pass
+            
             messages.success(request, f'Order placed successfully! Order Number: {order.order_number}')
             return redirect('products:order_detail', order_number=order.order_number)
         
@@ -615,8 +651,18 @@ def khalti_verify(request):
                     payment_response=data
                 )
                 
-                # Create Sale records if not already created (depending on how you track sales)
-                # (Existing logic in checkout created them, but we might want to flag them as paid here)
+                # Send email confirmation
+                from django.core.mail import send_mail
+                subject = f"Payment Confirmed: Order #{order.order_number}"
+                message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
+                          f"Your Khalti payment of Rs. {order.total_amount} for order #{order.order_number} was successful!\n" \
+                          f"Your order is now being processed.\n\n" \
+                          f"Thank you for shopping with Himalayan Pet Studio!"
+                try:
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                except Exception as e:
+                    print(f"DEBUG: Email confirmation error (Khalti): {e}")
+                    pass
                 
                 # Cleanup session
                 if 'pending_order_number' in request.session: del request.session['pending_order_number']
@@ -718,15 +764,46 @@ def update_order_status(request, order_number):
     if request.method == 'POST':
         new_status = request.POST.get('status')
         new_payment_status = request.POST.get('payment_status')
+        status_changed = False
         
         if new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
+            status_changed = True
         
         if new_payment_status in dict(Order.PAYMENT_STATUS_CHOICES):
             order.payment_status = new_payment_status
+            status_changed = True
+            
+            # Sync corresponding Payment object
+            from .models import Payment
+            payment = Payment.objects.filter(order=order).first()
+            if payment:
+                if new_payment_status == 'paid' and payment.status != 'completed':
+                    payment.status = 'completed'
+                    payment.save()
+                elif new_payment_status == 'pending' and payment.status != 'pending':
+                    payment.status = 'pending'
+                    payment.save()
+                elif new_payment_status == 'failed' and payment.status != 'failed':
+                    payment.status = 'failed'
+                    payment.save()
+            elif new_payment_status == 'paid':
+                # If no payment object exists (e.g. COD) but admin marks as paid, create one
+                from django.utils import timezone
+                Payment.objects.create(
+                    order=order,
+                    user=order.user,
+                    transaction_id=f"SHOP-ORDER-{order.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}",
+                    payment_method=order.payment_method or 'cod',
+                    amount=order.total_amount,
+                    status='completed',
+                    payment_response={'source': 'Admin Status Update', 'recorded_by': request.user.username}
+                )
         
-        order.save()
-        messages.success(request, f'Order #{order.order_number} updated successfully!')
+        if status_changed:
+            order.save()
+            messages.success(request, f'Order #{order.order_number} updated successfully!')
+        
         return redirect('products:admin_order_detail', order_number=order.order_number)
     
     return redirect('products:admin_order_list')
@@ -834,8 +911,8 @@ def admin_payment_list(request):
     payment_method_filter = request.GET.get('payment_method', '')
     search_query = request.GET.get('search', '')
     
-    # Base queryset
-    payments = Payment.objects.all().select_related('order', 'user')
+    # Base queryset - include both order and appointment
+    payments = Payment.objects.all().select_related('order', 'appointment', 'user').order_by('-created_at')
     
     # Apply filters
     if status_filter:
@@ -849,7 +926,8 @@ def admin_payment_list(request):
             Q(transaction_id__icontains=search_query) |
             Q(user__username__icontains=search_query) |
             Q(user__email__icontains=search_query) |
-            Q(order__order_number__icontains=search_query)
+            Q(order__order_number__icontains=search_query) |
+            Q(appointment__id__icontains=search_query)
         )
     
     # Pagination
@@ -857,9 +935,12 @@ def admin_payment_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Calculate statistics
+    # Calculate statistics using DB aggregation for accuracy
+    from django.db.models import Sum
     all_payments = Payment.objects.all()
-    completed_payments = all_payments.filter(status='completed')
+    completed_payments_qs = all_payments.filter(status='completed')
+    
+    total_rev = completed_payments_qs.aggregate(total=Sum('amount'))['total'] or 0
     
     context = {
         'page_obj': page_obj,
@@ -867,8 +948,8 @@ def admin_payment_list(request):
         'payment_method_filter': payment_method_filter,
         'search_query': search_query,
         'total_payments': all_payments.count(),
-        'completed_payments': completed_payments.count(),
-        'total_revenue': sum(p.amount for p in completed_payments),
+        'completed_payments': completed_payments_qs.count(),
+        'total_revenue': total_rev,
         'status_choices': Payment.STATUS_CHOICES,
         'payment_method_choices': Payment.PAYMENT_METHOD_CHOICES,
     }
@@ -887,3 +968,5 @@ def admin_payment_detail(request, pk):
         'payment': payment,
     }
     return render(request, 'products/admin_payment_detail.html', context)
+
+

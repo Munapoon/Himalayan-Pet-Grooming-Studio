@@ -68,11 +68,11 @@
                     </button>
                 </form>
 
-                <!-- Cancel -->
-                <form method="post" action="{% url 'appointment_delete' appointment.pk %}">
+                <!-- Cancel — deletes the pending appointment -->
+                <form method="post" action="{% url 'appointment_cancel_payment' appointment.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn-cancel"
-                        onclick="return confirm('Cancel this booking? Your slot will be released.')">
+                        onclick="return confirm('Cancel this booking? Your slot will be released and no payment will be taken.')">
                         <i class="fas fa-times me-2"></i>Cancel Booking
                     </button>
                 </form>

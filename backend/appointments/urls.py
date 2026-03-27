@@ -17,6 +17,7 @@ urlpatterns = [
     path('<int:pk>/payment/', views.appointment_payment, name='appointment_payment'),
     path('<int:pk>/khalti/initiate/', views.appointment_khalti_initiate, name='appointment_khalti_initiate'),
     path('khalti/verify/', views.appointment_khalti_verify, name='appointment_khalti_verify'),
+    path('<int:pk>/cancel-payment/', views.appointment_cancel_payment, name='appointment_cancel_payment'),
     path('services/', views.service_list, name='service_list'),
     path('service/<str:service_type>/', views.service_detail, name='service_detail'),
     path('service/<str:service_type>/review/', views.add_service_review, name='add_service_review'),

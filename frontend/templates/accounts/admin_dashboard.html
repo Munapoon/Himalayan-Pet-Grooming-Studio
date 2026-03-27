@@ -97,6 +97,25 @@
 
     <!-- Main Content Row -->
     <div class="row">
+        <!-- Sales Chart Column -->
+        <div class="col-xl-12 mb-4">
+            <div class="card dashboard-section-card shadow-sm">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-chart-line text-primary"></i> Weekly Sales Activity
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
         <!-- Recent Appointments Column -->
         <div class="col-xl-8 col-lg-7 mb-4">
             <div class="card dashboard-section-card shadow-sm h-100">
@@ -198,4 +217,61 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chartData = {{ chart_data_json|safe }};
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Product Orders',
+                        data: chartData.orders,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#0d6efd',
+                    },
+                    {
+                        label: 'Grooming Appointments',
+                        data: chartData.appointments,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#198754',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
