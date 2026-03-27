@@ -74,7 +74,7 @@ def product_list(request):
     from django.db.models import Q
     
     # Get search query, category filter, price range, and sort option
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get('search') or request.GET.get('q', '')
     category_id = request.GET.get('category', '')
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')

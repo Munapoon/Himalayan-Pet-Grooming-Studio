@@ -182,7 +182,20 @@ def user_register(request):
             user = form.save(commit=False)
             user.role = 'user'
             user.save()
-            messages.success(request, 'Registration successful. Please login.')
+            
+            # Send Confirmation Email
+            try:
+                subject = 'Welcome to Himalayan Pet Studio!'
+                message = f'Hi {user.username},\n\nThank you for registering with Himalayan Pet Studio. We are excited to have you with us!\n\nYou can now log in to your account and start booking grooming sessions or shopping for your furry friends.\n\nBest regards,\nHimalayan Pet Studio Team'
+                email_from = None # Uses DEFAULT_FROM_EMAIL
+                recipient_list = [user.email]
+                
+                send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+            except Exception as e:
+                # Log error or show warning but don't stop the registration process
+                print(f"Failed to send welcome email: {e}")
+
+            messages.success(request, 'Registration successful. A confirmation email has been sent. Please login.')
             return redirect('login')
     else:
         form = UserRegistrationForm()
