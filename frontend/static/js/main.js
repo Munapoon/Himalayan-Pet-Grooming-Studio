@@ -49,8 +49,11 @@ function togglePassword(inputId, button) {
 }
 
 // Navbar Scroll Effect
+// Navbar & Back to Top Scroll Effect
 window.addEventListener('scroll', function () {
     const navbar = document.querySelector('.navbar');
+    const backToTop = document.getElementById('backToTop');
+
     if (navbar) {
         if (window.scrollY > 50) {
             navbar.classList.add('navbar-scrolled');
@@ -58,4 +61,24 @@ window.addEventListener('scroll', function () {
             navbar.classList.remove('navbar-scrolled');
         }
     }
+
+    if (backToTop) {
+        if (window.scrollY > 300) {
+            backToTop.classList.add('show');
+        } else {
+            backToTop.classList.remove('show');
+        }
+    }
 });
+
+// Smooth Scroll to Top
+const backToTopBtn = document.getElementById('backToTop');
+if (backToTopBtn) {
+    backToTopBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}

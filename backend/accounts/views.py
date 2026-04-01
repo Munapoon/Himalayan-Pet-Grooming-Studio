@@ -15,7 +15,7 @@ from appointments.models import Appointment
 from .forms import (
     UserRegistrationForm, UserLoginForm, ForgotPasswordForm, 
     VerifyResetCodeForm, ResetPasswordForm, ChangePasswordForm,
-    UserProfileForm
+    UserProfileForm, VerifyEmailForm
 )
 from .decorators import admin_required
 
@@ -162,12 +162,37 @@ def user_login(request):
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
         if form.is_valid():
-            user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
-            if user and user.is_active:
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(username=username, password=password)
+            
+            if user:
+                is_first_login = user.last_login is None
+                
                 login(request, user)
+                
+                # Send Welcome Email on FIRST Login Only
+                if is_first_login:
+                    try:
+                        subject = 'Welcome to Himalayan Pet Studio!'
+                        message = f'Hi {user.username},\n\nWelcome to Himalayan pet grooming services! We are happy to see you. Thank you for choosing us for your furry friends.\n\nBest regards,\nHimalayan Pet Studio Team'
+                        send_mail(subject, message, None, [user.email], fail_silently=False)
+                    except Exception as e:
+                        print(f"Failed to send welcome email: {e}")
+
                 messages.success(request, 'Login successful')
                 return redirect('admin_dashboard' if user.is_admin_user() else 'home')
-            form.add_error(None, 'Invalid username or password.')
+            else:
+                # Check if it's an unverified/inactive user
+                try:
+                    user_check = User.objects.get(username=username)
+                    if not user_check.is_active and user_check.check_password(password):
+                        messages.warning(request, 'Please verify your email address first.')
+                        request.session['verification_email'] = user_check.email
+                        return redirect('verify_email')
+                except User.DoesNotExist:
+                    pass
+                form.add_error(None, 'Invalid username or password.')
     else:
         form = UserLoginForm()
     return render(request, 'accounts/login.html', {'form': form})
@@ -181,25 +206,55 @@ def user_register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.role = 'user'
+            user.is_active = False # Registration requires verification
+            
+            # Generate Code
+            code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+            user.verification_code = code
             user.save()
             
-            # Send Confirmation Email
+            # Send Code Email
             try:
-                subject = 'Welcome to Himalayan Pet Studio!'
-                message = f'Hi {user.username},\n\nThank you for registering with Himalayan Pet Studio. We are excited to have you with us!\n\nYou can now log in to your account and start booking grooming sessions or shopping for your furry friends.\n\nBest regards,\nHimalayan Pet Studio Team'
-                email_from = None # Uses DEFAULT_FROM_EMAIL
+                subject = 'Email Verification - Himalayan Pet Studio'
+                message = f'Hi {user.username},\n\nYour verification code is: {code}\n\nPlease enter this code to verify your email address.'
+                email_from = None
                 recipient_list = [user.email]
-                
                 send_mail(subject, message, email_from, recipient_list, fail_silently=False)
             except Exception as e:
-                # Log error or show warning but don't stop the registration process
-                print(f"Failed to send welcome email: {e}")
+                print(f"Failed to send verification email: {e}")
 
-            messages.success(request, 'Registration successful. A confirmation email has been sent. Please login.')
-            return redirect('login')
+            request.session['verification_email'] = user.email
+            messages.success(request, 'Registration successful. A verification code has been sent to your email.')
+            return redirect('verify_email')
     else:
         form = UserRegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
+
+
+def verify_email(request):
+    email = request.session.get('verification_email')
+    if not email:
+        return redirect('register')
+        
+    if request.method == 'POST':
+        form = VerifyEmailForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data['code']
+            try:
+                user = User.objects.get(email=email, verification_code=code)
+                user.is_email_verified = True
+                user.is_active = True
+                user.verification_code = None
+                user.save()
+                
+                del request.session['verification_email']
+                messages.success(request, "Email verified successfully! Please login to your account.")
+                return redirect('login')
+            except User.DoesNotExist:
+                messages.error(request, "Invalid verification code.")
+    else:
+        form = VerifyEmailForm(initial={'email': email})
+    return render(request, 'accounts/verify_email.html', {'form': form})
 
 
 def user_logout(request):
@@ -451,7 +506,7 @@ def contact_messages(request):
     messages_list = Contact.objects.all().order_by('-created_at')
     paginator = Paginator(messages_list, 10)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'accounts/contact_messages.html', {'messages': page_obj, 'page_obj': page_obj, 'unread_count': Contact.objects.filter(is_read=False).count()})
+    return render(request, 'accounts/contact_messages.html', {'contact_messages_list': page_obj, 'page_obj': page_obj, 'unread_count': Contact.objects.filter(is_read=False).count()})
 
 
 def contact_us(request):
@@ -466,7 +521,32 @@ def contact_us(request):
         )
         messages.success(request, 'Message sent!')
         return redirect('contact_us')
-    return render(request, 'contact.html', {'faqs': []}) # FAQs can be added here
+        
+    # Default FAQs for the store
+    faqs = [
+        {
+            'question': 'How can I book an appointment?',
+            'answer': 'You can book an appointment by navigating to the Services page or directly from your user dashboard after logging in.'
+        },
+        {
+            'question': 'What are your operating hours?',
+            'answer': 'We are open Sunday through Friday, from 10:00 AM to 6:00 PM.'
+        },
+        {
+            'question': 'Do you offer mobile grooming?',
+            'answer': 'Currently, we only offer services at our studio located in Amar Singh Chowk, Pokhara.'
+        },
+        {
+            'question': 'Are your products pet-friendly?',
+            'answer': 'Yes, all our grooming products are eco-friendly, organic, and specifically chosen to be safe for sensitive pet skin.'
+        },
+        {
+            'question': 'How do I pay for my service?',
+            'answer': 'You can pay online via Khalti during booking or pay in person with cash at the studio after the grooming session.'
+        }
+    ]
+    
+    return render(request, 'contact.html', {'faqs': faqs})
 
 
 @login_required

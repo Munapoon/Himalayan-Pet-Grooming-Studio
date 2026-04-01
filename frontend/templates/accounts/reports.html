@@ -12,10 +12,11 @@
     <!-- Page Title Header -->
     <div class="d-flex justify-content-between align-items-center mb-5 report-header">
         <h2>
-            <i class="fas fa-chart-line text-primary me-2"></i> 
+            <i class="fas fa-chart-line text-primary me-2"></i>
             Sales Reports & Analytics
         </h2>
-        <a href="{% url 'export_sales_csv' %}?month={{ selected_month }}&year={{ selected_year }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <a href="{% url 'export_sales_csv' %}?month={{ selected_month }}&year={{ selected_year }}"
+            class="btn btn-primary rounded-pill px-4 shadow-sm">
             <i class="fas fa-download me-2"></i> Generate Report
         </a>
     </div>
@@ -30,7 +31,7 @@
                         <span class="input-group-text bg-white"><i class="fas fa-calendar-alt text-muted"></i></span>
                         <select name="month" class="form-select border-start-0">
                             {% for month_num, month_name in months %}
-                            <option value="{{ month_num }}" {% if month_num == selected_month %}selected{% endif %}>
+                            <option value="{{ month_num }}" {% if month_num==selected_month %}selected{% endif %}>
                                 {{ month_name }}
                             </option>
                             {% endfor %}
@@ -43,7 +44,7 @@
                         <span class="input-group-text bg-white"><i class="fas fa-history text-muted"></i></span>
                         <select name="year" class="form-select border-start-0">
                             {% for year_option in years %}
-                            <option value="{{ year_option }}" {% if year_option == selected_year %}selected{% endif %}>
+                            <option value="{{ year_option }}" {% if year_option==selected_year %}selected{% endif %}>
                                 {{ year_option }}
                             </option>
                             {% endfor %}
@@ -69,8 +70,10 @@
                             <div class="card-subtitle">Monthly Revenue ({{ selected_month }}/{{ selected_year }})</div>
                             <div class="card-value">Rs. {{ monthly_revenue|floatformat:2 }}</div>
                             <div class="small mt-2">
-                                <span class="badge bg-light text-dark"><i class="fas fa-box me-1"></i> Products: Rs. {{ product_monthly_revenue|floatformat:2 }}</span>
-                                <span class="badge bg-light text-dark ms-2"><i class="fas fa-cut me-1"></i> Services: Rs. {{ service_monthly_revenue|floatformat:2 }}</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-box me-1"></i> Products: Rs. {{
+                                    product_monthly_revenue|floatformat:2 }}</span>
+                                <span class="badge bg-light text-dark ms-2"><i class="fas fa-cut me-1"></i> Services:
+                                    Rs. {{ service_monthly_revenue|floatformat:2 }}</span>
                             </div>
                         </div>
                         <div class="card-icon">
@@ -90,8 +93,10 @@
                             <div class="card-subtitle">Annual Revenue (Year {{ selected_year }})</div>
                             <div class="card-value">Rs. {{ yearly_revenue|floatformat:2 }}</div>
                             <div class="small mt-2">
-                                <span class="badge bg-light text-dark"><i class="fas fa-box me-1"></i> Products: Rs. {{ product_yearly_revenue|floatformat:2 }}</span>
-                                <span class="badge bg-light text-dark ms-2"><i class="fas fa-cut me-1"></i> Services: Rs. {{ service_yearly_revenue|floatformat:2 }}</span>
+                                <span class="badge bg-light text-dark"><i class="fas fa-box me-1"></i> Products: Rs. {{
+                                    product_yearly_revenue|floatformat:2 }}</span>
+                                <span class="badge bg-light text-dark ms-2"><i class="fas fa-cut me-1"></i> Services:
+                                    Rs. {{ service_yearly_revenue|floatformat:2 }}</span>
                             </div>
                         </div>
                         <div class="card-icon">
@@ -106,7 +111,8 @@
     <!-- Daily Sales Summary -->
     <div class="card shadow-sm border-0 mb-5">
         <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Daily Summary ({{ selected_month }}/{{ selected_year }})</h5>
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Daily Summary ({{ selected_month }}/{{ selected_year
+                }})</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -127,7 +133,8 @@
                             <td class="text-end pe-4 fw-bold">Rs. {{ d.total|floatformat:2 }}</td>
                             <td class="pe-4">
                                 <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ d.percentage }}%"></div>
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                        style="width: {{ d.percentage }}%"></div>
                                 </div>
                             </td>
                         </tr>
@@ -177,7 +184,7 @@
                             <td>
                                 {% if sale.customer %}
                                 <div class="text-dark">
-                                    <i class="fas fa-user-circle text-primary me-1"></i> 
+                                    <i class="fas fa-user-circle text-primary me-1"></i>
                                     {{ sale.customer.get_full_name|default:sale.customer.username }}
                                 </div>
                                 {% else %}
@@ -217,27 +224,30 @@
                 <ul class="pagination justify-content-center mb-0">
                     {% if sales_page.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ sales_page.previous_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
+                        <a class="page-link"
+                            href="?page={{ sales_page.previous_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     </li>
                     {% endif %}
 
                     {% for i in sales_page.paginator.page_range %}
-                        {% if sales_page.number == i %}
-                        <li class="page-item active" aria-current="page">
-                            <span class="page-link">{{ i }}</span>
-                        </li>
-                        {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ i }}&month={{ selected_month }}&year={{ selected_year }}">{{ i }}</a>
-                        </li>
-                        {% endif %}
+                    {% if sales_page.number == i %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link text-white">{{ i }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ i }}&month={{ selected_month }}&year={{ selected_year }}">{{
+                            i }}</a>
+                    </li>
+                    {% endif %}
                     {% endfor %}
 
                     {% if sales_page.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ sales_page.next_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
+                        <a class="page-link"
+                            href="?page={{ sales_page.next_page_number }}&month={{ selected_month }}&year={{ selected_year }}">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>

@@ -13,7 +13,7 @@
     <div class="welcome-header d-flex justify-content-between align-items-center mb-5">
         <div>
             <h1>
-                <i class="fas fa-home text-primary"></i> 
+                <i class="fas fa-home text-primary"></i>
                 Welcome back, {{ request.user.get_full_name|default:request.user.username }}!
             </h1>
             <p>Here's what's happening with your pet studio today.</p>
@@ -67,7 +67,9 @@
                             </div>
                             <div class="col">
                                 <div class="progress progress-sm mr-2 dashboard-progress">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ tasks_percentage }}%;" aria-valuenow="{{ tasks_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                        style="width: {{ tasks_percentage }}%;" aria-valuenow="{{ tasks_percentage }}"
+                                        aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </div>
                         </div>
@@ -123,7 +125,8 @@
                     <div class="section-title">
                         <i class="fas fa-history text-primary"></i> Recent Appointments
                     </div>
-                    <a href="{% url 'admin_appointment_list' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    <a href="{% url 'admin_appointment_list' %}"
+                        class="btn btn-outline-primary btn-sm rounded-pill px-3">
                         View All
                     </a>
                 </div>
@@ -142,38 +145,42 @@
                             </thead>
                             <tbody>
                                 {% if recent_appointments %}
-                                    {% for appointment in recent_appointments %}
-                                    <tr>
-                                        <td><a href="{% url 'admin_appointment_detail' appointment.id %}" class="text-primary fw-bold">#{{ appointment.id }}</a></td>
-                                        <td class="fw-bold">
-                                            <a href="{% url 'admin_appointment_detail' appointment.id %}" class="text-dark">{{ appointment.pet_name }}</a>
-                                        </td>
-                                        <td>
-                                            <i class="fas fa-user-circle text-primary me-1"></i> 
-                                            {{ appointment.user.get_full_name|default:appointment.user.username }}
-                                        </td>
-                                        <td>{{ appointment.get_service_display }}</td>
-                                        <td>
-                                            <div class="text-dark small">{{ appointment.appointment_date|date:"M d, Y" }}</div>
-                                            <div class="text-muted smaller">{{ appointment.appointment_time|time:"h:i A" }}</div>
-                                        </td>
-                                        <td>
-                                            <span class="status-pill 
+                                {% for appointment in recent_appointments %}
+                                <tr>
+                                    <td><a href="{% url 'admin_appointment_detail' appointment.id %}"
+                                            class="text-primary fw-bold">#{{ appointment.id }}</a></td>
+                                    <td class="fw-bold">
+                                        <a href="{% url 'admin_appointment_detail' appointment.id %}"
+                                            class="text-dark">{{ appointment.pet_name }}</a>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-user-circle text-primary me-1"></i>
+                                        {{ appointment.user.get_full_name|default:appointment.user.username }}
+                                    </td>
+                                    <td>{{ appointment.get_service_display }}</td>
+                                    <td>
+                                        <div class="text-dark small">{{ appointment.appointment_date|date:"M d, Y" }}
+                                        </div>
+                                        <div class="text-muted smaller">{{ appointment.appointment_time|time:"h:i A" }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill 
                                                  {% if appointment.status == 'completed' %}status-completed
                                                  {% elif appointment.status == 'pending' %}status-pending
                                                  {% elif appointment.status == 'confirmed' %}status-confirmed
                                                  {% else %}status-cancelled{% endif %}">
-                                                 {{ appointment.status|title }}
-                                             </span>
-                                         </td>
-                                    </tr>
-                                    {% endfor %}
+                                            {{ appointment.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
                                 {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            No recent appointments found.
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        No recent appointments found.
+                                    </td>
+                                </tr>
                                 {% endif %}
                             </tbody>
                         </table>
@@ -189,28 +196,29 @@
                     <div class="section-title text-warning">
                         <i class="fas fa-exclamation-triangle"></i> Low Stock Alert
                     </div>
-                    <a href="{% url 'products:product_list' %}" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                    <a href="{% url 'products:product_list' %}"
+                        class="btn btn-outline-warning btn-sm rounded-pill px-3">
                         View All
                     </a>
                 </div>
                 <div class="card-body p-0">
                     {% if low_stock_products %}
-                        {% for product in low_stock_products %}
-                        <div class="stock-item">
-                            <div class="stock-info">
-                                <h6>{{ product.name }}</h6>
-                                <p>{{ product.category.name|default:"Product" }}</p>
-                            </div>
-                            <div class="stock-badge badge-low">
-                                {{ product.stock_quantity }} left
-                            </div>
+                    {% for product in low_stock_products %}
+                    <div class="stock-item">
+                        <div class="stock-info">
+                            <h6>{{ product.name }}</h6>
+                            <p>{{ product.category.name|default:"Product" }}</p>
                         </div>
-                        {% endfor %}
+                        <div class="stock-badge badge-low">
+                            {{ product.stock_quantity }} left
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <div class="text-center py-5 text-muted">
-                            <i class="fas fa-check-circle text-success fs-1 mb-3"></i>
-                            <p>Inventory is in good shape!</p>
-                        </div>
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle text-success fs-1 mb-3"></i>
+                        <p>Inventory is in good shape!</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -222,10 +230,11 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const chartData = {{ chart_data_json|safe }};
+    document.addEventListener('DOMContentLoaded', function () {
+        const chartJsonText = '{{ chart_data_json|escapejs }}';
+        const chartData = JSON.parse(chartJsonText);
         const ctx = document.getElementById('salesChart').getContext('2d');
-        
+
         new Chart(ctx, {
             type: 'line',
             data: {

@@ -92,7 +92,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for message in messages %}
+                        {% for message in contact_messages_list %}
                         <tr class="{% if not message.is_read %}unread-row{% endif %}">
                             <td>
                                 {% if not message.is_read %}
