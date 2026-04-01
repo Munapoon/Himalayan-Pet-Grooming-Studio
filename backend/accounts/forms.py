@@ -220,6 +220,23 @@ class VerifyResetCodeForm(forms.Form):
     )
 
 
+class VerifyEmailForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'readonly': 'readonly'
+        })
+    )
+    code = forms.CharField(
+        max_length=6,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter 6-digit verification code',
+            'style': 'letter-spacing: 4px; font-size: 1.4rem; font-weight: 700;'
+        })
+    )
+
+
 class ResetPasswordForm(forms.Form):
     new_password1 = forms.CharField(
         label="New Password",
