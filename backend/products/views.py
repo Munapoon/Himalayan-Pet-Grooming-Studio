@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
 import requests as http_requests
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 from accounts.decorators import admin_required
 from .models import ProductCategory, Product, Cart, Order, OrderItem, Payment, Sale
@@ -506,13 +508,27 @@ def checkout(request):
             
             # Send email confirmation
             from django.core.mail import send_mail
-            subject = f"Order Confirmed: #{order.order_number}"
-            message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
-                      f"Your order #{order.order_number} has been placed successfully!\n" \
-                      f"Total amount to pay on delivery: Rs. {order.total_amount}.\n\n" \
-                      f"Thank you for shopping with Himalayan Pet Studio!"
+            
+            subject = f"Order #{order.order_number} Placed"
+            
+            context = {
+                'user_name': request.user.get_full_name() or request.user.username,
+                'order': order,
+                'site_url': request.build_absolute_uri('/')[:-1]
+            }
+            
+            html_message = render_to_string('emails/order_confirmation.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    settings.DEFAULT_FROM_EMAIL, 
+                    [request.user.email], 
+                    html_message=html_message,
+                    fail_silently=True
+                )
             except Exception as e:
                 print(f"DEBUG: Email confirmation error (COD): {e}")
                 pass
@@ -531,12 +547,17 @@ def checkout(request):
             url = f"{settings.KHALTI_BASE_URL}epayment/initiate/"
             return_url = request.build_absolute_uri(reverse('products:khalti_verify'))
             
+            # Build purchase name from product items
+            product_names = ", ".join([item.product.name for item in order.items.all()])
+            if len(product_names) > 80:
+                product_names = product_names[:77] + "..."
+            
             payload = {
                 "return_url": return_url,
                 "website_url": request.build_absolute_uri('/'),
                 "amount": int(order.total_amount * 100),
                 "purchase_order_id": f"order-{order.order_number}",
-                "purchase_order_name": f"Himalayan Pet Studio Order #{order.order_number}",
+                "purchase_order_name": f"Order #{order.order_number}: {product_names}",
                 "customer_info": {
                     "name": request.user.get_full_name() or request.user.username,
                     "email": request.user.email or "customer@example.com",
@@ -653,13 +674,27 @@ def khalti_verify(request):
                 
                 # Send email confirmation
                 from django.core.mail import send_mail
-                subject = f"Payment Confirmed: Order #{order.order_number}"
-                message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
-                          f"Your Khalti payment of Rs. {order.total_amount} for order #{order.order_number} was successful!\n" \
-                          f"Your order is now being processed.\n\n" \
-                          f"Thank you for shopping with Himalayan Pet Studio!"
+                
+                subject = f"Payment Received: Order #{order.order_number}"
+                
+                context = {
+                    'user_name': request.user.get_full_name() or request.user.username,
+                    'order': order,
+                    'site_url': request.build_absolute_uri('/')[:-1]
+                }
+                
+                html_message = render_to_string('emails/order_confirmation.html', context)
+                plain_message = strip_tags(html_message)
+                
                 try:
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                    send_mail(
+                        subject, 
+                        plain_message, 
+                        settings.DEFAULT_FROM_EMAIL, 
+                        [request.user.email], 
+                        html_message=html_message,
+                        fail_silently=True
+                    )
                 except Exception as e:
                     print(f"DEBUG: Email confirmation error (Khalti): {e}")
                     pass
@@ -815,7 +850,7 @@ def update_order_status(request, order_number):
 def admin_review_list(request):
     """Admin view to list all product reviews"""
     from .models import Review
-    from django.db.models import Q
+    from django.db.models import Q, Avg
     from django.core.paginator import Paginator
     
     # Get filter parameters
@@ -847,15 +882,41 @@ def admin_review_list(request):
     
     # Get all products for filter dropdown
     products = Product.objects.filter(is_active=True).order_by('name')
+
+    # Metrics
+    total_reviews = Review.objects.count()
+    approved_count = Review.objects.filter(is_approved=True).count()
+    pending_count = Review.objects.filter(is_approved=False).count()
+    avg_rating = Review.objects.aggregate(Avg('rating'))['rating__avg'] or 0
+    five_star_count = Review.objects.filter(rating=5).count()
     
     context = {
         'page_obj': page_obj,
         'rating_filter': rating_filter,
         'product_filter': product_filter,
+        'product_filter_int': int(product_filter) if product_filter else None,
         'search_query': search_query,
         'products': products,
+        'total_reviews': total_reviews,
+        'approved_count': approved_count,
+        'pending_count': pending_count,
+        'avg_rating': round(avg_rating, 1),
+        'five_star_count': five_star_count,
     }
     return render(request, 'products/admin_review_list.html', context)
+
+
+@login_required
+@admin_required
+def admin_approve_review(request, pk):
+    """Toggle approval status of a product review"""
+    from .models import Review
+    review = get_object_or_404(Review, pk=pk)
+    review.is_approved = not review.is_approved
+    review.save()
+    status = "approved" if review.is_approved else "unapproved"
+    messages.success(request, f'Review has been {status}.')
+    return redirect('products:admin_review_list')
 
 
 @login_required
@@ -874,6 +935,7 @@ def admin_delete_review(request, pk):
         return redirect('products:admin_review_list')
     
     return render(request, 'products/admin_review_confirm_delete.html', {'review': review})
+
 
 
 # Payment Views

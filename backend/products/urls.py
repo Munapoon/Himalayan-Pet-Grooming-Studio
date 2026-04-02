@@ -38,6 +38,7 @@ urlpatterns = [
     path('review/<int:pk>/delete/', views.delete_review, name='delete_review'),
     path('reviews/admin/', views.admin_review_list, name='admin_review_list'),
     path('reviews/admin/<int:pk>/delete/', views.admin_delete_review, name='admin_delete_review'),
+    path('reviews/admin/<int:pk>/approve/', views.admin_approve_review, name='admin_approve_review'),
     
     # Payment URLs
     path('payments/', views.user_payment_list, name='user_payment_list'),

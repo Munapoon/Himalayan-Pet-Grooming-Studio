@@ -22,6 +22,8 @@ urlpatterns = [
     path('service/<str:service_type>/', views.service_detail, name='service_detail'),
     path('service/<str:service_type>/review/', views.add_service_review, name='add_service_review'),
     path('reviews/admin/', views.admin_service_review_list, name='admin_service_review_list'),
+    path('reviews/admin/<int:pk>/approve/', views.admin_approve_service_review, name='admin_approve_service_review'),
+    path('reviews/admin/<int:pk>/delete/', views.admin_delete_service_review, name='admin_delete_service_review'),
     
     # Service Admin CRUD
     path('admin-dashboard/services/', views.admin_service_list, name='admin_service_list'),

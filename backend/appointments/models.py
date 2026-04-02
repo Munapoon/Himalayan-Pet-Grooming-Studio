@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 import json
 from decimal import Decimal
+from datetime import datetime
 
 
 class Service(models.Model):
@@ -120,10 +121,21 @@ class Appointment(models.Model):
 
     @property
     def is_refund_eligible(self):
-        """Refund eligible ONLY if cancelled within 24 hours of booking."""
+        """
+        Refund eligible ONLY if cancelled at least 24 hours before the appointment time.
+        """
         now = timezone.now()
-        time_diff = now - self.created_at
-        return time_diff.total_seconds() <= 24 * 3600
+        
+        # Combine date and time to get the appointment datetime
+        # appointment_time is a time object, appointment_date is a date object
+        appt_datetime = timezone.make_aware(
+            datetime.combine(self.appointment_date, self.appointment_time),
+            timezone.get_current_timezone()
+        )
+        
+        time_diff = appt_datetime - now
+        # Refund only if cancellation is at least 24 hours before the appointment
+        return time_diff.total_seconds() >= 24 * 3600
 
     @property
     def pending_amount(self):
@@ -171,6 +183,7 @@ class ServiceReview(models.Model):
     service = models.CharField(max_length=100)
     rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)])
     review = models.TextField()
+    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

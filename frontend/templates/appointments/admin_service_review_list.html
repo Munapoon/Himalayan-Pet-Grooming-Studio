@@ -1,210 +1,332 @@
 {% extends 'admin_base.html' %}
+{% load static %}
 
-{% block title %}Service Review Management - Admin Panel{% endblock %}
+{% block title %}Service Reviews - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #fff;
+        padding: 24px 20px;
+    }
+
+    .metric-title {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .metric-value {
+        font-size: 1.7rem;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .metric-desc {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .filter-bar {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 0.85rem;
+        color: #475569;
+        background: #f8fafc;
+    }
+
+    .review-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+        position: relative;
+    }
+
+    .review-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .service-icon {
+        width: 42px;
+        height: 42px;
+        background: #eff6ff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3b82f6;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .review-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .review-sub {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    .review-text {
+        font-size: 0.85rem;
+        color: #475569;
+        margin: 8px 0;
+    }
+
+    .review-meta {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .badge-approved {
+        background: #dcfce7;
+        color: #16a34a;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-pending {
+        background: #fef9c3;
+        color: #ca8a04;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .star-filled {
+        color: #f59e0b;
+    }
+
+    .star-empty {
+        color: #d1d5db;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        color: white;
+        font-size: 0.75rem;
+        text-decoration: none;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+
+    .btn-approve-on {
+        background: #22c55e;
+    }
+
+    .btn-approve-off {
+        background: #94a3b8;
+    }
+
+    .btn-delete-red {
+        background: #ef4444;
+    }
+
+    .action-btn:hover {
+        opacity: 0.85;
+        color: white;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary mb-2">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </a>
-            <h2><i class="fas fa-star"></i> Service Review Management</h2>
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="h4 mb-0 text-dark" style="font-weight: 400;">
+            <i class="fas fa-cut me-2 text-dark"></i> Service Reviews
+        </h2>
+    </div>
+
+    <!-- Metrics -->
+    <div class="row mb-4 gx-3">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-title">Average Rating</div>
+                <div class="metric-value text-dark">{{ avg_rating }} <span class="text-warning fs-5">&#9733;</span>
+                </div>
+                <div class="metric-desc">{{ total_reviews }} review{{ total_reviews|pluralize }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-title">Approved</div>
+                <div class="metric-value text-success">{{ approved_count }}</div>
+                <div class="metric-desc">Published reviews</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-title">Pending</div>
+                <div class="metric-value text-warning">{{ pending_count }}</div>
+                <div class="metric-desc">Awaiting approval</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-title">5 Star Reviews</div>
+                <div class="metric-value text-primary">{{ five_star_count }}</div>
+                <div class="metric-desc">Excellent feedback</div>
+            </div>
         </div>
     </div>
-    
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center bg-primary text-white">
-                <div class="card-body">
-                    <h3 class="mb-0">{{ total_reviews }}</h3>
-                    <p class="mb-0"><i class="fas fa-comments"></i> Total Reviews</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center bg-warning text-white">
-                <div class="card-body">
-                    <h3 class="mb-0">{{ avg_rating }}</h3>
-                    <p class="mb-0"><i class="fas fa-star"></i> Average Rating</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center bg-info text-white">
-                <div class="card-body">
-                    <h3 class="mb-0">{{ service_stats|length }}</h3>
-                    <p class="mb-0"><i class="fas fa-cut"></i> Service Types</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Service Statistics -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Service-wise Statistics</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                {% for stat in service_stats %}
-                <div class="col-md-4 mb-3">
-                    <div class="border rounded p-3 bg-light">
-                        <h6><i class="fas fa-cut text-primary"></i> {{ stat.name }}</h6>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-warning">
-                                <i class="fas fa-star"></i> {{ stat.avg_rating }}
-                            </span>
-                            <span class="badge bg-secondary">{{ stat.count }} review{{ stat.count|pluralize }}</span>
-                        </div>
-                    </div>
-                </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="get" id="serviceReviewFilter" class="d-flex gap-2 flex-grow-1 align-items-center flex-wrap">
+            <select name="service" id="srvSelect" onchange="this.form.submit()" style="min-width:160px;">
+                <option value="">All Services</option>
+                {% for code, name in service_choices %}
+                <option value="{{ code }}">{{ name }}</option>
                 {% endfor %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Filters -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-5">
-                    <label class="form-label">Filter by Service</label>
-                    <select name="service" class="form-select">
-                        <option value="">All Services</option>
-                        {% for code, name in service_choices %}
-                        <option value="{{ code }}" {% if service_filter == code %}selected{% endif %}>{{ name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-5">
-                    <label class="form-label">Filter by Rating</label>
-                    <select name="rating" class="form-select">
-                        <option value="">All Ratings</option>
-                        {% for i in "54321" %}
-                        <option value="{{ i }}" {% if rating_filter == i %}selected{% endif %}>{{ i }} Star{{ i|pluralize }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Apply
-                    </button>
-                </div>
-            </form>
+            </select>
+            <select name="rating" id="srvRatingSelect" onchange="this.form.submit()" style="min-width:130px;">
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+            </select>
+            <input type="text" name="search" value="{{ request.GET.search|default:'' }}"
+                placeholder="Search by customer or pet name..." class="flex-grow-1">
+            <button type="submit" class="btn btn-sm btn-primary px-3">Search</button>
             {% if service_filter or rating_filter %}
-            <div class="mt-3">
-                <a href="{% url 'admin_service_review_list' %}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-times"></i> Clear All Filters
-                </a>
-            </div>
+            <a href="{% url 'admin_service_review_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
             {% endif %}
-        </div>
+        </form>
     </div>
-    
-    <!-- Reviews List -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="fas fa-list"></i> All Reviews ({{ page_obj.paginator.count }})</h5>
-        </div>
-        <div class="card-body">
-            {% if page_obj %}
-                <div class="row">
-                    {% for review in page_obj %}
-                    <div class="col-lg-6 mb-4">
-                        <div class="card h-100 border">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="flex-grow-1">
-                                        <h5 class="card-title mb-1">
-                                            <span class="badge bg-info">
-                                                <i class="fas fa-cut"></i> {{ review.get_service_display }}
-                                            </span>
-                                        </h5>
-                                        <div class="text-warning mb-2">
-                                            {% for i in "12345" %}
-                                                {% if forloop.counter <= review.rating %}
-                                                    <i class="fas fa-star"></i>
-                                                {% else %}
-                                                    <i class="far fa-star"></i>
-                                                {% endif %}
-                                            {% endfor %}
-                                            <span class="text-muted ms-2">({{ review.rating }}/5)</span>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div class="mb-3">
-                                    <strong><i class="fas fa-user-circle text-primary"></i> Customer:</strong>
-                                    {{ review.user.get_full_name }}
-                                    <br>
-                                    <small class="text-muted">{{ review.user.email }}</small>
-                                </div>
-
-                                {% if review.review %}
-                                <div class="mb-3">
-                                    <strong><i class="fas fa-comment text-info"></i> Review:</strong>
-                                    <p class="mb-0 mt-1 text-muted">{{ review.review }}</p>
-                                </div>
-                                {% endif %}
-
-                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                    <small class="text-muted">
-                                        <i class="fas fa-clock"></i> {{ review.created_at|date:"M d, Y" }}<br>
-                                        <span class="ms-3">{{ review.created_at|time:"h:i A" }}</span>
-                                    </small>
-                                    {% if review.updated_at != review.created_at %}
-                                    <small class="text-success">
-                                        <i class="fas fa-edit"></i> Updated: {{ review.updated_at|date:"M d, Y" }}
-                                    </small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+    <!-- Review Cards -->
+    {% for review in page_obj %}
+    <div class="review-card">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex gap-3 align-items-start flex-grow-1">
+                <div class="service-icon">
+                    <i class="fas fa-cut"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="review-name">{{ review.get_service_display }}</span>
+                        {% if review.is_approved %}
+                        <span class="badge-approved">Approved</span>
+                        {% else %}
+                        <span class="badge-pending">Pending</span>
+                        {% endif %}
                     </div>
-                    {% endfor %}
+                    <div class="review-sub">
+                        <!-- Stars -->
+                        {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}<i class="fas fa-star star-filled"
+                            style="font-size:0.8rem;"></i>
+                            {% else %}<i class="far fa-star star-empty" style="font-size:0.8rem;"></i>{% endif %}
+                            {% endfor %}
+                            by {{ review.user.get_full_name|default:review.user.username }}
+                            {% if review.appointment %} for {{ review.appointment.pet_name }} ({{
+                            review.appointment.pet_type }}){% endif %}
+                    </div>
+                    {% if review.appointment %}
+                    <div class="review-sub">Appointment ID: APT-{{ review.appointment.id|stringformat:"03d" }}</div>
+                    {% endif %}
+                    <p class="review-text mt-2 mb-1">{{ review.review }}</p>
+                    <div class="review-meta">
+                        {{ review.created_at|date:"M d, Y" }}
+                        {% if review.helpful_count %}<span class="ms-3">&#128077; {{ review.helpful_count }}
+                            helpful</span>{% endif %}
+                    </div>
                 </div>
-                
-                <!-- Pagination -->
-                {% if page_obj.has_other_pages %}
-                <nav aria-label="Page navigation" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1{% if service_filter %}&service={{ service_filter }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}">First</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}">Previous</a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="page-item active">
-                            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                        </li>
-                        
-                        {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}">Next</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if service_filter %}&service={{ service_filter }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}">Last</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Reviews Found</h4>
-                    <p class="text-muted">Reviews will appear here once customers complete and rate services.</p>
-                </div>
-            {% endif %}
+            </div>
+            <!-- Actions -->
+            <div class="d-flex gap-1 ms-3 flex-shrink-0">
+                <form method="post" action="{% url 'admin_approve_service_review' review.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="action-btn {% if review.is_approved %}btn-approve-on{% else %}btn-approve-off{% endif %}"
+                        title="{% if review.is_approved %}Unapprove{% else %}Approve{% endif %}">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </form>
+                <form method="post" action="{% url 'admin_delete_service_review' review.id %}" style="display:inline;"
+                    onsubmit="return confirm('Delete this review?');">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn btn-delete-red" title="Delete">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
+    {% empty %}
+    <div class="text-center py-5 text-muted">
+        <i class="fas fa-star fa-3x mb-3 opacity-25"></i>
+        <p>No reviews found.</p>
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-3">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}&service={{ service_filter }}&rating={{ rating_filter }}">Previous</a>
+            </li>{% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link"
+                    href="?page={{ num }}&service={{ service_filter }}&rating={{ rating_filter }}">{{ num }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}&service={{ service_filter }}&rating={{ rating_filter }}">Next</a>
+            </li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var params = new URLSearchParams(window.location.search);
+        var service = params.get('service');
+        var rating = params.get('rating');
+        if (service) {
+            var sel = document.getElementById('srvSelect');
+            if (sel) sel.value = service;
+        }
+        if (rating) {
+            var sel2 = document.getElementById('srvRatingSelect');
+            if (sel2) sel2.value = rating;
+        }
+    });
+</script>
 {% endblock %}

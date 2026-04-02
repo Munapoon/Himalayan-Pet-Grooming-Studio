@@ -1,6 +1,6 @@
 from django import forms
 from .models import Appointment, Service
-from datetime import time
+from datetime import time, timedelta, datetime
 from django.utils import timezone
 import json
 
@@ -19,7 +19,11 @@ class AppointmentForm(forms.ModelForm):
             'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dog, Cat, etc.'}),
             'appointment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'min': '09:00', 'max': '18:00'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Special instructions...'}),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 3, 
+                'placeholder': 'Special instructions... e.g., [Medical: Heart Issue], [Medication: Weekly injection]'
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -52,16 +56,22 @@ class AppointmentForm(forms.ModelForm):
             # Get current local time (naive, stripped of tzinfo for comparison with form's naive time)
             local_now = timezone.localtime()
             today = local_now.date()
-            current_time = local_now.time().replace(tzinfo=None)
 
-            # Check if appointment is in the past
+            # Check if appointment is in the past or too soon
             if appointment_date < today:
                 raise forms.ValidationError('You cannot book an appointment for a past date.')
-            if appointment_date == today and appointment_time <= current_time:
-                raise forms.ValidationError(
-                    f'The selected time {appointment_time.strftime("%I:%M %p")} has already passed. '
-                    f'Please choose a future time (current time: {current_time.strftime("%I:%M %p")}).'
-                )
+            
+            if appointment_date == today:
+                # Enforce 30-minute advance booking for today's appointments
+                cutoff_datetime = local_now + timedelta(minutes=30)
+                
+                # If 30 minutes from now is already past today's operating hours (handled by clean_appointment_time)
+                # or if it rolls to tomorrow, just show a general "too soon" message.
+                if cutoff_datetime.date() > today or appointment_time < cutoff_datetime.time():
+                    raise forms.ValidationError(
+                        f'Appointments must be booked at least 30 minutes in advance to allow for studio preparation. '
+                        f'Earliest available for today: {cutoff_datetime.strftime("%I:%M %p")}.'
+                    )
 
             # Check if slot is already booked
             existing_appointment = Appointment.objects.filter(

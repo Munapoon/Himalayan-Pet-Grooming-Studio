@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - Himalayan Pet Studio{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero {
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("{% static 'images/about_hero.png' %}");
+        background-size: cover;
+        background-position: center;
+        height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+    .about-hero h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+    }
+    .mission-section {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 4rem;
+        margin-bottom: 4rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    .stat-card:hover {
+        transform: translateY(-10px);
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ff6b6b;
+    }
+    .team-member img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 1.5rem;
+        border: 5px solid #fff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        font-size: 1.5rem;
+    }
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+    <div class="container text-center">
+        <h1 class="display-3">Our Story</h1>
+        <p class="lead fs-4">Grooming with heart in the heart of Himalayas.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <h2 class="section-title mb-4">Dedicated to Your Pets</h2>
+            <p class="text-muted fs-5 mb-4">
+                Founded in Amar Singh Chowk, Pokhara, Himalayan Pet Grooming Studio started with a simple belief: every pet deserves a grooming experience that is as relaxing as it is refreshing.
+            </p>
+            <p class="text-muted mb-4">
+                We understand that pets are more than just animals; they are members of the family. Our team of certified professional groomers is dedicated to providing high-quality, compassionate care tailored to each pet's unique needs and personality.
+            </p>
+            <div class="row g-4 mt-2">
+                <div class="col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-primary-soft me-3">
+                            <i class="fas fa-certificate text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Certified Experts</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-success-soft me-3">
+                            <i class="fas fa-leaf text-success"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Organic Products</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="image-stack position-relative ms-lg-5 mt-4 mt-lg-0">
+                <img src="{% static 'images/about_hero.png' %}" alt="Pet Studio" class="img-fluid rounded-4 shadow">
+            </div>
+        </div>
+    </div>
+
+    <div class="mission-section">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <h2 class="fw-bold">Our Philosophy</h2>
+                <p class="text-muted">We don't just groom; we build relationships with our furry clients and their owners.</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number">5K+</div>
+                    <div class="fw-bold">Happy Pets</div>
+                    <p class="small text-muted mt-2">Satisfied furry friends groomed by our experts.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number">10+</div>
+                    <div class="fw-bold">Expert Groomers</div>
+                    <p class="small text-muted mt-2">Certified professionals who love what they do.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="fw-bold">Eco-Friendly</div>
+                    <p class="small text-muted mt-2">We use only organic and safe grooming products.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="mb-5 pb-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Meet our Leadership</h2>
+            <p class="text-muted">The passionate humans behind the paw-fect grooming.</p>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-4 team-member">
+                <img src="https://ui-avatars.com/api/?name=Anup+Gautam&background=ff6b6b&color=fff&size=150" alt="Anup Gautam">
+                <h5>Anup Gautam</h5>
+                <p class="text-muted">Founder & Master Groomer</p>
+            </div>
+            <div class="col-md-4 team-member">
+                <img src="https://ui-avatars.com/api/?name=Srijana+Chapaigain&background=4ecdc4&color=fff&size=150" alt="Srijana Chapaigain">
+                <h5>Srijana Chapaigain</h5>
+                <p class="text-muted">Lead Stylist</p>
+            </div>
+            <div class="col-md-4 team-member">
+                <img src="https://ui-avatars.com/api/?name=Kushal+Gurung&background=ffe66d&color=fff&size=150" alt="Kushal Gurung">
+                <h5>Kushal Gurung</h5>
+                <p class="text-muted">Studio Operations Manager</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -8,6 +8,8 @@ from django.db.models import Q
 import requests as http_requests
 import json
 import decimal
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 from .models import Appointment, Service, ServiceReview
 from .forms import AppointmentForm
@@ -146,7 +148,7 @@ def appointment_khalti_initiate(request, pk):
         "website_url": request.build_absolute_uri('/'),
         "amount": int(appointment.advance_amount * 100),
         "purchase_order_id": f"appt-{appointment.pk}",
-        "purchase_order_name": f"Grooming Advance for {appointment.pet_name}",
+        "purchase_order_name": f"Booking #{appointment.id}: {appointment.get_service_display()} for {appointment.pet_name}",
         "customer_info": {
             "name": request.user.get_full_name() or request.user.username,
             "email": request.user.email or "customer@example.com",
@@ -231,13 +233,28 @@ def appointment_khalti_verify(request):
                 # Send email confirmation
                 from django.core.mail import send_mail
                 from django.conf import settings
+                
                 subject = f"Booking Confirmed: {appointment.pet_name}'s Grooming"
-                message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
-                          f"Your appointment for {appointment.pet_name} on {appointment.appointment_date} at {appointment.appointment_time} has been confirmed!\n" \
-                          f"We have received your advance payment of Rs. {appointment.advance_amount}.\n\n" \
-                          f"Thank you for choosing Himalayan Pet Studio!"
+                
+                context = {
+                    'user_name': request.user.get_full_name() or request.user.username,
+                    'appointment': appointment,
+                    'service_name': appointment.get_service_display(),
+                    'site_url': request.build_absolute_uri('/')[:-1]
+                }
+                
+                html_message = render_to_string('emails/appointment_confirmation.html', context)
+                plain_message = strip_tags(html_message)
+                
                 try:
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                    send_mail(
+                        subject, 
+                        plain_message, 
+                        settings.DEFAULT_FROM_EMAIL, 
+                        [request.user.email], 
+                        html_message=html_message,
+                        fail_silently=True
+                    )
                 except Exception as e:
                     print(f"DEBUG: Appointment payment email error: {e}")
                     pass
@@ -360,10 +377,17 @@ def appointment_cancel(request, pk):
         
         if appointment.payment_status == 'advance_paid' or appointment.payment_status == 'paid':
             if is_eligible:
+                import decimal
+                # Deduct 50% fee (assuming advance is Rs. 10, fee is Rs. 5)
+                full_advance = appointment.advance_amount
+                fee = full_advance / 2
+                refund_amount = full_advance - fee
+                
                 appointment.payment_status = 'refunded'
-                messages.success(request, 'Appointment cancelled. Your advance payment will be refunded shortly since you cancelled within 24 hours of booking.')
+                # Optionally record the fee in notes or just update statuses
+                messages.success(request, f'Appointment cancelled. A 50% cancellation fee (Rs. {fee}) has been deducted. Your remaining Rs. {refund_amount} will be refunded shortly.')
             else:
-                messages.warning(request, 'Appointment cancelled. Note: Cancellation is more than 24 hours after booking, so your advance payment is non-refundable.')
+                messages.warning(request, 'Appointment cancelled.')
         else:
             messages.success(request, 'Appointment successfully cancelled.')
             
@@ -558,12 +582,28 @@ def appointment_confirm(request, pk):
             # Send email confirmation
             from django.core.mail import send_mail
             from django.conf import settings
+            
             subject = f"Appointment Confirmed: {appointment.pet_name}'s Grooming"
-            message = f"Hello {appointment.user.get_full_name() or appointment.user.username},\n\n" \
-                      f"Your appointment for {appointment.pet_name} on {appointment.appointment_date} at {appointment.appointment_time} has been confirmed by our staff!\n\n" \
-                      f"We look forward to seeing you at Himalayan Pet Studio."
+            
+            context = {
+                'user_name': appointment.user.get_full_name() or appointment.user.username,
+                'appointment': appointment,
+                'service_name': appointment.get_service_display(),
+                'site_url': request.build_absolute_uri('/')[:-1]
+            }
+            
+            html_message = render_to_string('emails/appointment_confirmation.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [appointment.user.email], fail_silently=True)
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    settings.DEFAULT_FROM_EMAIL, 
+                    [appointment.user.email], 
+                    html_message=html_message,
+                    fail_silently=True
+                )
             except Exception as e:
                 print(f"DEBUG: Appointment confirm email error: {e}")
                 pass
@@ -623,9 +663,12 @@ def admin_service_review_list(request):
     if rating_filter:
         reviews = reviews.filter(rating=int(rating_filter))
     
-    # Statistics
+    # Metrics
     total_reviews = ServiceReview.objects.count()
     avg_rating = ServiceReview.objects.aggregate(Avg('rating'))['rating__avg'] or 0
+    approved_count = ServiceReview.objects.filter(is_approved=True).count()
+    pending_count = ServiceReview.objects.filter(is_approved=False).count()
+    five_star_count = ServiceReview.objects.filter(rating=5).count()
     
     # Service-wise stats
     service_stats = []
@@ -649,6 +692,9 @@ def admin_service_review_list(request):
         'page_obj': page_obj,
         'total_reviews': total_reviews,
         'avg_rating': round(avg_rating, 1),
+        'approved_count': approved_count,
+        'pending_count': pending_count,
+        'five_star_count': five_star_count,
         'service_stats': service_stats,
         'service_choices': Appointment.SERVICE_CHOICES,
         'service_filter': service_filter,
@@ -656,6 +702,30 @@ def admin_service_review_list(request):
     }
     
     return render(request, 'appointments/admin_service_review_list.html', context)
+
+
+@login_required
+@admin_required
+def admin_approve_service_review(request, pk):
+    """Toggle approval of a service review"""
+    review = get_object_or_404(ServiceReview, pk=pk)
+    review.is_approved = not review.is_approved
+    review.save()
+    status = "approved" if review.is_approved else "unapproved"
+    messages.success(request, f'Service review has been {status}.')
+    return redirect('admin_service_review_list')
+
+
+@login_required
+@admin_required
+def admin_delete_service_review(request, pk):
+    """Delete a service review"""
+    review = get_object_or_404(ServiceReview, pk=pk)
+    review.delete()
+    messages.success(request, 'Service review deleted.')
+    return redirect('admin_service_review_list')
+
+
 
 
 def service_list(request):

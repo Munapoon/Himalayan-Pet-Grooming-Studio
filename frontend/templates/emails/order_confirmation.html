@@ -1,0 +1,48 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+    <h2>Order Success!</h2>
+    <p>Hello <span class="highlight">{{ user_name }}</span>,</p>
+    <p>Your order <strong class="highlight">#{{ order.order_number }}</strong> has been placed successfully!</p>
+
+    <div class="notice-box">
+        <p><strong>📦 Order Summary:</strong></p>
+        <table class="details-table" style="font-size: 14px;">
+            <thead style="background: #fcfcfc;">
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>Rs. {{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background: #fcfcfc; font-weight: bold;">
+                    <td colspan="2"><strong>Grand Total:</strong></td>
+                    <td class="highlight">Rs. {{ order.total_amount }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="notice-box" style="background: #e1f5fe; border-left-color: #03a9f4;">
+        <p><strong>🕒 Payment Details:</strong></p>
+        <p>Method: <strong>{{ order.get_payment_method_display }}</strong></p>
+        <p>Status: <strong>{{ order.get_payment_status_display }}</strong></p>
+        <p>Shipping to: <em>{{ order.shipping_address }}</em></p>
+    </div>
+
+    <p style="text-align: center; margin-top: 30px;">
+        <a href="{{ site_url }}{% url 'products:order_detail' order.order_number %}" class="button">Track Your Order</a>
+    </p>
+
+    <p>Thank you for shopping with Himalayan Pet Studio! Your order will be processed shortly.</p>
+{% endblock %}

@@ -31,9 +31,11 @@
                         <span class="input-group-text bg-white"><i class="fas fa-calendar-alt text-muted"></i></span>
                         <select name="month" class="form-select border-start-0">
                             {% for month_num, month_name in months %}
-                            <option value="{{ month_num }}" {% if month_num==selected_month %}selected{% endif %}>
-                                {{ month_name }}
-                            </option>
+                            {% if month_num == selected_month %}
+                            <option value="{{ month_num }}" selected>{{ month_name }}</option>
+                            {% else %}
+                            <option value="{{ month_num }}">{{ month_name }}</option>
+                            {% endif %}
                             {% endfor %}
                         </select>
                     </div>
@@ -44,9 +46,11 @@
                         <span class="input-group-text bg-white"><i class="fas fa-history text-muted"></i></span>
                         <select name="year" class="form-select border-start-0">
                             {% for year_option in years %}
-                            <option value="{{ year_option }}" {% if year_option==selected_year %}selected{% endif %}>
-                                {{ year_option }}
-                            </option>
+                            {% if year_option == selected_year %}
+                            <option value="{{ year_option }}" selected>{{ year_option }}</option>
+                            {% else %}
+                            <option value="{{ year_option }}">{{ year_option }}</option>
+                            {% endif %}
                             {% endfor %}
                         </select>
                     </div>
@@ -238,8 +242,9 @@
                     </li>
                     {% else %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ i }}&month={{ selected_month }}&year={{ selected_year }}">{{
-                            i }}</a>
+                        <a class="page-link" href="?page={{ i }}&month={{ selected_month }}&year={{ selected_year }}">
+                            {{ i }}
+                        </a>
                     </li>
                     {% endif %}
                     {% endfor %}

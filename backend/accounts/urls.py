@@ -19,6 +19,7 @@ urlpatterns = [
     path('admin-dashboard/users/<int:pk>/toggle-status/', views.user_toggle_status, name='user_toggle_status'),
     path('admin-dashboard/users/<int:pk>/delete/', views.user_delete, name='user_delete'),
     path('admin-dashboard/contact-messages/<int:pk>/read/', views.mark_contact_read, name='mark_contact_read'),
+    path('admin-dashboard/contact-messages/<int:pk>/delete/', views.delete_contact, name='delete_contact'),
     path('admin-dashboard/reports/', views.reports, name='reports'),
     path('admin-dashboard/reports/export-csv/', views.export_sales_csv, name='export_sales_csv'),
     path('admin-dashboard/search/', views.staff_search, name='staff_search'),
@@ -29,4 +30,6 @@ urlpatterns = [
     path('accounts/reset-password/', views.reset_password, name='reset_password'),
     path('accounts/verify-email/', views.verify_email, name='verify_email'),
     path('accounts/change-password/', views.change_password, name='change_password'),
+    path('about-us/', views.about_us, name='about_us'),
+    path('legal/', views.legal, name='legal'),
 ]
