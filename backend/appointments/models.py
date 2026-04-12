@@ -211,3 +211,25 @@ class ServiceReview(models.Model):
         if name:
             return name
         return self.service.replace('-', ' ').title()
+
+
+class Pet(models.Model):
+    """Users can save their pets for faster booking."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pets')
+    name = models.CharField(max_length=100)
+    pet_type = models.CharField(max_length=50, help_text="e.g. Dog, Cat, Rabbit")
+    breed = models.CharField(max_length=100, blank=True)
+    age = models.IntegerField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], blank=True)
+    medical_notes = models.TextField(blank=True, help_text="Known allergies, health issues, or medicines.")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pets'
+        unique_together = ('user', 'name')
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.pet_type})"

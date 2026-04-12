@@ -1,5 +1,5 @@
 from django import forms
-from .models import Appointment, Service
+from .models import Appointment, Service, Pet
 from datetime import time, timedelta, datetime
 from django.utils import timezone
 import json
@@ -159,4 +159,18 @@ class ServiceForm(forms.ModelForm):
             except json.JSONDecodeError:
                 raise forms.ValidationError('Please enter valid JSON format, e.g. ["Feature 1", "Feature 2"]')
         return data
+
+
+class PetForm(forms.ModelForm):
+    class Meta:
+        model = Pet
+        fields = ['name', 'pet_type', 'gender', 'breed', 'age', 'medical_notes']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name'}),
+            'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Dog, Cat'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'breed': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Breed (Optional)'}),
+            'age': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Age in years'}),
+            'medical_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Medical issues, allergies, or special care instructions...'}),
+        }
 

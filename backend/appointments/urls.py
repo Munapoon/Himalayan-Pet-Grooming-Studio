@@ -31,4 +31,11 @@ urlpatterns = [
     path('admin-dashboard/services/add/', views.admin_service_add, name='admin_service_add'),
     path('admin-dashboard/services/edit/<int:pk>/', views.admin_service_edit, name='admin_service_edit'),
     path('admin-dashboard/services/delete/<int:pk>/', views.admin_service_delete, name='admin_service_delete'),
+    
+    # Pet Profiles
+    path('pets/', views.pet_list, name='pet_list'),
+    path('admin-dashboard/pets/', views.admin_pet_list, name='admin_pet_list'),
+    path('pets/add/', views.pet_add, name='pet_add'),
+    path('pets/edit/<int:pk>/', views.pet_edit, name='pet_edit'),
+    path('pets/delete/<int:pk>/', views.pet_delete, name='pet_delete'),
 ]

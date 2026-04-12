@@ -11,8 +11,8 @@ import decimal
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from .models import Appointment, Service, ServiceReview
-from .forms import AppointmentForm
+from .models import Appointment, Service, ServiceReview, Pet
+from .forms import AppointmentForm, PetForm
 from accounts.decorators import admin_required
 
 
@@ -30,8 +30,8 @@ def appointment_list(request):
     ).order_by('-created_at')
     template_name = 'appointments/appointment_list.html'
     
-    # Pagination - 10 appointments per page
-    paginator = Paginator(appointments, 10)
+    # Pagination - 15 appointments per page
+    paginator = Paginator(appointments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -47,8 +47,8 @@ def admin_appointment_list(request):
     # Hide fake/abandoned waitlist (unconfirmed payments) from admin dashboard
     appointments = Appointment.objects.exclude(payment_status='pending_payment').order_by('-created_at')
     
-    # Pagination - 10 appointments per page
-    paginator = Paginator(appointments, 10)
+    # Pagination - 15 appointments per page
+    paginator = Paginator(appointments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -108,6 +108,11 @@ def appointment_detail(request, pk):
 @login_required
 def appointment_create(request):
     """Create a new appointment — redirects to advance payment after booking"""
+    # Prevent admins from booking manually as per requirement
+    if request.user.role == 'admin':
+        messages.error(request, 'Administrators cannot book appointments manually. Please use a customer account.')
+        return redirect('admin_dashboard')
+        
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
         if form.is_valid():
@@ -135,8 +140,14 @@ def appointment_create(request):
         else:
             form = AppointmentForm()
 
+    user_pets = Pet.objects.filter(user=request.user)
     base_template = 'admin_base.html' if request.user.is_admin_user() else 'base.html'
-    return render(request, 'appointments/appointment_form.html', {'form': form, 'action': 'Create', 'base_template': base_template})
+    return render(request, 'appointments/appointment_form.html', {
+        'form': form, 
+        'action': 'Create', 
+        'base_template': base_template,
+        'user_pets': user_pets
+    })
 
 
 @login_required
@@ -941,3 +952,78 @@ def admin_appointment_refund(request, pk):
         return redirect('admin_appointment_detail', pk=pk)
 
     return redirect('admin_appointment_detail', pk=pk)
+
+
+@login_required
+def pet_list(request):
+    """Users can see all their saved pets."""
+    pets = Pet.objects.filter(user=request.user)
+    return render(request, 'appointments/pet_list.html', {'pets': pets})
+
+
+@login_required
+@admin_required
+def admin_pet_list(request):
+    """Admin can see and manage all pets in the system."""
+    pets = Pet.objects.all().select_related('user').order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(pets, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'appointments/admin_pet_list.html', {'page_obj': page_obj})
+
+
+@login_required
+def pet_add(request):
+    """Add a new pet profile."""
+    if request.method == 'POST':
+        form = PetForm(request.POST)
+        if form.is_valid():
+            pet = form.save(commit=False)
+            pet.user = request.user
+            pet.save()
+            messages.success(request, f'Pet profile for {pet.name} created!')
+            return redirect('pet_list')
+    else:
+        form = PetForm()
+    return render(request, 'appointments/pet_form.html', {'form': form, 'title': 'Add Pet'})
+
+
+@login_required
+def pet_edit(request, pk):
+    """Edit an existing pet profile."""
+    if request.user.role == 'admin':
+        pet = get_object_or_404(Pet, pk=pk)
+    else:
+        pet = get_object_or_404(Pet, pk=pk, user=request.user)
+    
+    if request.method == 'POST':
+        form = PetForm(request.POST, instance=pet)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'{pet.name}\'s profile updated!')
+            if request.user.role == 'admin':
+                return redirect('admin_pet_list')
+            return redirect('pet_list')
+    else:
+        form = PetForm(instance=pet)
+    return render(request, 'appointments/pet_form.html', {'form': form, 'title': f'Edit Pet: {pet.name}'})
+
+
+@login_required
+def pet_delete(request, pk):
+    """Delete a pet profile."""
+    if request.user.role == 'admin':
+        pet = get_object_or_404(Pet, pk=pk)
+    else:
+        pet = get_object_or_404(Pet, pk=pk, user=request.user)
+        
+    if request.method == 'POST':
+        pet.delete()
+        messages.success(request, 'Pet profile deleted.')
+        if request.user.role == 'admin':
+            return redirect('admin_pet_list')
+        return redirect('pet_list')
+    return render(request, 'appointments/pet_confirm_delete.html', {'pet': pet})

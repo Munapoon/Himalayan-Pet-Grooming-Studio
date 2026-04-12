@@ -519,6 +519,17 @@ def user_update_role(request, pk):
         new_role = request.POST.get('role')
         if new_role in ['admin', 'staff', 'user']:
             user_obj.role = new_role
+            # Sync Django flags with the role
+            if new_role == 'admin':
+                user_obj.is_superuser = True
+                user_obj.is_staff = True
+            elif new_role == 'staff':
+                user_obj.is_superuser = False
+                user_obj.is_staff = True
+            else: # regular user
+                user_obj.is_superuser = False
+                user_obj.is_staff = False
+                
             user_obj.save()
             messages.success(request, f"User {user_obj.username}'s role was updated to {new_role}.")
     return redirect('user_detail', pk=pk)
