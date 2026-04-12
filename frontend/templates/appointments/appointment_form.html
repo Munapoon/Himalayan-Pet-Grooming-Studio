@@ -22,22 +22,18 @@
                         </div>
                         {% endif %}
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.pet_name.id_for_label }}" class="form-label">Pet Name *</label>
-                                {{ form.pet_name }}
-                                {% if form.pet_name.errors %}
-                                <div class="text-danger">{{ form.pet_name.errors }}</div>
-                                {% endif %}
+                        <div class="mb-4">
+                            <label for="{{ form.pet.id_for_label }}" class="form-label font-weight-bold">Select Your Pet *</label>
+                            <div class="input-group">
+                                {{ form.pet }}
+                                <a href="{% url 'pet_add' %}?next={{ request.path }}" class="btn btn-outline-secondary" title="Add a New Pet">
+                                    <i class="fas fa-plus"></i>
+                                </a>
                             </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.pet_type.id_for_label }}" class="form-label">Pet Type *</label>
-                                {{ form.pet_type }}
-                                {% if form.pet_type.errors %}
-                                <div class="text-danger">{{ form.pet_type.errors }}</div>
-                                {% endif %}
-                            </div>
+                            <small class="text-muted">Choose the pet for this grooming session. <a href="{% url 'pet_add' %}?next={{ request.path }}">Add new pet if not listed.</a></small>
+                            {% if form.pet.errors %}
+                            <div class="text-danger small mt-1">{{ form.pet.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <div class="mb-3">

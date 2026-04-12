@@ -21,7 +21,7 @@ def category_list(request):
     categories = ProductCategory.objects.all().order_by('-created_at')
     
     # Pagination - 10 categories per page
-    paginator = Paginator(categories, 10)
+    paginator = Paginator(categories, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -123,7 +123,7 @@ def product_list(request):
         products = products.order_by('-created_at')
     
     # Pagination - 10 products per page
-    paginator = Paginator(products, 10)
+    paginator = Paginator(products, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -595,10 +595,16 @@ def order_list(request):
     """View all user orders"""
     from .models import Order
     
-    orders = Order.objects.filter(user=request.user).prefetch_related('items__product')
+    orders_list = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
+    
+    # Pagination - 15 orders per page
+    paginator = Paginator(orders_list, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     context = {
-        'orders': orders,
+        'page_obj': page_obj,
+        'orders': page_obj,  # Keep 'orders' for backward compatibility in template
     }
     return render(request, 'products/order_list.html', context)
 
@@ -717,7 +723,7 @@ def admin_order_list(request):
         )
     
     # Pagination - 10 orders per page
-    paginator = Paginator(orders, 10)
+    paginator = Paginator(orders, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     

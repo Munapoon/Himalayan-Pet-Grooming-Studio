@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="h3 mb-4 text-center font-weight-bold">{{ title }}</h1>
+                    
+                    <form method="post" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="form-group mb-4">
+                            <label class="font-weight-bold text-muted small text-uppercase mb-2">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ field.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-5">
+                            <a href="{% url 'pet_list' %}" class="text-muted">
+                                <i class="fas fa-arrow-left"></i> Back to list
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 py-2 shadow" style="border-radius: 25px;">
+                                Save Pet Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

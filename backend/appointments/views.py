@@ -9,8 +9,8 @@ import requests as http_requests
 import json
 import decimal
 
-from .models import Appointment, Service, ServiceReview
-from .forms import AppointmentForm
+from .models import Appointment, Service, ServiceReview, Pet
+from .forms import AppointmentForm, PetForm
 from accounts.decorators import admin_required
 
 
@@ -29,7 +29,7 @@ def appointment_list(request):
     template_name = 'appointments/appointment_list.html'
     
     # Pagination - 10 appointments per page
-    paginator = Paginator(appointments, 10)
+    paginator = Paginator(appointments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -46,7 +46,7 @@ def admin_appointment_list(request):
     appointments = Appointment.objects.exclude(payment_status='pending_payment').order_by('-created_at')
     
     # Pagination - 10 appointments per page
-    paginator = Paginator(appointments, 10)
+    paginator = Paginator(appointments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -83,10 +83,16 @@ def appointment_detail(request, pk):
 def appointment_create(request):
     """Create a new appointment — redirects to advance payment after booking"""
     if request.method == 'POST':
-        form = AppointmentForm(request.POST)
+        form = AppointmentForm(request.POST, user=request.user)
         if form.is_valid():
             appointment = form.save(commit=False)
             appointment.user = request.user
+            
+            # Sync pet data to flat fields for backward compatibility
+            if appointment.pet:
+                appointment.pet_name = appointment.pet.name
+                appointment.pet_type = appointment.pet.get_pet_type_display()
+            
             appointment.advance_amount = 10  # Fixed advance
             appointment.payment_status = 'pending_payment'  # Not confirmed until paid
             appointment.save()
@@ -105,9 +111,9 @@ def appointment_create(request):
     else:
         service = request.GET.get('service')
         if service:
-            form = AppointmentForm(initial={'service': service})
+            form = AppointmentForm(initial={'service': service}, user=request.user)
         else:
-            form = AppointmentForm()
+            form = AppointmentForm(user=request.user)
 
     base_template = 'admin_base.html' if request.user.is_admin_user() else 'base.html'
     return render(request, 'appointments/appointment_form.html', {'form': form, 'action': 'Create', 'base_template': base_template})
@@ -308,15 +314,22 @@ def appointment_update(request, pk):
         return redirect('appointment_list')
     
     if request.method == 'POST':
-        form = AppointmentForm(request.POST, instance=appointment)
+        form = AppointmentForm(request.POST, instance=appointment, user=appointment.user)
         if form.is_valid():
-            form.save()
+            appointment = form.save(commit=False)
+            
+            # Sync pet data again if changed
+            if appointment.pet:
+                appointment.pet_name = appointment.pet.name
+                appointment.pet_type = appointment.pet.get_pet_type_display()
+            
+            appointment.save()
             messages.success(request, 'Appointment updated successfully!')
             if request.user.is_admin_user():
                 return redirect('admin_appointment_detail', pk=appointment.pk)
             return redirect('appointment_list')
     else:
-        form = AppointmentForm(instance=appointment)
+        form = AppointmentForm(instance=appointment, user=appointment.user)
     
     base_template = 'admin_base.html' if request.user.is_admin_user() else 'base.html'
     return render(request, 'appointments/appointment_form.html', {'form': form, 'action': 'Update', 'base_template': base_template})
@@ -744,3 +757,60 @@ def admin_service_delete(request, pk):
          messages.success(request, f'Service "{service.name}" deleted successfully.')
          return redirect('admin_service_list')
     return render(request, 'appointments/admin_service_confirm_delete.html', {'service': service})
+
+
+# PET CRUD VIEWS
+@login_required
+def pet_list(request):
+    """List all pets for the logged-in user"""
+    pets = Pet.objects.filter(user=request.user).order_by('name')
+    return render(request, 'appointments/pet_list.html', {'pets': pets})
+
+
+@login_required
+def pet_add(request):
+    """Add a new pet for the user"""
+    if request.method == 'POST':
+        form = PetForm(request.POST)
+        if form.is_valid():
+            pet = form.save(commit=False)
+            pet.user = request.user
+            pet.save()
+            messages.success(request, f'{pet.name} has been added to your profile!')
+            
+            # If came from booking page, redirect back there
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('pet_list')
+    else:
+        form = PetForm()
+    
+    return render(request, 'appointments/pet_form.html', {'form': form, 'title': 'Add a New Pet'})
+
+
+@login_required
+def pet_edit(request, pk):
+    """Edit an existing pet"""
+    pet = get_object_or_404(Pet, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = PetForm(request.POST, instance=pet)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Details for {pet.name} updated.')
+            return redirect('pet_list')
+    else:
+        form = PetForm(instance=pet)
+    return render(request, 'appointments/pet_form.html', {'form': form, 'title': f'Edit Pet: {pet.name}'})
+
+
+@login_required
+def pet_delete(request, pk):
+    """Delete a pet"""
+    pet = get_object_or_404(Pet, pk=pk, user=request.user)
+    if request.method == 'POST':
+        name = pet.name
+        pet.delete()
+        messages.success(request, f'{name} has been removed from your profile.')
+        return redirect('pet_list')
+    return render(request, 'appointments/pet_confirm_delete.html', {'pet': pet})

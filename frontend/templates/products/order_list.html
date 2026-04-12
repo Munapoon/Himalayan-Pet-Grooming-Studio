@@ -104,5 +104,11 @@
         </a>
     </div>
     {% endif %}
+    
+    {% if page_obj.has_other_pages %}
+    <div class="mt-4">
+        {% include 'pagination.html' %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

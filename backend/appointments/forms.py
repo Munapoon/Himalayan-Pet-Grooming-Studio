@@ -1,5 +1,5 @@
 from django import forms
-from .models import Appointment, Service
+from .models import Appointment, Service, Pet
 from datetime import time
 from django.utils import timezone
 import json
@@ -13,17 +13,23 @@ class AppointmentForm(forms.ModelForm):
 
     class Meta:
         model = Appointment
-        fields = ['pet_name', 'pet_type', 'service', 'appointment_date', 'appointment_time', 'notes']
+        fields = ['pet', 'service', 'appointment_date', 'appointment_time', 'notes']
         widgets = {
-            'pet_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name'}),
-            'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dog, Cat, etc.'}),
+            'pet': forms.Select(attrs={'class': 'form-control'}),
             'appointment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'min': '09:00', 'max': '18:00'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Special instructions...'}),
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        
+        # Filter pet choices for the specific user
+        if user:
+            self.fields['pet'].queryset = Pet.objects.filter(user=user)
+            self.fields['pet'].empty_label = "Select one of your pets"
+        
         # Dynamically set service choices from Service model
         active_services = Service.objects.filter(is_active=True).only('slug', 'name').order_by('order')
         if active_services.exists():
@@ -32,6 +38,20 @@ class AppointmentForm(forms.ModelForm):
         else:
             # Fallback to model choices if DB is empty
             self.fields['service'].choices = Appointment.SERVICE_CHOICES
+
+
+class PetForm(forms.ModelForm):
+    class Meta:
+        model = Pet
+        fields = ['name', 'pet_type', 'breed', 'age', 'gender', 'medical_notes']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name Heritage'}),
+            'pet_type': forms.Select(attrs={'class': 'form-control'}),
+            'breed': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. German Shepherd'}),
+            'age': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Age in years'}),
+            'gender': forms.Select(attrs={'class': 'form-control'}),
+            'medical_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Allergies, medical history, etc.'}),
+        }
     
     def clean_appointment_time(self):
         appointment_time = self.cleaned_data.get('appointment_time')

@@ -56,6 +56,32 @@ class Service(models.Model):
         self.features_json = json.dumps(features_list)
 
 
+class Pet(models.Model):
+    PET_TYPE_CHOICES = [
+        ('dog', 'Dog'),
+        ('cat', 'Cat'),
+        ('bird', 'Bird'),
+        ('rabbit', 'Rabbit'),
+        ('other', 'Other'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pets')
+    name = models.CharField(max_length=100)
+    pet_type = models.CharField(max_length=20, choices=PET_TYPE_CHOICES, default='dog')
+    breed = models.CharField(max_length=100, blank=True, null=True)
+    age = models.IntegerField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female')], blank=True)
+    medical_notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pets'
+
+    def __str__(self):
+        return f"{self.name} ({self.get_pet_type_display()}) - {self.user.username}"
+
+
 class Appointment(models.Model):
     SERVICE_CHOICES = [
         ('bath', 'Bath & Brush'),
@@ -90,8 +116,12 @@ class Appointment(models.Model):
     ADVANCE_AMOUNT = 10
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
-    pet_name = models.CharField(max_length=100)
-    pet_type = models.CharField(max_length=100)
+    # Linked to the new Pet model
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='appointments', null=True, blank=True)
+    
+    # Keeping these for backward compatibility or as fallback
+    pet_name = models.CharField(max_length=100, blank=True)
+    pet_type = models.CharField(max_length=100, blank=True)
     service = models.CharField(max_length=100)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
