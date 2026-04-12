@@ -18,7 +18,7 @@ class Service(models.Model):
 
     slug = models.CharField(max_length=100, unique=True,
                             help_text="Unique key that matches URL and appointment type (e.g., puppy-first-bath).")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     short_description = models.CharField(max_length=255, blank=True,
                                          help_text="Short tagline shown on cards.")
     description = models.TextField(blank=True, help_text="Full description on detail page.")
@@ -91,6 +91,13 @@ class Appointment(models.Model):
     ADVANCE_AMOUNT = 10
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
+    assigned_staff = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name='assigned_appointments',
+        limit_choices_to={'role': 'staff'}
+    )
     pet_name = models.CharField(max_length=100)
     pet_type = models.CharField(max_length=100)
     service = models.CharField(max_length=100)

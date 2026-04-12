@@ -31,6 +31,7 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        unique_together = ('name', 'category')
 
     def __str__(self):
         return self.name
@@ -111,6 +112,7 @@ class Order(models.Model):
         ('processing', 'Processing'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
     ]
     
     PAYMENT_METHOD_CHOICES = [
@@ -123,6 +125,7 @@ class Order(models.Model):
         ('pending', 'Pending'),
         ('paid', 'Paid'),
         ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')

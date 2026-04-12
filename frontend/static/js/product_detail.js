@@ -1,73 +1,46 @@
 /**
  * Product Detail quantity controls and purchase actions.
  */
-function incrementQty(max) {
+window.changeQty = function(amount) {
     const qtyInput = document.getElementById('quantity');
-    if (qtyInput) {
-        const currentVal = parseInt(qtyInput.value) || 1;
-        const maxValue = parseInt(max) || Infinity;
-        if (currentVal < maxValue) {
+    const incBtn = document.querySelector('.increment-btn');
+    if (!qtyInput || !incBtn) return;
+
+    let currentVal = parseInt(qtyInput.value) || 1;
+    const max = parseInt(incBtn.dataset.max) || 999;
+
+    if (amount > 0) {
+        if (currentVal < max) {
             qtyInput.value = currentVal + 1;
         } else {
-            alert('Cannot exceed available stock limit (' + maxValue + ' items)');
+            alert('Cannot exceed available stock limit (' + max + ' units)');
         }
-    }
-}
-
-function decrementQty() {
-    const qtyInput = document.getElementById('quantity');
-    if (qtyInput) {
-        const currentVal = parseInt(qtyInput.value) || 1;
+    } else {
         if (currentVal > 1) {
             qtyInput.value = currentVal - 1;
         }
     }
 }
 
-function buyNow() {
-    const redirectTo = document.getElementById('redirectTo');
-    const form = document.getElementById('addToCartForm');
-    
-    // Manual validation for size requirement since form.submit() bypasses onsubmit
-    const sizeBlock = document.getElementById('sizeSelectionBlock');
-    const sizeInput = document.getElementById('selectedSizeInput');
-    if (sizeBlock && (!sizeInput || !sizeInput.value)) {
-        alert('Please select a size first!');
-        return;
-    }
-
-    if (redirectTo && form) {
-        redirectTo.value = 'cart';
-        form.submit();
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function () {
-    // Quantity increment
-    const incrementBtns = document.querySelectorAll('.increment-btn');
-    incrementBtns.forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            incrementQty(this.dataset.max);
-        });
-    });
-
-    // Quantity decrement
-    const decrementBtns = document.querySelectorAll('.decrement-btn');
-    decrementBtns.forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            decrementQty();
-        });
-    });
-
-    // Buy Now
     const buyNowBtn = document.querySelector('.btn-buy-now');
     if (buyNowBtn) {
-        buyNowBtn.addEventListener('click', function () {
-            buyNow();
+        buyNowBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const redirectTo = document.getElementById('redirectTo');
+            const form = document.getElementById('addToCartForm');
+            
+            const sizeBlock = document.getElementById('sizeSelectionBlock');
+            const sizeInput = document.getElementById('selectedSizeInput');
+            if (sizeBlock && (!sizeInput || !sizeInput.value)) {
+                alert('Please select a size first!');
+                return;
+            }
+
+            if (redirectTo && form) {
+                redirectTo.value = 'cart';
+                form.submit();
+            }
         });
     }
 });

@@ -6,9 +6,25 @@ import json
 
 
 class AppointmentForm(forms.ModelForm):
+    TIME_SLOTS = [
+        ('10:00', '10:00 AM'),
+        ('11:00', '11:00 AM'),
+        ('12:00', '12:00 PM'),
+        ('13:00', '01:00 PM'),
+        ('14:00', '02:00 PM'),
+        ('15:00', '03:00 PM'),
+        ('16:00', '04:00 PM'),
+        ('17:00', '05:00 PM'),
+    ]
+
     service = forms.ChoiceField(
         choices=[], 
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-select fw-bold'})
+    )
+    
+    appointment_time = forms.ChoiceField(
+        choices=TIME_SLOTS,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
     class Meta:
@@ -18,13 +34,13 @@ class AppointmentForm(forms.ModelForm):
             'pet_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name'}),
             'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dog, Cat, etc.'}),
             'appointment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'min': '09:00', 'max': '18:00'}),
             'notes': forms.Textarea(attrs={
                 'class': 'form-control', 
                 'rows': 3, 
                 'placeholder': 'Special instructions... e.g., [Medical: Heart Issue], [Medication: Weekly injection]'
             }),
         }
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,14 +54,15 @@ class AppointmentForm(forms.ModelForm):
             self.fields['service'].choices = Appointment.SERVICE_CHOICES
     
     def clean_appointment_time(self):
-        appointment_time = self.cleaned_data.get('appointment_time')
-        
-        # Check if time is between 9 AM and 6 PM
-        if appointment_time:
-            if appointment_time < time(9, 0) or appointment_time >= time(18, 0):
-                raise forms.ValidationError('Appointments are only available between 9:00 AM and 6:00 PM.')
-        
-        return appointment_time
+        time_str = self.cleaned_data.get('appointment_time')
+        if time_str:
+            # Convert string from ChoiceField to a datetime.time object
+            try:
+                hour, minute = map(int, time_str.split(':'))
+                return time(hour, minute)
+            except ValueError:
+                raise forms.ValidationError("Invalid time format selected.")
+        return time_str
     
     def clean(self):
         cleaned_data = super().clean()
@@ -62,19 +79,22 @@ class AppointmentForm(forms.ModelForm):
                 raise forms.ValidationError('You cannot book an appointment for a past date.')
             
             if appointment_date == today:
-                # Enforce 30-minute advance booking for today's appointments
+                # 1. Check if the selected time is strictly in the past
+                if appointment_time < local_now.time():
+                    raise forms.ValidationError('Yo time already past vaiskyo. Please choose a future time.')
+
+                # 2. Enforce 30-minute advance booking for today's appointments
                 cutoff_datetime = local_now + timedelta(minutes=30)
                 
-                # If 30 minutes from now is already past today's operating hours (handled by clean_appointment_time)
-                # or if it rolls to tomorrow, just show a general "too soon" message.
+                # If 30 minutes from now rolls to tomorrow or time is too soon
                 if cutoff_datetime.date() > today or appointment_time < cutoff_datetime.time():
                     raise forms.ValidationError(
                         f'Appointments must be booked at least 30 minutes in advance to allow for studio preparation. '
                         f'Earliest available for today: {cutoff_datetime.strftime("%I:%M %p")}.'
                     )
 
-            # Check if slot is already booked
-            existing_appointment = Appointment.objects.filter(
+            # Check capacity: Limit to 2 appointments per time slot
+            existing_appointments = Appointment.objects.filter(
                 appointment_date=appointment_date,
                 appointment_time=appointment_time,
                 status__in=['pending', 'confirmed']
@@ -82,12 +102,13 @@ class AppointmentForm(forms.ModelForm):
             
             # Exclude current appointment if updating
             if self.instance and self.instance.pk:
-                existing_appointment = existing_appointment.exclude(pk=self.instance.pk)
+                existing_appointments = existing_appointments.exclude(pk=self.instance.pk)
             
-            if existing_appointment.exists():
-                raise forms.ValidationError(
-                    f'This time slot is already booked. Please choose a different date or time.'
-                )
+            MAX_CAPACITY_PER_SLOT = 1
+            
+            if existing_appointments.count() >= MAX_CAPACITY_PER_SLOT:
+                raise forms.ValidationError('This time slot is already taken. Please choose another time or day.')
+
         
         return cleaned_data
 

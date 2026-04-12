@@ -46,12 +46,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'about_us' %}active{% endif %}"
-                            href="{% url 'about_us' %}">
-                            <i class="fas fa-info-circle nav-icon"></i><span>About Us</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}"
                             href="{% url 'products:product_list' %}">
                             <i class="fas fa-shopping-bag nav-icon"></i><span>Products</span>
@@ -67,6 +61,12 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'contact_us' %}active{% endif %}"
                             href="{% url 'contact_us' %}">
                             <i class="fas fa-envelope nav-icon"></i><span>Contact Us</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about_us' %}active{% endif %}"
+                            href="{% url 'about_us' %}">
+                            <i class="fas fa-info-circle nav-icon"></i><span>About Us</span>
                         </a>
                     </li>
                 </ul>
@@ -203,24 +203,19 @@
                     </div>
                 </div>
 
-                <!-- Column 3: Quick Links (Middle) -->
+                <!-- Column 3: Legals (Middle) -->
                 <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
                     <h5 class="footer-heading d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" data-bs-target="#footerLinks" role="button" aria-expanded="false">
-                        Quick Links
+                        Legals
                         <i class="fas fa-chevron-down d-md-none footer-chevron"></i>
                     </h5>
                     <div class="collapse d-md-block" id="footerLinks">
                         <ul class="footer-links">
-                            <li><a href="{% url 'home' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
-                            <li><a href="{% url 'about_us' %}"><i class="fas fa-chevron-right"></i> About Us</a></li>
-                            <li><a href="{% url 'products:product_list' %}"><i class="fas fa-chevron-right"></i> Pet
-                                    Shop</a></li>
-                            <li><a href="{% url 'contact_us' %}"><i class="fas fa-chevron-right"></i> Contact Us</a>
-                            </li>
-                            <li><a href="{% url 'legal' %}"><i class="fas fa-chevron-right"></i> Legal & Policies</a></li>
-                            <li><a href="{% url 'login' %}"><i class="fas fa-chevron-right"></i> My Account</a></li>
-                            <li><a href="{% url 'register' %}"><i class="fas fa-chevron-right"></i> Join Studio</a></li>
+                            <li><a href="{% url 'legal' %}"><i class="fas fa-chevron-right"></i> Shipping Policy</a></li>
+                            <li><a href="{% url 'legal' %}"><i class="fas fa-chevron-right"></i> Refund Policy</a></li>
+                            <li><a href="{% url 'legal' %}"><i class="fas fa-chevron-right"></i> Privacy Policy</a></li>
+                            <li><a href="{% url 'legal' %}"><i class="fas fa-chevron-right"></i> Terms of service</a></li>
                         </ul>
                     </div>
                 </div>
@@ -244,19 +239,18 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+        </div>
 
-            <div class="footer-bottom">
+        <div class="footer-bottom">
+            <div class="container">
                 <div class="row align-items-center">
-                    <div class="col-md-6 text-md-start mb-3 mb-md-0">
+                    <div class="col-md-12 text-center mb-2 mb-md-0">
                         <p class="mb-0">&copy; {% now "Y" %} Himalayan Pet Grooming Studio. All rights reserved.</p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <p class="mb-0">Designed with <i class="fas fa-heart text-danger"></i> for pet lovers.</p>
                     </div>
                 </div>
             </div>
         </div>
+
     </footer>
 
     <!-- Back to Top Button -->

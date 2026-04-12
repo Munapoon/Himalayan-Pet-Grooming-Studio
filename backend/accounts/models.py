@@ -7,6 +7,7 @@ class User(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('user', 'User'),
+        ('staff', 'Staff'),
     ]
     
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
@@ -36,6 +37,9 @@ class User(AbstractUser):
     
     def is_regular_user(self):
         return self.role == 'user'
+        
+    def is_staff_user(self):
+        return self.role == 'staff'
 
 
 class Contact(models.Model):

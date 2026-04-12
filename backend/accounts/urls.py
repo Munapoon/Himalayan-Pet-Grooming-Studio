@@ -8,7 +8,9 @@ urlpatterns = [
     path('accounts/logout/', views.user_logout, name='logout'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
+    path('staff-dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('user-profile/', views.user_profile, name='user_profile'),
+    path('user-profile/remove-picture/', views.remove_profile_picture, name='remove_profile_picture'),
     path('contact-us/', views.contact_us, name='contact_us'), 
     path('my-contact-requests/', views.my_contact_requests, name='my_contact_requests'),
     path('admin-dashboard/contact-messages/', views.contact_messages, name='contact_messages'),
@@ -16,6 +18,7 @@ urlpatterns = [
     # Admin Users and Reports
     path('admin-dashboard/users/', views.user_list, name='user_list'),
     path('admin-dashboard/users/<int:pk>/', views.user_detail, name='user_detail'),
+    path('admin-dashboard/users/<int:pk>/update-role/', views.user_update_role, name='user_update_role'),
     path('admin-dashboard/users/<int:pk>/toggle-status/', views.user_toggle_status, name='user_toggle_status'),
     path('admin-dashboard/users/<int:pk>/delete/', views.user_delete, name='user_delete'),
     path('admin-dashboard/contact-messages/<int:pk>/read/', views.mark_contact_read, name='mark_contact_read'),

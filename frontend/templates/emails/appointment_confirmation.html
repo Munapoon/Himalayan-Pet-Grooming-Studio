@@ -1,31 +1,21 @@
 {% extends "emails/base_email.html" %}
 
 {% block content %}
-    <h2>Appointment Confirmation!</h2>
-    <p>Hello <span class="highlight">{{ user_name }}</span>,</p>
-    <p>Your grooming appointment for <strong class="highlight">{{ appointment.pet_name }}</strong> has been confirmed! We've reserved the following slot for your visit:</p>
+<h3 style="color: #b51c3a;">Booking Confirmed!</h3>
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+<p>Your appointment for <strong>{{ appointment.pet_name }}</strong> is confirmed.</p>
 
-    <div class="notice-box">
-        <p><strong>🕒 Appointment Details:</strong></p>
-        <table class="details-table">
-            <tr><td><strong>Service</strong></td><td>{{ service_name }}</td></tr>
-            <tr><td><strong>Date</strong></td><td>{{ appointment.appointment_date|date:"F d, Y (l)" }}</td></tr>
-            <tr><td><strong>Time</strong></td><td>{{ appointment.appointment_time|time:"g:i A" }}</td></tr>
-            <tr><td><strong>Advance Paid</strong></td><td>Rs. {{ appointment.advance_amount }}</td></tr>
-        </table>
-    </div>
+<table class="details-table">
+    <tr><td>Service</td><td>{{ service_name }}</td></tr>
+    <tr><td>Date</td><td>{{ appointment.appointment_date|date:"F d, Y" }}</td></tr>
+    <tr><td>Time</td><td>{{ appointment.appointment_time|time:"g:i A" }}</td></tr>
+    <tr><td>Paid</td><td>Rs. {{ appointment.advance_amount }}</td></tr>
+</table>
 
-    <div class="notice-box" style="background: #e3f2fd; border-left-color: #2196f3;">
-        <p><strong>📣 Important Notice:</strong></p>
-        <p>Please <strong>visit our studio at your scheduled appointment time</strong>. If you are running late, please give us a call.</p>
-        {% if appointment.notes %}
-        <p><em>Your Instructions: {{ appointment.notes }}</em></p>
-        {% endif %}
-    </div>
+<div style="text-align: center;">
+    <a href="{{ site_url }}{% url 'appointment_detail' appointment.pk %}" class="button">View Details</a>
+</div>
 
-    <p style="text-align: center; margin-top: 30px;">
-        <a href="{{ site_url }}{% url 'appointment_detail' appointment.pk %}" class="button">View Booking Status</a>
-    </p>
-
-    <p>We look forward to meeting you and your furry friend!</p>
+<p style="margin-top: 20px; font-size: 13px; color: #666;">Please arrive 10 minutes early. We look forward to seeing you!</p>
 {% endblock %}
+

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Cancel Order #{{ order.order_number }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Are you sure you want to cancel this order?</p>
+                    <p>Once cancelled, the items will be returned to stock. If you have already paid, please contact support for a refund.</p>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Order Total:</strong> Rs. {{ order.total_amount }}<br>
+                        <strong>Items:</strong> {{ order.items.count }} items
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'products:order_detail' order.order_number %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>No, Keep Order
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Yes, Cancel Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

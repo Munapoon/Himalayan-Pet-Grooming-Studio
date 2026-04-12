@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard - Himalayan Pet Grooming Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/accounts/dashboard.css' %}">
+<style>
+    .dashboard-container {
+        padding: 2rem 0;
+    }
+    .user-welcome-card {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 30px rgba(78, 115, 223, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .user-welcome-card::after {
+        content: '\f1b0';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        font-size: 10rem;
+        opacity: 0.1;
+        transform: rotate(-15deg);
+    }
+    .user-welcome-card h1 {
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    .user-welcome-card p {
+        opacity: 0.9;
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+    .quick-link-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+        text-align: center;
+        padding: 2rem;
+        height: 100%;
+        background: white;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    .quick-link-card:hover {
+        transform: translateY(-5px);
+        color: #4e73df;
+    }
+    .quick-link-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #4e73df;
+    }
+    .quick-link-title {
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="user-welcome-card">
+            <h1>Welcome back, {{ user.first_name|default:user.username }}!</h1>
+            <p>Your one-stop destination for grooming services and pet products in Pokhara.</p>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card accent-blue">
+                    <div class="card-body">
+                        <div>
+                            <div class="stat-card-title text-blue">Total Bookings</div>
+                            <div class="stat-card-value">{{ total_appointments }}</div>
+                        </div>
+                        <div class="stat-card-icon"><i class="fas fa-calendar-check"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card accent-green">
+                    <div class="card-body">
+                        <div>
+                            <div class="stat-card-title text-green">Orders Placed</div>
+                            <div class="stat-card-value">{{ total_orders }}</div>
+                        </div>
+                        <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card accent-info">
+                    <div class="card-body">
+                        <div>
+                            <div class="stat-card-title text-info">Member Points</div>
+                            <div class="stat-card-value">{{ member_points }}</div>
+                        </div>
+                        <div class="stat-card-icon"><i class="fas fa-award"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card accent-orange">
+                    <div class="card-body">
+                        <div>
+                            <div class="stat-card-title text-orange">Profile Health</div>
+                            <div class="stat-card-value">{% if user.profile_picture %}Full{% else %}Needs Pic{% endif %}</div>
+                        </div>
+                        <div class="stat-card-icon"><i class="fas fa-user-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Row -->
+        <div class="row g-4 mb-5">
+            <!-- Recent Appointments -->
+            <div class="col-lg-7">
+                <div class="dashboard-section-card h-100">
+                    <div class="section-header">
+                        <h5 class="section-title">Recent Appointments</h5>
+                        <a href="{% url 'appointment_list' %}" class="btn btn-sm btn-link">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Pet Name</th>
+                                    <th>Service</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appt in recent_appointments %}
+                                <tr>
+                                    <td class="fw-bold">{{ appt.pet_name }}</td>
+                                    <td>{{ appt.get_service_display }}</td>
+                                    <td>{{ appt.appointment_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="status-pill status-{{ appt.status }}">
+                                            {{ appt.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No appointments found. <a href="{% url 'service_list' %}">Book one now!</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Overview / Quick Links -->
+            <div class="col-lg-5">
+                <div class="dashboard-section-card h-100">
+                    <div class="section-header">
+                        <h5 class="section-title">Quick Actions</h5>
+                    </div>
+                    <div class="p-4">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <a href="{% url 'user_profile' %}" class="quick-link-card">
+                                    <div class="quick-link-icon"><i class="fas fa-user-edit"></i></div>
+                                    <div class="quick-link-title">Edit Profile</div>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{% url 'products:cart' %}" class="quick-link-card">
+                                    <div class="quick-link-icon"><i class="fas fa-shopping-cart"></i></div>
+                                    <div class="quick-link-title">My Cart</div>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{% url 'service_list' %}" class="quick-link-card">
+                                    <div class="quick-link-icon"><i class="fas fa-calendar-plus"></i></div>
+                                    <div class="quick-link-title">Book Service</div>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{% url 'products:product_list' %}" class="quick-link-card">
+                                    <div class="quick-link-icon"><i class="fas fa-store"></i></div>
+                                    <div class="quick-link-title">Shop Products</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="dashboard-section-card">
+                    <div class="section-header">
+                        <h5 class="section-title">Latest Orders</h5>
+                        <a href="{% url 'products:order_list' %}" class="btn btn-sm btn-link">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Items</th>
+                                    <th>Payment Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td class="fw-bold text-primary">#{{ order.order_number }}</td>
+                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td>Rs. {{ order.total_amount }}</td>
+                                    <td>{{ order.items.count }} items</td>
+                                    <td>
+                                        <span class="status-pill {% if order.payment_status == 'paid' %}status-completed{% else %}status-pending{% endif %}">
+                                            {{ order.get_payment_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No orders found. <a href="{% url 'products:product_list' %}">Browse products!</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

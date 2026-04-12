@@ -49,6 +49,11 @@
             </h1>
             <p class="text-muted small">Monitor and manage customer purchases and delivery status.</p>
         </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'products:export_orders_excel' %}?{{ request.GET.urlencode }}" class="btn btn-primary px-3 shadow-sm rounded-3">
+                <i class="fas fa-download me-1"></i> Download Report
+            </a>
+        </div>
     </div>
 
     <!-- Order Statistics Cards -->
@@ -146,6 +151,7 @@
                         <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>Processing</option>
                         <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
                         <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        <option value="refunded" {% if status_filter == 'refunded' %}selected{% endif %}>Refunded</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -155,6 +161,7 @@
                         <option value="pending" {% if payment_status_filter == 'pending' %}selected{% endif %}>Pending</option>
                         <option value="paid" {% if payment_status_filter == 'paid' %}selected{% endif %}>Paid</option>
                         <option value="failed" {% if payment_status_filter == 'failed' %}selected{% endif %}>Failed</option>
+                        <option value="refunded" {% if payment_status_filter == 'refunded' %}selected{% endif %}>Refunded</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -235,7 +242,7 @@
                                         <div class="payment-badge badge-stripe"><i class="fab fa-stripe"></i> Stripe</div>
                                     {% endif %}
                                     
-                                    <span class="status-pill {% if order.payment_status == 'paid' %}status-completed{% elif order.payment_status == 'pending' %}status-pending{% else %}status-cancelled{% endif %} py-1" style="min-width: 70px; font-size: 0.6rem;">
+                                    <span class="status-pill {% if order.payment_status == 'paid' %}status-completed{% elif order.payment_status == 'pending' %}status-pending{% elif order.payment_status == 'refunded' %}status-confirmed{% else %}status-cancelled{% endif %} py-1" style="min-width: 70px; font-size: 0.6rem;">
                                         {{ order.payment_status|title }}
                                     </span>
                                 </div>
@@ -245,6 +252,7 @@
                                     {% if order.status == 'completed' %}status-completed
                                     {% elif order.status == 'pending' %}status-pending
                                     {% elif order.status == 'processing' %}status-confirmed
+                                    {% elif order.status == 'refunded' %}status-pending
                                     {% else %}status-cancelled{% endif %}">
                                     {{ order.status|title }}
                                 </span>

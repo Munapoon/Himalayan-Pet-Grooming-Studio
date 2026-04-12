@@ -1,0 +1,16 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<h3 style="color: #b51c3a;">Verify Your Email</h3>
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+<p>Use the code below to verify your account:</p>
+
+<div style="background: #f8f9fa; border: 2px dashed #b51c3a; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
+    <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333;">{{ verification_code }}</span>
+</div>
+
+<p style="font-size: 13px; color: #777;">This code expires in 5 minutes. If you didn't request this, ignore this email.</p>
+{% endblock %}
+
+
+

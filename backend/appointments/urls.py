@@ -14,6 +14,7 @@ urlpatterns = [
     path('confirm/<int:pk>/', views.appointment_confirm, name='appointment_confirm'),
     path('complete/<int:pk>/', views.appointment_complete, name='appointment_complete'),
     path('pay-shop/<int:pk>/', views.admin_appointment_pay_shop, name='admin_appointment_pay_shop'),
+    path('admin/<int:pk>/refund/', views.admin_appointment_refund, name='admin_appointment_refund'),
     path('<int:pk>/payment/', views.appointment_payment, name='appointment_payment'),
     path('<int:pk>/khalti/initiate/', views.appointment_khalti_initiate, name='appointment_khalti_initiate'),
     path('khalti/verify/', views.appointment_khalti_verify, name='appointment_khalti_verify'),
