@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Pet - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card border-0 shadow rounded-4 text-center">
+                <div class="card-body p-5">
+                    <div class="text-danger mb-4">
+                        <i class="fas fa-exclamation-triangle fa-4x"></i>
+                    </div>
+                    <h2 class="h3 mb-3">Delete Profile?</h2>
+                    <p class="text-muted mb-5">Are you sure you want to remove the profile for <strong>{{ pet.name }}</strong>? This action cannot be undone.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger rounded-pill py-3 fw-bold">
+                                Yes, Delete Profile
+                            </button>
+                            <a href="{% if user.role == 'admin' %}{% url 'admin_pet_list' %}{% else %}{% url 'pet_list' %}{% endif %}" class="btn rounded-pill py-3" style="border-color: #1e3a8a; color: #1e3a8a;">
+                                No, Keep Profile
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

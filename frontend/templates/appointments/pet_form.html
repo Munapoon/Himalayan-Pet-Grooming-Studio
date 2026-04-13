@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header p-4 text-center border-0 text-white" style="background-color: #1e3a8a;">
+                    <h2 class="h4 mb-0"><i class="fas fa-paw me-2"></i>{{ title }}</h2>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">Pet Name *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.pet_type.id_for_label }}" class="form-label fw-bold">Pet Type *</label>
+                                {{ form.pet_type }}
+                                {% if form.pet_type.errors %}
+                                    <div class="text-danger small mt-1">{{ form.pet_type.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">e.g. Dog, Cat</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label fw-bold">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger small mt-1">{{ form.gender.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.breed.id_for_label }}" class="form-label fw-bold">Breed</label>
+                                {{ form.breed }}
+                                {% if form.breed.errors %}
+                                    <div class="text-danger small mt-1">{{ form.breed.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Optional</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.age.id_for_label }}" class="form-label fw-bold">Age (Years)</label>
+                                {{ form.age }}
+                                {% if form.age.errors %}
+                                    <div class="text-danger small mt-1">{{ form.age.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="{{ form.medical_notes.id_for_label }}" class="form-label fw-bold">Medical Notes</label>
+                            {{ form.medical_notes }}
+                            {% if form.medical_notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.medical_notes.errors }}</div>
+                            {% endif %}
+                            <div class="form-text text-danger"><i class="fas fa-info-circle me-1"></i>Please list any allergies or health conditions.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn rounded-pill py-3 fw-bold text-white" style="background-color: #1e3a8a;">
+                                <i class="fas fa-save me-2"></i> Save Pet Profile
+                            </button>
+                            <a href="{% if user.role == 'admin' %}{% url 'admin_pet_list' %}{% else %}{% url 'pet_list' %}{% endif %}" class="btn btn-link text-muted py-2">
+                                Cancel and Go Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -63,6 +63,11 @@
                 href="{% url 'user_list' %}">
                 <i class="fas fa-users"></i> <span>Users</span>
             </a>
+            
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin_pet_list' %}active{% endif %}"
+                href="{% url 'admin_pet_list' %}">
+                <i class="fas fa-paw"></i> <span>Pet Profiles</span>
+            </a>
 
             <a class="nav-link {% if 'products:product' in request.resolver_match.view_name %}active{% endif %}"
                 href="{% url 'products:product_list' %}">

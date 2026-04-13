@@ -2,12 +2,39 @@
 
 {% block title %}{{ action }} Appointment - Himalayan Pet Studio{% endblock %}
 
+{% block extra_js %}
+<script>
+function autoFillPet(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const nameField = document.querySelector('input[name="pet_name"]');
+    const typeField = document.querySelector('input[name="pet_type"]');
+    const alertDiv = document.getElementById('pet-medical-alert');
+    const alertText = document.getElementById('pet-medical-text');
+    
+    if (selectedOption.value) {
+        nameField.value = selectedOption.value;
+        typeField.value = selectedOption.getAttribute('data-type');
+        
+        const medical = selectedOption.getAttribute('data-medical');
+        if (medical && medical.trim() !== "") {
+            alertText.innerText = medical;
+            alertDiv.classList.remove('d-none');
+        } else {
+            alertDiv.classList.add('d-none');
+        }
+    } else {
+        alertDiv.classList.add('d-none');
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header text-white" style="background-color: #1e3a8a;">
                     <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> {{ action }} Appointment</h4>
                 </div>
                 <div class="card-body">
@@ -21,6 +48,26 @@
                             {% endfor %}
                         </div>
                         {% endif %}
+
+                        {% if user_pets %}
+                        <div class="mb-4 p-3 bg-light border rounded-3">
+                            <label class="form-label fw-bold" style="color: #1e3a8a;"><i class="fas fa-paw"></i> Select from Your Saved Pets</label>
+                            <select id="pet-selector" class="form-select shadow-sm" onchange="autoFillPet(this)">
+                                <option value="">-- Choose a Pet for Fast Booking --</option>
+                                {% for pet in user_pets %}
+                                <option value="{{ pet.name }}" data-type="{{ pet.pet_type }}" data-medical="{{ pet.medical_notes|escapejs }}">
+                                    {{ pet.name }} ({{ pet.pet_type }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text mt-1 text-muted">Selecting a saved pet will automatically fill the name and type fields.</div>
+                            
+                            <div id="pet-medical-alert" class="mt-3 p-2 bg-danger-subtle border border-danger-subtle rounded-3 d-none">
+                                <span class="fw-bold text-danger"><i class="fas fa-notes-medical"></i> Medical Alert:</span>
+                                <span id="pet-medical-text" class="text-dark small"></span>
+                            </div>
+                        </div>
+{% endif %}
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -77,7 +124,7 @@
 
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn text-white" style="background-color: #1e3a8a;">
                                 <i class="fas fa-save"></i> Save Appointment
                             </button>
                             <a href="{% if user.is_admin_user %}{% url 'admin_appointment_list' %}{% else %}{% url 'appointment_list' %}{% endif %}" class="btn btn-secondary">

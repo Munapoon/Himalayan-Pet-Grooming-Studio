@@ -143,6 +143,26 @@ body {
     scroll-behavior: smooth;
 }
 
+/* Global Color overrides to match Navbar Navy */
+.btn-primary, .bg-primary {
+    background-color: #1e3a8a !important;
+    border-color: #1e3a8a !important;
+}
+
+.btn-outline-primary {
+    color: #1e3a8a !important;
+    border-color: #1e3a8a !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #1e3a8a !important;
+    color: white !important;
+}
+
+.text-primary {
+    color: #1e3a8a !important;
+}
+
 body.no-pt {
     padding-top: 0 !important;
 }
