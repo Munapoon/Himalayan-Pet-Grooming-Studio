@@ -197,27 +197,7 @@
             </div>
         </div>
 
-        <!-- Recommendation Section -->
-        {% if recommended_service %}
-        <div class="card shadow-sm border-0 mb-4 rounded-4" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="fw-bold mb-2 text-dark"><i class="fas fa-lightbulb text-warning me-2"></i> Frequent pairing with this product</h4>
-                        <p class="text-secondary mb-3 mb-md-0">
-                            People who bought this product also booked our 
-                            <strong style="color:var(--color-primary)">{{ recommended_service.name|default:"Grooming" }}</strong> service.
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-md-end">
-                        <a href="{% url 'appointment_create' %}?service={{ recommended_service.slug }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                            <i class="fas fa-calendar-alt me-1"></i> Book Appointment
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
+
 
         <!-- Reviews Section -->
         <div class="reviews-section">
