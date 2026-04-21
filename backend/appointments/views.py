@@ -224,13 +224,7 @@ def appointment_khalti_verify(request):
         messages.error(request, "Invalid payment callback.")
         return redirect('appointment_list')
 
-    # Since we redirected the user from initiate, we might not have the pk readily,
-    # but Khalti sends back some info OR we can use the order/appointment ID we passed in initiate.
-    # For now, let's find the appointment linked to this user with a status of 'pending' OR check session.
-    # Actually, a better way is to pass the pk in the return URL or use purchase_order_id
-    
-    # Check if we can find the appointment from the session (set in initiate)
-    # Actually, I'll update initiate to pass the info
+   
     
     appointment_id = request.session.get('pending_appointment_id')
     if not appointment_id:
