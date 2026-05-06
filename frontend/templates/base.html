@@ -38,35 +38,35 @@
 
             <div class="collapse navbar-collapse gap-2" id="navbarNav">
                 <!-- Main Nav Links (Centered) -->
-                <ul class="navbar-nav mx-auto gap-3 flex-shrink-0">
+                <ul class="navbar-nav mx-auto gap-4 flex-shrink-0">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                             href="{% url 'home' %}">
-                            <i class="fas fa-home nav-icon"></i><span>Home</span>
+                            <span>Home</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}"
                             href="{% url 'products:product_list' %}">
-                            <i class="fas fa-shopping-bag nav-icon"></i><span>Products</span>
+                            <span>Products</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'service_list' %}active{% endif %}"
                             href="{% url 'service_list' %}">
-                            <i class="fas fa-scissors nav-icon"></i><span>Grooming Services</span>
+                            <span>Grooming Services</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'contact_us' %}active{% endif %}"
                             href="{% url 'contact_us' %}">
-                            <i class="fas fa-envelope nav-icon"></i><span>Contact Us</span>
+                            <span>Contact Us</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'about_us' %}active{% endif %}"
                             href="{% url 'about_us' %}">
-                            <i class="fas fa-info-circle nav-icon"></i><span>About Us</span>
+                            <span>About Us</span>
                         </a>
                     </li>
                 </ul>

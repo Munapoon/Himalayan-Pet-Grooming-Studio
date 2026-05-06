@@ -279,12 +279,11 @@ body.no-pt {
     font-size: 1.1rem;
     font-weight: 600;
     color: #1e3a8a !important;
-    padding: 0.55rem 1rem !important;
+    padding: 0.6rem 1.5rem !important;
     border-radius: 50px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
-    gap: 5px;
     white-space: nowrap;
     border: 1.5px solid transparent;
     flex-shrink: 0;
@@ -574,7 +573,7 @@ body.no-pt {
 }
 
 .footer-bottom {
-    padding: 2rem 0;
+    padding: 3rem 0;
     margin-top: 4rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     background: rgba(0, 0, 0, 0.2);
