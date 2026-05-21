@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section with Gradient Background -->
+
 <div class="hero-section">
     <div class="hero-overlay"></div>
     <div class="container position-relative">
@@ -30,7 +30,7 @@
 
 <div class="container content-section">
     {% if page_obj %}
-    <!-- Stats Cards -->
+    
     <div class="row g-4 mb-5">
         <div class="col-md-4">
             <div class="stat-card stat-total">
@@ -67,7 +67,7 @@
         </div>
     </div>
 
-    <!-- Messages Timeline -->
+    
     <div class="messages-timeline">
         {% for contact in page_obj %}
         <div class="timeline-item">
@@ -78,7 +78,7 @@
             </div>
 
             <div class="message-card">
-                <!-- Card Header -->
+                
                 <div class="message-header">
                     <div class="header-left">
                         <div class="avatar-wrapper">
@@ -109,7 +109,7 @@
                     </div>
                 </div>
 
-                <!-- Your Message -->
+                
                 <div class="message-body">
                     <div class="chat-bubble user-bubble">
                         <div class="bubble-header">
@@ -128,7 +128,7 @@
                         </div>
                     </div>
 
-                    <!-- Admin Reply -->
+                    
                     {% if contact.admin_reply %}
                     <div class="chat-bubble admin-bubble">
                         <div class="bubble-header">
@@ -163,7 +163,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <!-- Empty State -->
+    
     <div class="empty-state-modern">
         <div class="empty-animation">
             <div class="empty-circle"></div>
@@ -180,7 +180,7 @@
     </div>
     {% endif %}
 
-    <!-- Pagination -->
+    
     {% if page_obj %}
     <div class="mt-5">
         {% include 'pagination.html' %}

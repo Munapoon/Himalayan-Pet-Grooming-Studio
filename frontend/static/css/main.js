@@ -1,7 +1,7 @@
-// Main JavaScript for Himalayan Pet Studio
+
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Auto-hide alerts after 5 seconds
+    
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -10,15 +10,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
     });
 
-    // Remove browser default password reveal buttons
+    
     const passwordInputs = document.querySelectorAll('input[type="password"]');
     passwordInputs.forEach(input => {
-        // Disable browser's built-in password reveal
+        
         input.style.webkitTextSecurity = 'disc';
     });
 });
 
-// Toggle password visibility
+
 function togglePassword(inputId, button) {
     const input = document.getElementById(inputId);
     const icon = button.querySelector('i');

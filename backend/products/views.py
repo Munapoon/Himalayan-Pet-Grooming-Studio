@@ -17,7 +17,7 @@ from .models import ProductCategory, Product, Cart, Order, OrderItem, Payment, S
 from .forms import ProductCategoryForm, ProductForm
 
 
-# Product Category Views
+
 @login_required
 @admin_required
 def category_list(request):
@@ -25,7 +25,7 @@ def category_list(request):
     
     categories = ProductCategory.objects.all().order_by('-created_at')
     
-    # Pagination - 10 categories per page
+    
     paginator = Paginator(categories, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -67,7 +67,7 @@ def category_update(request, pk):
 def category_delete(request, pk):
     category = get_object_or_404(ProductCategory, pk=pk)
     if request.method == 'POST':
-        # Block deletion if category has active products
+        
         active_products = category.products.filter(is_active=True)
         active_count = active_products.count()
         if active_count > 0:
@@ -84,12 +84,12 @@ def category_delete(request, pk):
     return render(request, 'products/category_confirm_delete.html', {'category': category})
 
 
-# Product Views
+
 def product_list(request):
     from django.core.paginator import Paginator
     from django.db.models import Q
     
-    # Get search query, category filter, price range, and sort option
+    
     search_query = request.GET.get('search') or request.GET.get('q', '')
     category_id = request.GET.get('category', '')
     min_price = request.GET.get('min_price', '')
@@ -103,7 +103,7 @@ def product_list(request):
         products = Product.objects.filter(is_active=True)
         template_name = 'products/product_list.html'
     
-    # Apply search filter
+    
     if search_query:
         products = products.filter(
             Q(name__icontains=search_query) |
@@ -111,11 +111,11 @@ def product_list(request):
             Q(category__name__icontains=search_query)
         )
     
-    # Apply category filter
+    
     if category_id:
         products = products.filter(category_id=category_id)
 
-    # Apply price filters
+    
     if min_price:
         try:
             products = products.filter(price__gte=float(min_price))
@@ -128,22 +128,22 @@ def product_list(request):
         except ValueError:
             pass
     
-    # Apply sorting
+    
     if sort_by == 'price_low':
         products = products.order_by('price')
     elif sort_by == 'price_high':
         products = products.order_by('-price')
     elif sort_by == 'rating':
         products = products.order_by('-rating', '-created_at')
-    else:  # newest (default)
+    else:  
         products = products.order_by('-created_at')
     
-    # Pagination - 10 products per page
+    
     paginator = Paginator(products, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Get all categories for filter
+    
     categories = ProductCategory.objects.all()
     
     context = {
@@ -177,8 +177,8 @@ def product_detail(request, pk):
     from .models import Review, Sale, OrderItem
     product = get_object_or_404(Product, pk=pk)
     
-    # Check if user has purchased this product
-    # Check BOTH: Sale records (admin) AND actual OrderItems from user orders
+    
+    
     has_purchased = False
     if request.user.is_authenticated and not request.user.is_admin_user():
         via_sale = Sale.objects.filter(
@@ -191,24 +191,24 @@ def product_detail(request, pk):
         ).exists()
         has_purchased = via_sale or via_order
     
-    # Get user's existing review if any
+    
     user_review = None
     if request.user.is_authenticated and not request.user.is_admin_user():
         user_review = Review.objects.filter(product=product, user=request.user).first()
     
-    # Get all reviews for this product (Approved only, or owner's own)
+    
     reviews_qs = Review.objects.filter(product=product).select_related('user')
     if not request.user.is_authenticated or not request.user.is_admin_user():
-        # Regular users see approved ones or their own
+        
         if request.user.is_authenticated:
             reviews = reviews_qs.filter(Q(is_approved=True) | Q(user=request.user))
         else:
             reviews = reviews_qs.filter(is_approved=True)
     else:
-        # Admins see everything
+        
         reviews = reviews_qs
     
-    # Simple Recommendation System
+    
     from appointments.models import Service
     recommended_service = None
     
@@ -224,7 +224,7 @@ def product_detail(request, pk):
         recommended_service = Service.objects.filter(is_active=True, slug__icontains='spa').first()
         
     if not recommended_service:
-        # Fallback to a deterministic service based on product ID so it doesn't change on refresh
+        
         active_services = list(Service.objects.filter(is_active=True))
         if active_services:
             index = product.id % len(active_services)
@@ -272,7 +272,7 @@ def product_delete(request, pk):
     return render(request, 'products/product_confirm_delete.html', {'product': product})
 
 
-# Cart Views
+
 @login_required
 def cart_view(request):
     """View cart items"""
@@ -300,7 +300,7 @@ def add_to_cart(request, product_id):
     size = request.POST.get('size', None)
     redirect_to = request.POST.get('redirect_to', 'cart')
     
-    # Check if item already in cart with same size
+    
     cart_item, created = Cart.objects.get_or_create(
         user=request.user,
         product=product,
@@ -309,14 +309,14 @@ def add_to_cart(request, product_id):
     )
     
     if not created:
-        # Update quantity if item already exists
+        
         cart_item.quantity += quantity
         cart_item.save()
         messages.success(request, f'Updated {product.name} quantity in cart.')
     else:
         messages.success(request, f'{product.name} added to cart successfully!')
     
-    # Redirect based on the redirect_to parameter
+    
     if redirect_to == 'product':
         return redirect('products:product_detail', pk=product_id)
     else:
@@ -371,7 +371,7 @@ def add_review(request, pk):
     
     product = get_object_or_404(Product, pk=pk)
     
-    # Check if user has purchased this product via Sale OR OrderItem
+    
     via_sale = Sale.objects.filter(
         customer=request.user,
         product=product
@@ -386,7 +386,7 @@ def add_review(request, pk):
         messages.error(request, 'You can only review products you have purchased.')
         return redirect('products:product_detail', pk=pk)
     
-    # Check if user already has a review
+    
     existing_review = Review.objects.filter(product=product, user=request.user).first()
     
     if request.method == 'POST':
@@ -424,7 +424,7 @@ def delete_review(request, pk):
     review = get_object_or_404(Review, pk=pk)
     product_id = review.product.id
     
-    # Check if user owns this review
+    
     if review.user != request.user:
         messages.error(request, 'You can only delete your own reviews.')
         return redirect('products:product_detail', pk=product_id)
@@ -437,38 +437,38 @@ def delete_review(request, pk):
     return render(request, 'products/review_confirm_delete.html', {'review': review})
 
 
-# Checkout & Order Views
+
 @login_required
 def checkout(request):
     """Checkout page with payment options"""
     from .models import Order, OrderItem
     
-    # Get selected item IDs from POST request
+    
     selected_item_ids = request.POST.getlist('selected_items')
     
     if selected_item_ids:
-        # Filter cart items by selected IDs
+        
         cart_items = Cart.objects.filter(
             user=request.user, 
             id__in=selected_item_ids
         ).select_related('product')
-        # Store selected IDs in session for later use
+        
         request.session['selected_cart_items'] = selected_item_ids
     elif 'selected_cart_items' in request.session:
-        # Use stored selection from session
+        
         cart_items = Cart.objects.filter(
             user=request.user,
             id__in=request.session['selected_cart_items']
         ).select_related('product')
     else:
-        # No selection - use all cart items
+        
         cart_items = Cart.objects.filter(user=request.user).select_related('product')
     
     if not cart_items.exists():
         messages.warning(request, 'Your cart is empty or no items selected.')
         return redirect('products:cart')
     
-    # Check stock availability
+    
     for item in cart_items:
         if item.quantity > item.product.stock_quantity:
             messages.error(request, f'{item.product.name} has insufficient stock.')
@@ -489,7 +489,7 @@ def checkout(request):
                 'total': total,
             })
         
-        # Create order
+        
         order = Order.objects.create(
             user=request.user,
             total_amount=total,
@@ -499,7 +499,7 @@ def checkout(request):
             notes=notes,
         )
         
-        # Create order items and update stock
+        
         for item in cart_items:
             OrderItem.objects.create(
                 order=order,
@@ -509,11 +509,11 @@ def checkout(request):
                 unit_price=item.product.price,
             )
             
-            # Update product stock
+            
             item.product.stock_quantity -= item.quantity
             item.product.save()
             
-            # Create Sale record for purchase verification (for reviews)
+            
             Sale.objects.create(
                 product=item.product,
                 customer=request.user,
@@ -522,15 +522,15 @@ def checkout(request):
                 payment_method='online' if payment_method == 'khalti' else 'cash',
             )
         
-        # Clear only the selected cart items
+        
         cart_items.delete()
         
-        # Clear session data
+        
         if 'selected_cart_items' in request.session:
             del request.session['selected_cart_items']
         
         if payment_method == 'cod':
-            # Cash on Delivery - Order is pending
+            
             order.payment_status = 'pending'
             order.save()
             
@@ -544,7 +544,7 @@ def checkout(request):
                 status='pending',
             )
             
-            # Send email confirmation
+            
             from django.core.mail import send_mail
             
             subject = f"Order #{order.order_number} Placed"
@@ -575,7 +575,7 @@ def checkout(request):
             return redirect('products:order_detail', order_number=order.order_number)
         
         elif payment_method == 'khalti':
-            # Khalti payment - Initiate KPG-2
+            
             import requests as http_requests
             from django.urls import reverse
             
@@ -585,7 +585,7 @@ def checkout(request):
             url = f"{settings.KHALTI_BASE_URL}epayment/initiate/"
             return_url = request.build_absolute_uri(reverse('products:khalti_verify'))
             
-            # Build purchase name from product items
+            
             product_names = ", ".join([item.product.name for item in order.items.all()])
             if len(product_names) > 80:
                 product_names = product_names[:77] + "..."
@@ -612,9 +612,9 @@ def checkout(request):
                 response = http_requests.post(url, json=payload, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
-                    # Store pidx in session or order (if you have a field for it)
-                    # Let's use the session or just pass it in return_url if needed, 
-                    # but Khalti sends it back in GET params.
+                    
+                    
+                    
                     request.session['pending_order_pidx'] = data.get('pidx')
                     request.session['pending_order_number'] = order.order_number
                     return redirect(data.get('payment_url'))
@@ -656,14 +656,14 @@ def order_list(request):
     
     orders_list = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
     
-    # Pagination - 15 orders per page
+    
     paginator = Paginator(orders_list, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     context = {
         'page_obj': page_obj,
-        'orders': page_obj,  # Keep 'orders' for backward compatibility in template
+        'orders': page_obj,  
     }
     return render(request, 'products/order_list.html', context)
 
@@ -678,7 +678,7 @@ def order_cancel(request, order_number):
         return redirect('products:order_detail', order_number=order_number)
     
     if request.method == 'POST':
-        # Restore stock before cancelling
+        
         for item in order.items.all():
             item.product.stock_quantity += item.quantity
             item.product.save()
@@ -731,16 +731,16 @@ def khalti_verify(request):
         messages.error(request, "Invalid payment callback.")
         return redirect('products:cart')
 
-    # Get order from session or verify against returned data
+    
     order_number = request.session.get('pending_order_number')
     if not order_number:
-        # Fallback/Security: Check if we can find an order with this pidx if stored
+        
         messages.error(request, "Session expired or order not found.")
         return redirect('products:cart')
 
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
 
-    # Call lookup to verify
+    
     url = f"{settings.KHALTI_BASE_URL}epayment/lookup/"
     payload = {"pidx": pidx}
     headers = {"Authorization": f"Key {settings.KHALTI_SECRET_KEY}"}
@@ -754,7 +754,7 @@ def khalti_verify(request):
                 order.payment_method = 'khalti'
                 order.save()
                 
-                # Create payment record
+                
                 Payment.objects.create(
                     order=order,
                     user=request.user,
@@ -765,7 +765,7 @@ def khalti_verify(request):
                     payment_response=data
                 )
                 
-                # Send email confirmation
+                
                 from django.core.mail import send_mail
                 
                 subject = f"Payment Received: Order #{order.order_number}"
@@ -792,7 +792,7 @@ def khalti_verify(request):
                     print(f"DEBUG: Email confirmation error (Khalti): {e}")
                     pass
                 
-                # Cleanup session
+                
                 if 'pending_order_number' in request.session: del request.session['pending_order_number']
                 if 'pending_order_pidx' in request.session: del request.session['pending_order_pidx']
                 
@@ -809,7 +809,7 @@ def khalti_verify(request):
         return redirect('products:cart')
 
 
-# Admin Order Management Views
+
 @login_required
 @admin_required
 def admin_order_list(request):
@@ -817,7 +817,7 @@ def admin_order_list(request):
     from django.db.models import Q
     from django.core.paginator import Paginator
     
-    # Get filter parameters
+    
     status_filter = request.GET.get('status', '')
     payment_status_filter = request.GET.get('payment_status', '')
     payment_method_filter = request.GET.get('payment_method', '')
@@ -825,7 +825,7 @@ def admin_order_list(request):
     
     orders = Order.objects.all().select_related('user').prefetch_related('items__product').order_by('-created_at')
     
-    # Apply filters
+    
     if status_filter:
         orders = orders.filter(status=status_filter)
     
@@ -844,12 +844,12 @@ def admin_order_list(request):
             Q(user__last_name__icontains=search_query)
         )
     
-    # Pagination - 10 orders per page
+    
     paginator = Paginator(orders, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Calculate statistics for all filtered orders (not just current page)
+    
     total_orders = orders.count()
     pending_orders = orders.filter(status='pending').count()
     total_revenue = sum(order.total_amount for order in orders.filter(payment_status='paid'))
@@ -902,7 +902,7 @@ def update_order_status(request, order_number):
             order.payment_status = new_payment_status
             status_changed = True
             
-            # Sync corresponding Payment object
+            
             from .models import Payment
             payment = Payment.objects.filter(order=order).first()
             if payment:
@@ -916,7 +916,7 @@ def update_order_status(request, order_number):
                     payment.status = 'failed'
                     payment.save()
             elif new_payment_status == 'paid':
-                # If no payment object exists (e.g. COD) but admin marks as paid, create one
+                
                 from django.utils import timezone
                 Payment.objects.create(
                     order=order,
@@ -957,12 +957,12 @@ def admin_order_refund(request, order_number):
                 messages.error(request, f'Refund amount cannot exceed order total (Rs. {order.total_amount}).')
                 return redirect('products:admin_order_detail', order_number=order_number)
             
-            # 1. Update order status and payment status
+            
             order.status = 'refunded'
             order.payment_status = 'refunded'
             order.save()
             
-            # 2. Record the refund as a Payment object with negative amount
+            
             unique_id = f"REF-{uuid.uuid4().hex[:4]}-{timezone.now().strftime('%y%m%d')}"
             
             Payment.objects.create(
@@ -990,7 +990,7 @@ def admin_order_refund(request, order_number):
     return redirect('products:admin_order_detail', order_number=order_number)
 
 
-# Admin Review Management Views
+
 @login_required
 @admin_required
 def admin_review_list(request):
@@ -999,14 +999,14 @@ def admin_review_list(request):
     from django.db.models import Q, Avg
     from django.core.paginator import Paginator
     
-    # Get filter parameters
+    
     rating_filter = request.GET.get('rating', '')
     product_filter = request.GET.get('product', '')
     search_query = request.GET.get('search', '')
     
     reviews = Review.objects.all().select_related('product', 'user').order_by('-created_at')
     
-    # Apply filters
+    
     if rating_filter:
         reviews = reviews.filter(rating=rating_filter)
     
@@ -1021,15 +1021,15 @@ def admin_review_list(request):
             Q(comment__icontains=search_query)
         )
     
-    # Pagination - 10 reviews per page
+    
     paginator = Paginator(reviews, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Get all products for filter dropdown
+    
     products = Product.objects.filter(is_active=True).order_by('name')
 
-    # Metrics
+    
     total_reviews = Review.objects.count()
     approved_count = Review.objects.filter(is_approved=True).count()
     pending_count = Review.objects.filter(is_approved=False).count()
@@ -1084,7 +1084,7 @@ def admin_delete_review(request, pk):
 
 
 
-# Payment Views
+
 @login_required
 def user_payment_list(request):
     """User view to see their payment history"""
@@ -1093,7 +1093,7 @@ def user_payment_list(request):
     
     payments = Payment.objects.filter(user=request.user).select_related('order')
     
-    # Pagination
+    
     paginator = Paginator(payments, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1114,15 +1114,15 @@ def admin_payment_list(request):
     from django.core.paginator import Paginator
     from django.db.models import Q
     
-    # Get filter parameters
+    
     status_filter = request.GET.get('status', '')
     payment_method_filter = request.GET.get('payment_method', '')
     search_query = request.GET.get('search', '')
     
-    # Base queryset - include both order and appointment
+    
     payments = Payment.objects.all().select_related('order', 'appointment', 'user').order_by('-created_at')
     
-    # Apply filters
+    
     if status_filter:
         payments = payments.filter(status=status_filter)
     
@@ -1138,12 +1138,12 @@ def admin_payment_list(request):
             Q(appointment__id__icontains=search_query)
         )
     
-    # Pagination
+    
     paginator = Paginator(payments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Calculate statistics using DB aggregation for accuracy
+    
     from django.db.models import Sum
     all_payments = Payment.objects.all()
     completed_payments_qs = all_payments.filter(status='completed')
@@ -1187,14 +1187,14 @@ def export_orders_excel(request):
     from django.utils import timezone
     from openpyxl.styles import Font, Alignment, PatternFill
     
-    # Get filters from request
+    
     status_filter = request.GET.get('status', '')
     payment_status_filter = request.GET.get('payment_status', '')
     search_query = request.GET.get('search', '')
     
     orders = Order.objects.all().select_related('user').order_by('-created_at')
     
-    # Apply filters (same as admin_order_list)
+    
     if status_filter:
         orders = orders.filter(status=status_filter)
     if payment_status_filter:
@@ -1206,16 +1206,16 @@ def export_orders_excel(request):
             Q(user__email__icontains=search_query)
         )
     
-    # Create workbook
+    
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Orders Report"
     
-    # Header cells
+    
     headers = ['Order #', 'Customer', 'Email', 'Date', 'Amount (Rs.)', 'Method', 'Payment Status', 'Order Status']
     ws.append(headers)
     
-    # Style headers
+    
     header_font = Font(bold=True, color="FFFFFF")
     header_fill = PatternFill(start_color="4E73DF", end_color="4E73DF", fill_type="solid")
     for cell in ws[1]:
@@ -1223,7 +1223,7 @@ def export_orders_excel(request):
         cell.fill = header_fill
         cell.alignment = Alignment(horizontal='center')
     
-    # Add data
+    
     for order in orders:
         ws.append([
             order.order_number,
@@ -1236,12 +1236,12 @@ def export_orders_excel(request):
             order.status.upper()
         ])
     
-    # Adjust column widths
+    
     for column_cells in ws.columns:
         length = max(len(str(cell.value)) for cell in column_cells)
         ws.column_dimensions[column_cells[0].column_letter].width = length + 2
 
-    # Prepare response
+    
     timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="Order_Report_{timestamp}.xlsx"'
@@ -1259,7 +1259,7 @@ def export_payments_excel(request):
     from django.utils import timezone
     from openpyxl.styles import Font, Alignment, PatternFill
     
-    # Get filters
+    
     status_filter = request.GET.get('status', '')
     method_filter = request.GET.get('payment_method', '')
     
@@ -1316,14 +1316,14 @@ def export_orders_csv(request):
     from django.utils import timezone
     import csv
 
-    # Get filters from request
+    
     status_filter = request.GET.get('status', '')
     payment_status_filter = request.GET.get('payment_status', '')
     search_query = request.GET.get('search', '')
 
     orders = Order.objects.all().select_related('user').order_by('-created_at')
 
-    # Apply filters (same as admin_order_list)
+    
     if status_filter:
         orders = orders.filter(status=status_filter)
     if payment_status_filter:
@@ -1335,7 +1335,7 @@ def export_orders_csv(request):
             Q(user__email__icontains=search_query)
         )
 
-    # Prepare response
+    
     timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="Order_Report_{timestamp}.csv"'
@@ -1366,7 +1366,7 @@ def export_payments_csv(request):
     from django.utils import timezone
     import csv
 
-    # Get filters
+    
     status_filter = request.GET.get('status', '')
     method_filter = request.GET.get('payment_method', '')
 
@@ -1377,7 +1377,7 @@ def export_payments_csv(request):
     if method_filter:
         payments = payments.filter(payment_method=method_filter)
 
-    # Prepare response
+    
     timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="Payment_Report_{timestamp}.csv"'

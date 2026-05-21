@@ -132,14 +132,14 @@
 
 {% block content %}
 <div class="container-fluid py-4 p-md-4">
-    <!-- Header -->
+    
     <div class="mb-4">
         <h2 class="h4 mb-0 text-dark" style="font-weight: 400;">
             <i class="far fa-envelope-open me-2 text-dark"></i> Contact Messages
         </h2>
     </div>
 
-    <!-- Metrics -->
+    
     <div class="row mb-4 gx-3">
         <div class="col-md-3">
             <div class="metric-card">
@@ -172,7 +172,7 @@
     </div>
 
     <div class="table-container mb-4">
-        <!-- Filter Bar -->
+        
         <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white"
             style="border-radius: 8px 8px 0 0;">
             <div class="input-group" style="max-width: 400px;">
@@ -254,7 +254,7 @@
                         </td>
                     </tr>
 
-                    <!-- Message Modal (Reused) -->
+                    
                     <div class="modal fade" id="messageModal{{ message.id }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-lg">
                             <div class="modal-content border-0 shadow-lg rounded-4">
@@ -300,7 +300,7 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+        
         {% if is_paginated %}
         <div class="px-4 py-3 bg-white border-top" style="border-radius: 0 0 8px 8px;">
             <nav aria-label="Page navigation">
@@ -335,7 +335,7 @@
                 const messageId = this.id.replace('messageModal', '');
                 const readUrl = `/admin-dashboard/contact-messages/${messageId}/read/`;
 
-                // Fire async read state change
+                
                 fetch(readUrl, {
                     method: 'POST',
                     headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
@@ -343,8 +343,8 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            // Wait for manual refresh or rely on user doing so to see new status badge.
-                            // Since this redesign overrides class, user hitting refresh will update correctly. 
+                            
+                            
                         }
                     });
             });

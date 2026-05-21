@@ -143,7 +143,7 @@ def home(request):
     
     services = Service.objects.filter(is_active=True).order_by('order')
     
-    # Pre-fetch service ratings
+    
     service_ratings = {}
     for svc in services:
         reviews = ServiceReview.objects.filter(service=svc.slug)
@@ -191,7 +191,7 @@ def user_login(request):
                 
                 login(request, user)
                 
-                # Send Welcome Email on FIRST Login Only
+                
                 if is_first_login:
                     try:
                         context = {
@@ -220,7 +220,7 @@ def user_login(request):
                     return redirect('staff_dashboard')
                 return redirect('home')
             else:
-                # Check if it's an unverified/inactive user
+                
                 try:
                     user_check = User.objects.get(username=username)
                     if not user_check.is_active and user_check.check_password(password):
@@ -243,14 +243,14 @@ def user_register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.role = 'user'
-            user.is_active = False # Registration requires verification
+            user.is_active = False 
             
-            # Generate Code
+            
             code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
             user.verification_code = code
             user.save()
             
-            # Send Code Email
+            
             try:
                 context = {
                     'user_name': user.username,
@@ -330,7 +330,7 @@ def admin_dashboard(request):
     recent_appointments = Appointment.objects.select_related('user').all().order_by('-created_at')[:5]
     low_stock_products = Product.objects.filter(stock_quantity__lt=10).order_by('stock_quantity')[:5]
 
-    # --- Total Revenue (all time, completed payments) ---
+    
     import calendar
     from decimal import Decimal
     from django.db.models import Sum
@@ -339,7 +339,7 @@ def admin_dashboard(request):
         status__in=['completed', 'refunded']
     ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
-    # --- Charts Data (Last 6 Months) ---
+    
     today = timezone.now().date()
     import calendar
     from decimal import Decimal
@@ -351,7 +351,7 @@ def admin_dashboard(request):
     from datetime import date, datetime
     
     for i in range(5, -1, -1):
-        # Calculate target month and year
+        
         m = today.month - i
         y = today.year
         while m <= 0:
@@ -361,12 +361,12 @@ def admin_dashboard(request):
         target_date = date(y, m, 1)
         months_labels.append(target_date.strftime('%b'))
         
-        # Date range for the target month
+        
         last_day = calendar.monthrange(y, m)[1]
         start_date = timezone.make_aware(datetime(y, m, 1))
         end_date = timezone.make_aware(datetime(y, m, last_day, 23, 59, 59))
         
-        # Revenue via Payment model
+        
         month_revenue = Payment.objects.filter(
             created_at__range=(start_date, end_date),
             status__in=['completed', 'refunded']
@@ -374,7 +374,7 @@ def admin_dashboard(request):
         
         earnings_data.append(float(month_revenue))
         
-        # Appointment counts
+        
         a_count = Appointment.objects.filter(
             created_at__range=(start_date, end_date),
             status__in=['pending', 'confirmed', 'completed']
@@ -408,7 +408,7 @@ def user_dashboard(request):
     elif request.user.is_staff_user():
         return redirect('staff_dashboard')
     
-    # Since the user requested to remove the dashboard, we redirect them to their profile
+    
     return redirect('user_profile')
 
 @login_required
@@ -421,19 +421,19 @@ def staff_dashboard(request):
     from datetime import date
     
     today = date.today()
-    # Fetch today's assignments for this staff member
+    
     today_appointments = Appointment.objects.filter(
         assigned_staff=request.user, 
         appointment_date=today
     ).order_by('appointment_time')
     
-    # Upcoming tasks (> today)
+    
     upcoming_appointments = Appointment.objects.filter(
         assigned_staff=request.user,
         appointment_date__gt=today
     ).exclude(status='completed').order_by('appointment_date', 'appointment_time')[:10]
     
-    # Stats
+    
     completed_today = today_appointments.filter(status='completed').count()
     pending_today = today_appointments.exclude(status='completed').count()
     total_completed_all_time = Appointment.objects.filter(assigned_staff=request.user, status='completed').count()
@@ -476,7 +476,7 @@ def remove_profile_picture(request):
     """Remove user's profile picture"""
     user = request.user
     if user.profile_picture:
-        user.profile_picture.delete(save=False) # Physically delete file
+        user.profile_picture.delete(save=False) 
         user.profile_picture = None
         user.save()
         messages.success(request, 'Profile picture removed.')
@@ -519,14 +519,14 @@ def user_update_role(request, pk):
         new_role = request.POST.get('role')
         if new_role in ['admin', 'staff', 'user']:
             user_obj.role = new_role
-            # Sync Django flags with the role
+            
             if new_role == 'admin':
                 user_obj.is_superuser = True
                 user_obj.is_staff = True
             elif new_role == 'staff':
                 user_obj.is_superuser = False
                 user_obj.is_staff = True
-            else: # regular user
+            else: 
                 user_obj.is_superuser = False
                 user_obj.is_staff = False
                 
@@ -562,7 +562,7 @@ def reports(request):
         start_year_date = datetime(selected_year, 1, 1)
         end_year_date = datetime(selected_year, 12, 31, 23, 59, 59)
 
-    # Actual filtered data for the selected period using __range
+    
     monthly_sales = all_sales.filter(created_at__range=(start_date, end_date))
     
     monthly_revenue = monthly_sales.aggregate(total=Sum('amount'))['total'] or 0
@@ -577,7 +577,7 @@ def reports(request):
     service_name_map = dict(Appointment.SERVICE_CHOICES)
     sales_qs = monthly_sales.select_related('order', 'appointment', 'user').order_by('-created_at')
 
-    # Python-side aggregation to avoid timezone issues with TruncDate on SQLite
+    
     from collections import defaultdict
     daily_stats = defaultdict(lambda: {"total": 0, "count": 0})
     
@@ -710,11 +710,11 @@ def export_sales_csv(request):
 def contact_messages(request):
     messages_list = Contact.objects.all().order_by('-created_at')
     
-    # Contact metrics
+    
     unread_count = Contact.objects.filter(is_read=False).count()
-    # "Read Messages" defined as read but not yet replied
+    
     read_count = Contact.objects.filter(is_read=True, admin_reply__isnull=True).exclude(admin_reply__exact='').count()
-    # Replied messages 
+    
     replied_count = Contact.objects.exclude(admin_reply__isnull=True).exclude(admin_reply__exact='').count()
     high_priority_count = Contact.objects.filter(priority='High').count()
 
@@ -744,7 +744,7 @@ def contact_us(request):
         messages.success(request, 'Message sent!')
         return redirect('contact_us')
         
-    # Default FAQs for the store
+    
     faqs = [
         {
             'question': 'How can I book an appointment?',

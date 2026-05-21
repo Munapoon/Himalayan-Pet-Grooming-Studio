@@ -1,7 +1,4 @@
-/* 
-   Service Detail Page Styles
-   Himalayan Pet Grooming Studio
-*/
+
 
 .service-image-container {
     width: 100%;
@@ -58,7 +55,7 @@
     opacity: 1;
 }
 
-/* Show filled star on hover */
+
 .rating-input label:hover .fas,
 .rating-input label:hover~label .fas {
     opacity: 1;
@@ -69,7 +66,7 @@
     opacity: 0;
 }
 
-/* Show filled star when checked */
+
 .rating-input input:checked~label .fas {
     opacity: 1;
 }

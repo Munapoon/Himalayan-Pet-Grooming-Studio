@@ -1,6 +1,4 @@
-/**
- * Product Detail quantity controls and purchase actions.
- */
+
 window.changeQty = function(amount) {
     const qtyInput = document.getElementById('quantity');
     const incBtn = document.querySelector('.increment-btn');

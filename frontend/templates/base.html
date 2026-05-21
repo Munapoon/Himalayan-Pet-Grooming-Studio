@@ -13,7 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ request.timestamp|default:'1' }}">
-    <!-- Google Fonts: Outfit -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
@@ -24,7 +24,7 @@
 
 <body class="{% block body_class %}{% endblock %}">
     {% block navbar %}
-    <!-- Navigation -->
+    
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container-fluid px-3">
             <a class="navbar-brand" href="{% url 'home' %}">
@@ -37,7 +37,7 @@
             </button>
 
             <div class="collapse navbar-collapse gap-2" id="navbarNav">
-                <!-- Main Nav Links (Centered) -->
+                
                 <ul class="navbar-nav mx-auto gap-4 flex-shrink-0">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
@@ -71,7 +71,7 @@
                     </li>
                 </ul>
 
-                <!-- Premium Search Bar (Pill Style) -->
+                
                 <form action="{% url 'products:product_list' %}" method="GET" class="nav-search-pill">
                     <input type="text" name="q" placeholder="Search..." aria-label="Search">
                     <button type="submit" class="nav-search-btn">
@@ -79,11 +79,11 @@
                     </button>
                 </form>
 
-                <!-- Right Auth Elements -->
+                
                 <div class="d-flex align-items-center gap-2" id="navbar-auth">
 
                     {% if user.is_authenticated %}
-                    <!-- Cart & User profile -->
+                    
                     <a class="nav-link position-relative d-flex align-items-center" href="{% url 'products:cart' %}">
                         <i class="fas fa-shopping-cart" style="font-size: 1.8rem;"></i>
                         {% if cart_count > 0 %}
@@ -138,7 +138,7 @@
     </nav>
     {% endblock navbar %}
 
-    <!-- MESSAGES (Floating Toasts) -->
+    
     {% if messages %}
     <div class="floating-messages-container">
         {% for message in messages %}
@@ -157,17 +157,17 @@
     </div>
     {% endif %}
 
-    <!-- MAIN CONTENT -->
+    
     <main class="{% block main_class %}container py-4{% endblock %} main-wrapper">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- PREMIUM FOOTER -->
+    
     {% block footer %}
     <footer class="premium-footer">
         <div class="container">
             <div class="row gx-lg-4">
-                <!-- Column 1: About -->
+                
                 <div class="col-lg-3 col-md-6 mb-5 mb-lg-0">
                     <a href="{% url 'home' %}" class="footer-logo text-decoration-none">
                         <i class="fas fa-paw me-2"></i>Himalayan Pet Studio
@@ -184,7 +184,7 @@
                     </div>
                 </div>
 
-                <!-- Column 2: Our Services -->
+                
                 <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
                     <h5 class="footer-heading d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" data-bs-target="#footerServices" role="button" aria-expanded="false">
@@ -207,7 +207,7 @@
                     </div>
                 </div>
 
-                <!-- Column 3: Legals (Middle) -->
+                
                 <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
                     <h5 class="footer-heading d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" data-bs-target="#footerLinks" role="button" aria-expanded="false">
@@ -224,7 +224,7 @@
                     </div>
                 </div>
 
-                <!-- Column 4: Visit Our Studio -->
+                
                 <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
                     <h5 class="footer-heading d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" data-bs-target="#footerContact" role="button" aria-expanded="false">
@@ -257,7 +257,7 @@
 
     </footer>
 
-    <!-- Back to Top Button -->
+    
     <a href="#" class="back-to-top shadow-lg" id="backToTop">
         <i class="fas fa-chevron-up"></i>
     </a>

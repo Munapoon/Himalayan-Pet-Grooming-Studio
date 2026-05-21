@@ -1,9 +1,6 @@
-/* 
-   Homepage Specific Styles 
-   Himalayan Pet Grooming Studio
-*/
 
-/* --- Navigation & Hero Section --- */
+
+
 .navbar {
     background: white !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
@@ -32,7 +29,7 @@
     z-index: 1;
 }
 
-/* Hero Backgrounds */
+
 .hero-slide-1 {
     background: linear-gradient(to right, rgba(255, 255, 255, 0.98) 25%, rgba(255, 255, 255, 0) 85%),
         url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=1600&auto=format&fit=crop');
@@ -134,7 +131,7 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* --- Carousel Navigation --- */
+
 .carousel-nav {
     position: absolute;
     left: 20px;
@@ -191,7 +188,7 @@
     border-radius: 5px;
 }
 
-/* --- Animations --- */
+
 @keyframes fadeInDown {
     from {
         opacity: 0;
@@ -240,7 +237,7 @@
     }
 }
 
-/* --- Service Section & Cards --- */
+
 .services-section-title {
     color: #1e3a8a;
     font-size: 2.5rem;
@@ -430,7 +427,7 @@
     box-shadow: 0 12px 25px rgba(30, 58, 138, 0.3);
 }
 
-/* --- Scroll Containers --- */
+
 .scroll-container {
     overflow-x: auto;
     overflow-y: hidden;
@@ -502,7 +499,7 @@
     border-color: transparent;
 }
 
-/* --- Section Titles --- */
+
 .section-title {
     position: relative;
     display: inline-block;
@@ -525,7 +522,7 @@
     border-radius: 3px;
 }
 
-/* --- Why Choose Us Cards --- */
+
 .why-choose-card {
     transition: all 0.3s ease;
     padding: 30px;
@@ -550,7 +547,7 @@
     transform: scale(1.15) rotate(8deg);
 }
 
-/* --- Product Grids & Horizontal Scroll --- */
+
 .horizontal-scroll-container {
     overflow-x: auto;
     overflow-y: hidden;
@@ -582,7 +579,7 @@
     border-color: #b91c1c !important;
 }
 
-/* --- Responsive Adjustments --- */
+
 @media (max-width: 1200px) {
     .hero-image {
         width: 400px;

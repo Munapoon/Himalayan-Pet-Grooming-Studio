@@ -14,14 +14,14 @@
 </head>
 
 <body>
-    <!-- Admin Header -->
+    
     <div class="admin-header">
         <div class="container-fluid">
             <a href="{% url 'admin_dashboard' %}" class="admin-logo">
                 <i class="fas fa-paw"></i> Himalayan Pet Studio - Admin
             </a>
 
-            <!-- Staff Global Search Bar -->
+            
             <div class="header-search-container ms-auto me-3" style="max-width: 550px; flex: 1; padding: 0 10px;">
                 <form action="{% url 'staff_search' %}" method="GET" class="position-relative">
                     <input type="text" name="q" class="form-control rounded-pill ps-4 pe-5"
@@ -42,7 +42,7 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
+    
     <div class="sidebar">
         <nav class="nav flex-column">
             <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
@@ -89,7 +89,7 @@
                 <i class="fas fa-credit-card"></i> <span>Payments</span>
             </a>
 
-            <!-- Reviews Dropdown -->
+            
             <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle {% if 'products:admin_review' in request.resolver_match.view_name or request.resolver_match.url_name == 'admin_service_review_list' %}active{% endif %}"
                     href="#" id="reviewsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -135,7 +135,7 @@
         </nav>
     </div>
 
-    <!-- Floating Toast Messages -->
+    
     {% if messages %}
     <div id="admin-toast-container" style="
         position: fixed;
@@ -247,7 +247,7 @@
     </style>
     {% endif %}
 
-    <!-- Main Content -->
+    
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>

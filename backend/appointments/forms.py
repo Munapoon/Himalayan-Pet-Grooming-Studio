@@ -44,19 +44,19 @@ class AppointmentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Dynamically set service choices from Service model
+        
         active_services = Service.objects.filter(is_active=True).only('slug', 'name').order_by('order')
         if active_services.exists():
             choices = [(s.slug, s.name) for s in active_services]
             self.fields['service'].choices = choices
         else:
-            # Fallback to model choices if DB is empty
+            
             self.fields['service'].choices = Appointment.SERVICE_CHOICES
     
     def clean_appointment_time(self):
         time_str = self.cleaned_data.get('appointment_time')
         if time_str:
-            # Convert string from ChoiceField to a datetime.time object
+            
             try:
                 hour, minute = map(int, time_str.split(':'))
                 return time(hour, minute)
@@ -70,37 +70,37 @@ class AppointmentForm(forms.ModelForm):
         appointment_time = cleaned_data.get('appointment_time')
         
         if appointment_date and appointment_time:
-            # Get current local time (naive, stripped of tzinfo for comparison with form's naive time)
+            
             local_now = timezone.localtime()
             today = local_now.date()
 
-            # Check if appointment is in the past or too soon
+            
             if appointment_date < today:
                 raise forms.ValidationError('You cannot book an appointment for a past date.')
             
             if appointment_date == today:
-                # 1. Check if the selected time is strictly in the past
+                
                 if appointment_time < local_now.time():
                     raise forms.ValidationError('Yo time already past vaiskyo. Please choose a future time.')
 
-                # 2. Enforce 30-minute advance booking for today's appointments
+                
                 cutoff_datetime = local_now + timedelta(minutes=30)
                 
-                # If 30 minutes from now rolls to tomorrow or time is too soon
+                
                 if cutoff_datetime.date() > today or appointment_time < cutoff_datetime.time():
                     raise forms.ValidationError(
                         f'Appointments must be booked at least 30 minutes in advance to allow for studio preparation. '
                         f'Earliest available for today: {cutoff_datetime.strftime("%I:%M %p")}.'
                     )
 
-            # Check capacity: Limit to 2 appointments per time slot
+            
             existing_appointments = Appointment.objects.filter(
                 appointment_date=appointment_date,
                 appointment_time=appointment_time,
                 status__in=['pending', 'confirmed']
             )
             
-            # Exclude current appointment if updating
+            
             if self.instance and self.instance.pk:
                 existing_appointments = existing_appointments.exclude(pk=self.instance.pk)
             
@@ -152,7 +152,7 @@ class ServiceForm(forms.ModelForm):
         data = self.cleaned_data.get('features_json')
         if data:
             try:
-                # Validate that it's a valid JSON list
+                
                 parsed = json.loads(data)
                 if not isinstance(parsed, list):
                     raise forms.ValidationError('Features must be a JSON list of strings.')

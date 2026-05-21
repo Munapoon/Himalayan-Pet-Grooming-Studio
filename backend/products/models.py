@@ -80,7 +80,7 @@ class Sale(models.Model):
         return f"Sale #{self.id} - {self.product.name} - Rs. {self.total_amount}"
     
     def save(self, *args, **kwargs):
-        # Calculate total amount
+        
         self.total_amount = self.quantity * self.unit_price
         super().save(*args, **kwargs)
 
@@ -152,7 +152,7 @@ class Order(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.order_number:
-            # Generate unique order number
+            
             import random
             import string
             self.order_number = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
@@ -182,7 +182,7 @@ class Payment(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    payment_response = models.JSONField(blank=True, null=True)  # Store full payment gateway response
+    payment_response = models.JSONField(blank=True, null=True)  
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     

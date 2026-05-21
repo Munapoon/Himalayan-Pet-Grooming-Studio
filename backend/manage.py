@@ -2,7 +2,7 @@ import os
 import sys
 import smtplib
 
-# Monkeypatch smtplib to fix compatibility between Django and Python 3.12+
+
 _original_starttls = smtplib.SMTP.starttls
 _original_ssl_init = smtplib.SMTP_SSL.__init__
 

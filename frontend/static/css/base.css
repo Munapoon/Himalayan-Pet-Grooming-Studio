@@ -19,21 +19,21 @@ html {
     flex-grow: 0 !important;
 }
 
-/* Search pill can shrink to make room for auth buttons */
+
 .nav-search-pill {
     flex-shrink: 1 !important;
 }
 
-/* ── RESPONSIVE: 992px–1399px — compact mode ── */
+
 @media (min-width: 992px) and (max-width: 1399px) {
 
-    /* Slightly compress nav link padding */
+    
     .nav-link {
         padding: 0.45rem 0.7rem !important;
         font-size: 0.95rem !important;
     }
 
-    /* Search pill: input + button always side by side */
+    
     .nav-search-pill {
         width: 220px !important;
         min-width: 180px !important;
@@ -56,7 +56,7 @@ html {
         flex-shrink: 0 !important;
     }
 
-    /* Compact auth buttons */
+    
     .btn-login {
         padding: 0.4rem 1rem !important;
         font-size: 0.95rem !important;
@@ -73,7 +73,7 @@ html {
 
 
 
-/* CRITICAL: Hide browser's built-in password reveal */
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
     display: none !important;
@@ -91,7 +91,7 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
 }
 
 :root {
-    /* Premium Color Palette (HSL for better harmony) */
+    
     --color-primary: #1e3a8a;
     --color-primary-light: #3b82f6;
     --color-accent: #0d9488;
@@ -143,7 +143,7 @@ body {
     scroll-behavior: smooth;
 }
 
-/* Global Color overrides to match Navbar Navy */
+
 .btn-primary, .bg-primary {
     background-color: #1e3a8a !important;
     border-color: #1e3a8a !important;
@@ -167,7 +167,7 @@ body.no-pt {
     padding-top: 0 !important;
 }
 
-/* --- REDESIGNED NAVBAR --- */
+
 .navbar {
     background: white !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
@@ -191,7 +191,7 @@ body.no-pt {
 }
 
 
-/* Use flex only on larger screens when expanded. On mobile, Bootstrap handles it. */
+
 @media (min-width: 992px) {
     .navbar-collapse {
         display: flex !important;
@@ -212,7 +212,7 @@ body.no-pt {
     }
 }
 
-/* Mobile-specific navbar adjustments */
+
 @media (max-width: 991.98px) {
     .navbar {
         height: auto !important;
@@ -317,7 +317,7 @@ body.no-pt {
     color: #1e3a8a !important;
 }
 
-/* User Profile Dropdown Pill Visibility */
+
 #userDropdown {
     border: 1.5px solid #cbd5e1 !important;
     background: #f8fafc;
@@ -336,7 +336,7 @@ body.no-pt {
     color: #1e3a8a !important;
 }
 
-/* Button Enhancements */
+
 .btn-login {
     display: inline-flex;
     align-items: center;
@@ -386,7 +386,7 @@ body.no-pt {
     color: white !important;
 }
 
-/* SEARCH BAR */
+
 .nav-search-pill {
     display: flex;
     align-items: center;
@@ -445,7 +445,7 @@ body.no-pt {
     transform: scale(1.05);
 }
 
-/* --- PREMIUM FOOTER --- */
+
 .premium-footer {
     background: #0f172a;
     color: #f8fafc;
@@ -455,7 +455,7 @@ body.no-pt {
     border-top: 4px solid #1e3a8a;
 }
 
-/* Decorative Pattern - Subtler */
+
 .premium-footer::after {
     content: '';
     position: absolute;
@@ -651,14 +651,14 @@ body.no-pt {
     }
 }
 
-/* Desktop Visibility */
+
 @media (min-width: 768px) {
     .premium-footer .collapse {
         display: block !important;
     }
 }
 
-/* Floating Messages */
+
 .floating-messages-container {
     position: fixed;
     top: 85px;
@@ -674,12 +674,12 @@ body.no-pt {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-/* Main Content Layout */
+
 .main-wrapper {
     flex: 1;
 }
 
-/* User Dropdown Enhancements */
+
 .dropdown-menu {
     border: none;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -727,7 +727,7 @@ body.no-pt {
     opacity: 0.1;
 }
 
-/* --- SEGMENTED PAGINATION (ROUNDED) --- */
+
 .pagination-rounded {
     display: flex;
     list-style: none;
@@ -787,7 +787,7 @@ body.no-pt {
     background: #f8f9fa !important;
 }
 
-/* Back to Top Button */
+
 .back-to-top {
     position: fixed;
     bottom: 30px;

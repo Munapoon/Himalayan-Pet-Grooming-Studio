@@ -2,9 +2,9 @@ from django.contrib import admin
 from .models import Service, Appointment, ServiceReview
 
 
-# ──────────────────────────────────────────────
-# Service Admin
-# ──────────────────────────────────────────────
+
+
+
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'price', 'duration', 'is_active', 'order')
@@ -35,9 +35,9 @@ class ServiceAdmin(admin.ModelAdmin):
     )
 
 
-# ──────────────────────────────────────────────
-# Appointment Admin
-# ──────────────────────────────────────────────
+
+
+
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = ('pet_name', 'pet_type', 'service', 'appointment_date',
@@ -66,9 +66,9 @@ class AppointmentAdmin(admin.ModelAdmin):
     )
 
 
-# ──────────────────────────────────────────────
-# ServiceReview Admin
-# ──────────────────────────────────────────────
+
+
+
 @admin.register(ServiceReview)
 class ServiceReviewAdmin(admin.ModelAdmin):
     list_display = ('user', 'service', 'rating', 'created_at')

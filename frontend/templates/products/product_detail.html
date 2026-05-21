@@ -10,7 +10,7 @@
 {% block content %}
 <div class="product-detail-page">
     <div class="container">
-        <!-- Breadcrumb -->
+        
         <nav class="breadcrumb-custom">
             <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
             <span class="mx-2">/</span>
@@ -27,7 +27,7 @@
         </div>
 
         <div class="row">
-            <!-- Product Image Section -->
+            
             <div class="col-lg-5 mb-4">
                 <div class="product-image-section">
                     <div class="product-main-image">
@@ -40,14 +40,14 @@
                 </div>
             </div>
 
-            <!-- Product Info Section -->
+            
             <div class="col-lg-7 mb-4">
                 <div class="product-info-section">
                     <span class="product-category-badge">{{ product.category.name }}</span>
 
                     <h2 class="product-title">{{ product.name }}</h2>
 
-                    <!-- Rating Section -->
+                    
                     <div class="product-rating-section">
                         {% if product.average_rating > 0 %}
                         <div class="rating-stars">
@@ -67,7 +67,7 @@
                         {% endif %}
                     </div>
 
-                    <!-- Price and Stock -->
+                    
                     <div class="product-price-section">
                         <div class="product-price">Rs. {{ product.price }}</div>
                         <div>
@@ -85,7 +85,7 @@
                         </div>
                     </div>
 
-                    <!-- Description -->
+                    
                     <div class="product-description">
                         <h3 class="section-heading">
                             <i class="fas fa-align-left"></i>
@@ -95,7 +95,7 @@
                     </div>
 
                     {% if "cloth" in product.category.name|lower or "apparel" in product.category.name|lower or "accessor" in product.category.name|lower %}
-                    <!-- Clothing Size Guide -->
+                    
                     <div class="product-description mt-4" style="background:#f1f5f9; padding:15px; border-radius:12px; border:1px solid #e2e8f0;" id="sizeSelectionBlock">
                         <h4 class="h5 mb-3" style="color:var(--color-primary); font-weight:700;"><i class="fas fa-ruler-combined me-2"></i> Select Size (By Weight)</h4>
                         <div class="row text-center g-2" id="sizeCards">
@@ -130,7 +130,7 @@
                     </div>
                     {% endif %}
 
-                    <!-- Quantity and Actions -->
+                    
                     {% if product.in_stock %}
                     <div class="quantity-section">
                         <div class="quantity-label">
@@ -199,7 +199,7 @@
 
 
 
-        <!-- Reviews Section -->
+        
         <div class="reviews-section">
             <div class="reviews-header">
                 <h3 class="reviews-title">

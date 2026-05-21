@@ -1,7 +1,4 @@
-/* 
-   Product List Page Styles
-   Himalayan Pet Grooming Studio
-*/
+
 
 .products-hero {
     background: #FFFBF7 !important;
@@ -13,7 +10,7 @@
     display: flex;
     align-items: center;
     padding-top: 80px;
-    /* Account for fixed-top navbar */
+    
 }
 
 .hero-content-left {

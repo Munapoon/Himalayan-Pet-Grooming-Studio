@@ -5,10 +5,10 @@ Run this with: python create_admin.py
 import os
 import django
 
-# Setup Django
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'himalayan_pet_studio.settings')
 
-# Use PyMySQL
+
 try:
     import pymysql
     pymysql.install_as_MySQLdb()

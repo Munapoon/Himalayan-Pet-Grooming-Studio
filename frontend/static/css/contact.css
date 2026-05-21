@@ -5,7 +5,7 @@
     --contact-border: #e2e8f0;
 }
 
-/* Hero Section */
+
 .contact-hero {
     position: relative;
     height: 350px;
@@ -15,7 +15,7 @@
     justify-content: center;
     text-align: center;
     color: white;
-    margin-top: -24px; /* Offset the container padding */
+    margin-top: -24px; 
     margin-bottom: 3rem;
     border-radius: 0 0 40px 40px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
@@ -35,7 +35,7 @@
     margin: 0 auto;
 }
 
-/* Info Cards */
+
 .info-card {
     background: white;
     padding: 2rem;
@@ -84,7 +84,7 @@
     line-height: 1.6;
 }
 
-/* Form & FAQ Section */
+
 .contact-main {
     padding-bottom: 5rem;
 }
@@ -144,7 +144,7 @@
     box-shadow: 0 10px 20px rgba(30, 58, 138, 0.25);
 }
 
-/* FAQ Customization */
+
 .faq-section {
     margin-top: 4rem;
 }
@@ -204,7 +204,7 @@
     letter-spacing: 1px;
 }
 
-/* Map Section */
+
 .map-container {
     margin-top: 5rem;
     border-radius: 30px;

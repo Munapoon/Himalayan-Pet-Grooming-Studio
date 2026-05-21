@@ -10,7 +10,7 @@ class SecurePasswordInput(forms.PasswordInput):
         super().__init__(*args, **kwargs)
     
     def get_context(self, name, value, attrs):
-        # Always set value to None to prevent rendering
+        
         return super().get_context(name, None, attrs)
 
 
@@ -84,11 +84,11 @@ class UserRegistrationForm(UserCreationForm):
         if not phone:
             return phone
         
-        # Check if phone contains only digits
+        
         if not phone.isdigit():
              raise forms.ValidationError('Only digits allowed.')
 
-        # Check minimum length (e.g. at least 10 digits)
+        
         if len(phone) < 10:
              raise forms.ValidationError('Minimum 10 digits required.')
 
@@ -101,14 +101,14 @@ class UserRegistrationForm(UserCreationForm):
         if not username:
             return username
         
-        # Check minimum length
+        
         if len(username) < 4:
             raise forms.ValidationError('Minimum 4 characters required.')
 
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError('Username already taken.')
             
-        # Check for valid characters
+        
         if not re.match(r'^[\w.@+-]+$', username):
             raise forms.ValidationError('Only letters, numbers, and @/./+/-/_ allowed.')
             
@@ -119,15 +119,15 @@ class UserRegistrationForm(UserCreationForm):
         if not password:
             return password
         
-        # Check minimum length
+        
         if len(password) < 8:
             raise forms.ValidationError('Minimum 8 characters required.')
         
-        # Check if entirely numeric
+        
         if password.isdigit():
             raise forms.ValidationError('Cannot be entirely numeric.')
         
-        # Check for common passwords
+        
         common_passwords = [
             'password', '12345678', 'password123', 'qwerty', 'abc123',
             '11111111', '00000000', 'password1', '123456789', 'iloveyou'
@@ -146,7 +146,7 @@ class UserRegistrationForm(UserCreationForm):
         first_name = cleaned_data.get('first_name')
         last_name = cleaned_data.get('last_name')
         
-        # Check if password is too similar to personal information
+        
         if password1:
             password_lower = password1.lower()
             
@@ -162,7 +162,7 @@ class UserRegistrationForm(UserCreationForm):
             if last_name and len(last_name) > 2 and last_name.lower() in password_lower:
                 self.add_error('password1', 'Too similar to last name.')
         
-        # Check if passwords match
+        
         if password1 and password2 and password1 != password2:
             self.add_error('password2', 'Passwords do not match.')
         

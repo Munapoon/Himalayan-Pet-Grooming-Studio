@@ -6,7 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/accounts/dashboard.css' %}">
 <style>
-    /* Specific overrides for Order Management if needed */
+    
     .filter-card {
         border: none;
         border-radius: 8px;
@@ -56,9 +56,9 @@
         </div>
     </div>
 
-    <!-- Order Statistics Cards -->
+    
     <div class="row mb-4">
-        <!-- Total Orders -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-blue">
                 <div class="card-body">
@@ -76,7 +76,7 @@
             </div>
         </div>
         
-        <!-- Total Revenue -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-green">
                 <div class="card-body">
@@ -94,7 +94,7 @@
             </div>
         </div>
         
-        <!-- Pending Revenue -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-orange">
                 <div class="card-body">
@@ -112,7 +112,7 @@
             </div>
         </div>
         
-        <!-- Completed Orders -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-info">
                 <div class="card-body">
@@ -131,7 +131,7 @@
         </div>
     </div>
 
-    <!-- Filters Section -->
+    
     <div class="card filter-card mb-4">
         <div class="section-header">
             <div class="section-title"><i class="fas fa-filter me-2"></i> Filter Orders</div>
@@ -184,7 +184,7 @@
         </div>
     </div>
 
-    <!-- Orders Table -->
+    
     <div class="card dashboard-section-card pb-3">
         <div class="section-header">
             <div class="section-title"><i class="fas fa-list me-2"></i> Recent Orders</div>
@@ -278,7 +278,7 @@
         </div>
     </div>
     
-    <!-- Pagination -->
+    
     <div class="mt-4">
         {% include 'pagination.html' %}
     </div>

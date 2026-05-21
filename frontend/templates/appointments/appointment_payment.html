@@ -12,7 +12,7 @@
     <div class="container">
         <div class="payment-card">
 
-            <!-- Header -->
+            
             <div class="payment-header">
                 <div class="icon-circle">
                     <i class="fas fa-shield-alt"></i>
@@ -21,10 +21,10 @@
                 <p>Secure your grooming appointment with a small advance</p>
             </div>
 
-            <!-- Body -->
+            
             <div class="payment-body">
 
-                <!-- Booking Summary -->
+                
                 <div class="booking-summary">
                     <h5><i class="fas fa-calendar-check me-2"></i>Booking Summary</h5>
                     <div class="summary-row">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
 
-                <!-- Advance Amount -->
+                
                 <div class="advance-box">
                     <div class="amount">Rs. {{ advance_amount }}</div>
                     <div class="label">Advance Amount</div>
@@ -59,7 +59,7 @@
                     </p>
                 </div>
 
-                <!-- Khalti Pay Form (KPG-2) -->
+                
                 <form method="post" action="{% url 'appointment_khalti_initiate' appointment.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn-khalti">
@@ -68,7 +68,7 @@
                     </button>
                 </form>
 
-                <!-- Cancel — deletes the pending appointment -->
+                
                 <form method="post" action="{% url 'appointment_cancel_payment' appointment.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn-cancel"
@@ -85,4 +85,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %}

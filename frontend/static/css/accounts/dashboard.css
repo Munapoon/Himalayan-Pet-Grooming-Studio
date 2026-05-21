@@ -1,7 +1,4 @@
-/* 
-   Admin Dashboard Premium Styles - V2 (White Accent Style)
-   Pixel-perfect match for the 2nd mockup provided
-*/
+
 
 :root {
     --primary-blue: #4e73df;
@@ -31,10 +28,10 @@
     font-size: 1.1rem;
 }
 
-/* SB Admin Style Stat Cards - Exact Replicas */
+
 .stat-card {
     border: none;
-    border-radius: 5px; /* Less rounded, more like the pic */
+    border-radius: 5px; 
     height: 105px;
     background: white !important;
     box-shadow: var(--card-shadow) !important;
@@ -60,7 +57,7 @@
     z-index: 10;
 }
 
-/* Exact Accent Colors */
+
 .accent-blue::before { background: var(--primary-blue); }
 .accent-green::before { background: var(--success-green); }
 .accent-info::before { background: var(--info-cyan); }
@@ -82,7 +79,7 @@
     margin-bottom: 4px;
 }
 
-/* Card titles text color */
+
 .text-blue { color: var(--primary-blue) !important; }
 .text-green { color: var(--success-green) !important; }
 .text-info { color: var(--info-cyan) !important; }
@@ -97,20 +94,20 @@
 
 .stat-card-icon {
     font-size: 2rem;
-    color: #dddfeb; /* Default light */
+    color: #dddfeb; 
 }
 
-/* Dashboard specific dark icon as seen in pic */
+
 .stat-card-icon i {
-    color: #dddfeb; /* Pic actually shows them very light gray, my bad, let's look again */
+    color: #dddfeb; 
 }
 
-/* Looking at pic 2 again: icons are actually dark gray! */
+
 .text-gray-800 {
     color: #333 !important;
 }
 
-/* Progress bar exact style */
+
 .dashboard-progress {
     height: 0.6rem;
     border-radius: 10px;
@@ -118,7 +115,7 @@
     overflow: hidden;
 }
 
-/* Sections & Tables Content Style */
+
 .dashboard-section-card {
     border: none;
     border-radius: 8px;
@@ -143,7 +140,7 @@
     margin-bottom: 0;
 }
 
-/* Table Enhancements */
+
 .table-responsive {
     border-radius: 0 0 8px 8px;
 }
@@ -173,7 +170,7 @@
     background-color: #f8f9fc;
 }
 
-/* Refined Status Badges - User Friendly Pill Shape */
+
 .status-pill {
     padding: 0.4rem 0.8rem;
     border-radius: 50px;
@@ -190,7 +187,7 @@
 .status-confirmed { background: #ebf8ff; color: #3182ce; border: 1px solid #bee3f8; }
 .status-cancelled { background: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; }
 
-/* Dashboard Card Value Size */
+
 .stat-card-value {
     font-size: 1.6rem;
     font-weight: 800;
@@ -198,7 +195,7 @@
     margin-top: 5px;
 }
 
-/* Low Stock Alert Refinements */
+
 .stock-item {
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid #e3e6f0;

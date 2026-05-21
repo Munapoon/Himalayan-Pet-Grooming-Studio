@@ -1,4 +1,4 @@
-/* Modern Web App Upgrade - Himalayan Pet Studio */
+
 
 :root {
     --color-navbar-start: #2563EB;
@@ -12,7 +12,7 @@
     --bs-primary-rgb: 29, 78, 216;
 }
 
-/* Bootstrap Primary Color Override */
+
 .bg-primary {
     background-color: #1D4ED8 !important;
 }
@@ -55,7 +55,7 @@ body {
     min-height: 100vh;
 }
 
-/* 1. Navbar → Clean & Minimal */
+
 .navbar {
     transition: var(--transition-smooth);
 }
@@ -75,7 +75,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* 2. Login Card → Glassmorphism + Depth */
+
 .login-card {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(14px);
@@ -109,12 +109,12 @@ body {
     }
 }
 
-/* 3. Inputs → Modern Floating Effect */
+
 .form-control {
     border-radius: 12px;
     padding: 14px;
     padding-right: 45px;
-    /* Make room for eye icon */
+    
     border: 1px solid #CBD5E1;
     transition: all 0.3s ease;
     background-color: rgba(255, 255, 255, 0.9);
@@ -126,7 +126,7 @@ body {
     background-color: #ffffff;
 }
 
-/* Hide browser default password reveal button */
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
     display: none !important;
@@ -142,7 +142,7 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
     margin: 0;
 }
 
-/* 4. Login Button → Animated Gradient */
+
 .login-btn {
     background: linear-gradient(90deg, var(--color-btn-start), var(--color-btn-end));
     border-radius: 14px;
@@ -159,7 +159,7 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
     color: white;
 }
 
-/* Additional Polish */
+
 .btn-check:checked+.btn,
 .btn.active,
 .btn.show,
@@ -168,7 +168,7 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
     border-color: transparent;
 }
 
-/* Password Toggle Button Styling */
+
 .position-relative button[onclick*="togglePassword"] {
     opacity: 0.8;
     transition: all 0.2s ease;

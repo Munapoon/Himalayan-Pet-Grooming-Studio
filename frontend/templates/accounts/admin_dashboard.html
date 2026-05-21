@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="container-fluid pt-2 pb-4">
-    <!-- Dashboard Header -->
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="h3 mb-1 text-dark fw-semibold" style="letter-spacing: -0.5px;">Dashboard</h2>
@@ -21,9 +21,9 @@
         </a>
     </div>
 
-    <!-- Stat Cards Row -->
+    
     <div class="row mb-5">
-        <!-- Total Users Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-blue">
                 <div class="card-body">
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <!-- Total Bookings Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-green">
                 <div class="card-body">
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <!-- Tasks Completion Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-info">
                 <div class="card-body">
@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <!-- Grooming Services Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-orange">
                 <div class="card-body">
@@ -95,11 +95,11 @@
         </div>
     </div>
 
-    <!-- Stat Cards Row ends here -->
+    
 
-    <!-- Main Content Row -->
+    
     <div class="row">
-        <!-- Sales Chart Column -->
+        
         <div class="col-xl-6 mb-4">
             <div class="card dashboard-section-card shadow-sm h-100">
                 <div class="section-header border-0 pb-0">
@@ -115,7 +115,7 @@
             </div>
         </div>
 
-        <!-- Appointment Trend Column -->
+        
         <div class="col-xl-6 mb-4">
             <div class="card dashboard-section-card shadow-sm h-100">
                 <div class="section-header border-0 pb-0">
@@ -132,9 +132,9 @@
         </div>
     </div>
 
-    <!-- Main Content Row -->
+    
     <div class="row">
-        <!-- Recent Appointments Column -->
+        
         <div class="col-xl-8 col-lg-7 mb-4">
             <div class="card dashboard-section-card shadow-sm h-100">
                 <div class="section-header">
@@ -205,7 +205,7 @@
             </div>
         </div>
 
-        <!-- Low Stock Alerts Column -->
+        
         <div class="col-xl-4 col-lg-5 mb-4">
             <div class="card dashboard-section-card shadow-sm h-100">
                 <div class="section-header">
@@ -250,7 +250,7 @@
         const chartJsonText = '{{ chart_data_json|escapejs }}';
         const chartData = JSON.parse(chartJsonText);
 
-        // Earnings Bar Chart
+        
         const ctxEarnings = document.getElementById('earningsChart').getContext('2d');
         new Chart(ctxEarnings, {
             type: 'bar',
@@ -259,7 +259,7 @@
                 datasets: [{
                     label: 'Earnings',
                     data: chartData.earnings,
-                    backgroundColor: '#2563eb', // Blue bar color
+                    backgroundColor: '#2563eb', 
                     borderRadius: 4,
                     barPercentage: 0.6
                 }]
@@ -294,7 +294,7 @@
             }
         });
 
-        // Appointment Trend Chart
+        
         const ctxAppt = document.getElementById('appointmentChart').getContext('2d');
         new Chart(ctxAppt, {
             type: 'line',
@@ -303,10 +303,10 @@
                 datasets: [{
                     label: 'Appointments',
                     data: chartData.appointments,
-                    borderColor: '#06b6d4', // Cyan line color
-                    backgroundColor: 'rgba(6, 182, 212, 0.15)', // Cyan fill
+                    borderColor: '#06b6d4', 
+                    backgroundColor: 'rgba(6, 182, 212, 0.15)', 
                     borderWidth: 3,
-                    tension: 0.4, // Curvature of the line
+                    tension: 0.4, 
                     fill: true,
                     pointBackgroundColor: '#06b6d4',
                     pointRadius: 4,

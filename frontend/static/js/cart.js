@@ -1,7 +1,4 @@
-/**
- * Shopping Cart management functionality.
- * Handles quantity adjustments, item selection, and checkout processing.
- */
+
 
 function incrementCartQty(itemId, maxQty) {
     const qtyInput = document.getElementById('qty-' + itemId);
@@ -113,19 +110,19 @@ function proceedToCheckout(checkoutUrl) {
 document.addEventListener('DOMContentLoaded', function () {
     updateOrderSummary();
 
-    // Select all checkbox
+    
     const selectAll = document.getElementById('select-all');
     if (selectAll) {
         selectAll.addEventListener('change', toggleAllItems);
     }
 
-    // Individual item checkboxes
+    
     const checkboxes = document.querySelectorAll('.cart-item-checkbox');
     checkboxes.forEach(cb => {
         cb.addEventListener('change', updateOrderSummary);
     });
 
-    // Quantity increment buttons
+    
     const incrementBtns = document.querySelectorAll('.cart-increment');
     incrementBtns.forEach(btn => {
         btn.addEventListener('click', function (e) {
@@ -137,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Quantity decrement buttons
+    
     const decrementBtns = document.querySelectorAll('.cart-decrement');
     decrementBtns.forEach(btn => {
         btn.addEventListener('click', function (e) {
@@ -149,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Checkout button
+    
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', function () {

@@ -1,7 +1,4 @@
-/**
- * Appointment List page interaction logic.
- * Handles making appointment cards clickable for easy access to details.
- */
+
 document.addEventListener('DOMContentLoaded', function () {
     const appointmentCards = document.querySelectorAll('.appointment-card[data-url]');
 

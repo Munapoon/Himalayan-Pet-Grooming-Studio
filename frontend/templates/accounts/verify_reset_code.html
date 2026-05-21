@@ -77,7 +77,7 @@
 
 {% block extra_css %}
 <style>
-    /* Remove spinner from number input */
+    
     input[type="text"]#code::-webkit-outer-spin-button,
     input[type="text"]#code::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -88,10 +88,10 @@
 
 {% block extra_js %}
 <script>
-    // Auto-focus on code input
+    
     document.getElementById('code').focus();
 
-    // Only allow numbers
+    
     document.getElementById('code').addEventListener('input', function (e) {
         this.value = this.value.replace(/[^0-9]/g, '');
     });

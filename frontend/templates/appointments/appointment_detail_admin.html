@@ -11,7 +11,7 @@
                     <h4 class="mb-0"><i class="fas fa-calendar-alt"></i> Appointment Details</h4>
                 </div>
                 <div class="card-body">
-                    <!-- Appointment Status & ID -->
+                    
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h6 class="text-muted">Appointment ID</h6>
@@ -66,7 +66,7 @@
 
                     <hr>
 
-                    <!-- Owner Details Section -->
+                    
                     <h5 class="mb-3 text-primary"><i class="fas fa-user-circle"></i> Owner Details</h5>
                     <div class="row mb-4">
                         <div class="col-md-6">
@@ -92,7 +92,7 @@
 
                     <hr>
 
-                    <!-- Pet & Booking Details Section -->
+                    
                     <h5 class="mb-3 text-primary"><i class="fas fa-paw"></i> Pet & Booking Details</h5>
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -181,7 +181,7 @@
                         </div>
                     </div>
 
-                    <!-- Payment Action Section -->
+                    
                     <div class="row mb-4">
                         <div class="col-12">
                             {% if request.GET.mode != 'view' %}
@@ -223,7 +223,7 @@
                         </div>
                     </div>
 
-                    <!-- Payment History Table -->
+                    
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="text-muted mb-3"><i class="fas fa-history"></i> Payment & Refund History</h6>
@@ -283,7 +283,7 @@
 
                     <hr>
 
-                    <!-- Timestamps Section -->
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <h6 class="text-muted"><i class="fas fa-calendar-plus"></i> Booking Created</h6>
@@ -313,7 +313,7 @@
                                     </button>
                                 </form>
                                 {% endif %}
-                                <!-- Quick Edit Button -->
+                                
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editAppointmentModal">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
@@ -332,7 +332,7 @@
         </div>
     </div>
 </div>
-<!-- Edit Appointment Modal -->
+
 <div class="modal fade" id="editAppointmentModal" tabindex="-1" aria-labelledby="editAppointmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -381,7 +381,7 @@
     </div>
 </div>
 
-<!-- Refund Modal -->
+
 <div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

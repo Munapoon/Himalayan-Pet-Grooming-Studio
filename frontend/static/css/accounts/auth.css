@@ -24,7 +24,7 @@
     align-items: stretch;
 }
 
-/* Visual Side - Left Column */
+
 .auth-visual {
     flex: 1;
     min-height: 100%;
@@ -78,7 +78,7 @@
     color: #fbbf24;
 }
 
-/* Form Side - Right Column */
+
 .auth-form-side {
     flex: 1;
     display: flex;
@@ -101,7 +101,7 @@
     max-width: 580px;
 }
 
-/* Custom Form Styles */
+
 .input-group-custom {
     position: relative;
     display: flex;
@@ -223,7 +223,7 @@
     box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
 }
 
-/* Responsive Adjustments */
+
 @media (max-width: 1200px) {
     .auth-visual {
         padding: 3rem 2rem;

@@ -15,23 +15,23 @@ import os
 import smtplib
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
+
+
 SECRET_KEY = 'django-insecure-himalayan-pet-studio-secret-key-change-in-production'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
 
-# Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -79,10 +79,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'himalayan_pet_studio.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# MySQL Database Configuration
+
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -100,8 +100,8 @@ DATABASES = {
 
 
 
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -119,8 +119,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -131,8 +131,8 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
+
+
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
@@ -143,25 +143,25 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
+
 AUTH_USER_MODEL = 'accounts.User'
 
-# Session Settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'  # Use cached database backend
-SESSION_COOKIE_AGE = 600  # 10 minutes in seconds
-SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Keep session after browser close
-SESSION_COOKIE_NAME = 'himalayan_pet_sessionid'
-SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
-SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
 
-# Cache Settings (required for cached_db session backend)
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'  
+SESSION_COOKIE_AGE = 600  
+SESSION_SAVE_EVERY_REQUEST = True  
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  
+SESSION_COOKIE_NAME = 'himalayan_pet_sessionid'
+SESSION_COOKIE_HTTPONLY = True  
+SESSION_COOKIE_SECURE = False  
+SESSION_COOKIE_SAMESITE = 'Lax'  
+
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -169,18 +169,18 @@ CACHES = {
     }
 }
 
-# Login URLs
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'user_dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Khalti Payment Gateway Configuration
+
 KHALTI_PUBLIC_KEY = os.environ.get('KHALTI_PUBLIC_KEY', '87ebfe01e2f24a0091a8ef2831e96b91')
 KHALTI_SECRET_KEY = os.environ.get('KHALTI_SECRET_KEY', 'ec1855a02a0d42ea95d3dc36b0cf0c39')
 KHALTI_BASE_URL = "https://khalti.com/api/v2/" if KHALTI_SECRET_KEY.startswith('live_') else "https://a.khalti.com/api/v2/"
 
 
-# Email Configuration
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
@@ -191,7 +191,7 @@ EMAIL_HOST_PASSWORD = 'motbmwzdcuwgfxda'
 DEFAULT_FROM_EMAIL = 'himalayanpetgrommingstudio12@gmail.com'
 
 
-# Monkeypatch smtplib to fix compatibility between Django and Python 3.12+
+
 _original_starttls = smtplib.SMTP.starttls
 _original_ssl_init = smtplib.SMTP_SSL.__init__
 
@@ -205,5 +205,5 @@ def _fixed_ssl_init(self, *args, **kwargs):
     kwargs.pop('certfile', None)
     return _original_ssl_init(self, *args, **kwargs)
 
-smtplib.SMTP.starttls = _fixed_starttls  # type: ignore
-smtplib.SMTP_SSL.__init__ = _fixed_ssl_init  # type: ignore
+smtplib.SMTP.starttls = _fixed_starttls  
+smtplib.SMTP_SSL.__init__ = _fixed_ssl_init  

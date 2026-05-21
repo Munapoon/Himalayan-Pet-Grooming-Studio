@@ -1,10 +1,7 @@
-/**
- * Homepage functionality for Himalayan Pet Studio
- * Handles hero carousel, horizontal service scroll, and navbar scroll effects.
- */
+
 
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Navbar Scroll Effect ---
+    
     const navbar = document.querySelector('.navbar');
     if (navbar) {
         window.addEventListener('scroll', () => {
@@ -16,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Hero Carousel Functionality ---
+    
     const slides = document.querySelectorAll('.carousel-slide');
     const indicators = document.querySelectorAll('.indicator');
     const prevBtn = document.getElementById('prevBtn');
@@ -60,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clearInterval(autoPlayInterval);
         }
 
-        // Event Listeners
+        
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
                 nextSlide();
@@ -85,10 +82,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Start autoplay
+        
         startAutoPlay();
 
-        // Pause on hover
+        
         const carousel = document.querySelector('.hero-carousel');
         if (carousel) {
             carousel.addEventListener('mouseenter', stopAutoPlay);
@@ -96,14 +93,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Service Section Scroll Logic ---
+    
     const scrollContainer = document.querySelector('.scroll-container');
     const progressBar = document.getElementById('scrollProgressBar');
     const servicePrev = document.getElementById('servicePrev');
     const serviceNext = document.getElementById('serviceNext');
 
     if (scrollContainer) {
-        // Update progress bar on scroll
+        
         scrollContainer.addEventListener('scroll', function () {
             const scrollLeft = scrollContainer.scrollLeft;
             const scrollWidth = scrollContainer.scrollWidth - scrollContainer.clientWidth;
@@ -113,13 +110,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Initialize progress bar width
+        
         const scrollWidth = scrollContainer.scrollWidth - scrollContainer.clientWidth;
         if (progressBar) {
             progressBar.style.width = scrollWidth > 0 ? '0%' : '100%';
         }
 
-        // Scroll controls
+        
         const scrollAmount = 400;
         if (servicePrev) {
             servicePrev.addEventListener('click', () => {
@@ -133,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Service Card Click Handlers ---
+    
     document.querySelectorAll('.service-card[data-url]').forEach(function (card) {
         card.style.cursor = 'pointer';
         card.addEventListener('click', function () {
@@ -141,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // --- Booking Button Click Handlers ---
+    
     document.querySelectorAll('[data-book-url]').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();

@@ -1,9 +1,6 @@
-/* 
-   Appointment List Page Styles
-   Himalayan Pet Grooming Studio
-*/
 
-/* Appointment Cards */
+
+
 .appointment-card {
     background: white;
     border-radius: 20px;
@@ -20,7 +17,7 @@
     border-color: rgba(102, 126, 234, 0.3);
 }
 
-/* Card Header */
+
 .appointment-card-header {
     padding: 25px;
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
@@ -55,7 +52,7 @@
     font-size: 1.1rem;
 }
 
-/* Status Badges */
+
 .status-badge {
     padding: 8px 18px;
     border-radius: 50px;
@@ -86,7 +83,7 @@
     color: white;
 }
 
-/* Card Body */
+
 .appointment-card-body {
     padding: 25px;
 }
@@ -133,7 +130,7 @@
     font-size: 0.95rem;
 }
 
-/* Card Footer */
+
 .appointment-card-footer {
     padding: 20px 25px;
     background: #f9fafb;
@@ -201,7 +198,7 @@
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
 
-/* Empty State */
+
 .empty-state {
     text-align: center;
     padding: 80px 20px;
@@ -228,7 +225,7 @@
     margin-bottom: 30px;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
     .appointment-card-header {
         flex-direction: column;

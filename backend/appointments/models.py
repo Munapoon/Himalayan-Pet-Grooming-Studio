@@ -74,7 +74,7 @@ class Appointment(models.Model):
     ]
 
     PAYMENT_STATUS_CHOICES = [
-        ('pending_payment', 'Pending Payment'),  # Awaiting advance — not yet confirmed
+        ('pending_payment', 'Pending Payment'),  
         ('unpaid', 'Unpaid'),
         ('advance_paid', 'Advance Paid'),
         ('paid', 'Paid'),
@@ -87,7 +87,7 @@ class Appointment(models.Model):
         ('online', 'Online'),
     ]
 
-    # Fixed advance amount in NPR
+    
     ADVANCE_AMOUNT = 10
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
@@ -106,7 +106,7 @@ class Appointment(models.Model):
     notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
-    # Advance payment fields
+    
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     advance_amount = models.DecimalField(max_digits=10, decimal_places=2, default=10.00)
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -133,15 +133,15 @@ class Appointment(models.Model):
         """
         now = timezone.now()
         
-        # Combine date and time to get the appointment datetime
-        # appointment_time is a time object, appointment_date is a date object
+        
+        
         appt_datetime = timezone.make_aware(
             datetime.combine(self.appointment_date, self.appointment_time),
             timezone.get_current_timezone()
         )
         
         time_diff = appt_datetime - now
-        # Refund only if cancellation is at least 24 hours before the appointment
+        
         return time_diff.total_seconds() >= 24 * 3600
 
     @property
@@ -149,23 +149,23 @@ class Appointment(models.Model):
         """Calculates remaining amount if total_price is set, or uses service price as estimate."""
         import re
 
-        target_price = self.total_price  # This is a DecimalField, always numeric
+        target_price = self.total_price  
         
-        # If admin hasn't set a custom total_price yet, try to get the base service price
+        
         if target_price == 0:
             service_obj = Service.objects.filter(slug=self.service).first()
             if service_obj and service_obj.price:
-                # Service.price is a CharField (e.g. "950" or "Rs. 950 - 1500")
-                # Clean the string to find the first numeric value
+                
+                
                 try:
-                    # Find all numbers (including decimals) in the string
+                    
                     nums = re.findall(r"[-+]?\d*\.\d+|\d+", service_obj.price.replace(',', ''))
                     if nums:
                         target_price = Decimal(nums[0])
                 except Exception:
                     target_price = Decimal('0')
         
-        # Ensure we return a Decimal
+        
         if target_price > 0:
             return max(Decimal('0'), target_price - self.paid_amount)
             
@@ -176,11 +176,11 @@ class Appointment(models.Model):
         svc = Service.objects.filter(slug=self.service).first()
         if svc:
             return svc.name
-        # Fallback to legacy choices dict
+        
         name = dict(self.SERVICE_CHOICES).get(self.service)
         if name:
             return name
-        # Last resort: return the raw slug, prettified
+        
         return self.service.replace('-', ' ').title()
 
 

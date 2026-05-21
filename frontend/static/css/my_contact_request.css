@@ -1,4 +1,4 @@
-    /* Hero Section */
+    
     .hero-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 80px 0;
@@ -111,14 +111,14 @@
         color: #667eea;
     }
 
-    /* Content Section */
+    
     .content-section {
         margin-top: -40px;
         position: relative;
         z-index: 10;
     }
 
-    /* Stats Cards */
+    
     .stat-card {
         background: white;
         padding: 30px;
@@ -193,7 +193,7 @@
         font-size: 1rem;
     }
 
-    /* Timeline */
+    
     .messages-timeline {
         position: relative;
     }
@@ -255,7 +255,7 @@
         margin-top: 10px;
     }
 
-    /* Message Card */
+    
     .message-card {
         flex: 1;
         background: white;
@@ -355,7 +355,7 @@
         background: currentColor;
     }
 
-    /* Message Body */
+    
     .message-body {
         padding: 30px;
     }
@@ -411,7 +411,7 @@
         margin: 0 5px;
     }
 
-    /* User Bubble */
+    
     .user-bubble .bubble-header {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
@@ -427,7 +427,7 @@
         color: #64748b;
     }
 
-    /* Admin Bubble */
+    
     .admin-bubble {
         position: relative;
     }
@@ -458,7 +458,7 @@
         color: #065f46;
     }
 
-    /* Waiting Response */
+    
     .waiting-response {
         text-align: center;
         padding: 40px;
@@ -509,7 +509,7 @@
         font-size: 1.05rem;
     }
 
-    /* Empty State */
+    
     .empty-state-modern {
         text-align: center;
         padding: 100px 20px;
@@ -585,7 +585,7 @@
         margin-right: auto;
     }
 
-    /* Responsive */
+    
     @media (max-width: 768px) {
         .hero-title {
             font-size: 2.5rem;

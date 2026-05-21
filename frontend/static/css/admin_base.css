@@ -1,7 +1,4 @@
-/* 
-   Admin Panel Base Styles
-   Himalayan Pet Grooming Studio
-*/
+
 
 body {
     margin: 0;
@@ -61,7 +58,7 @@ body {
     border-right: 1px solid #e2e8f0;
 }
 
-/* Custom scrollbar for sidebar */
+
 .sidebar::-webkit-scrollbar {
     width: 6px;
 }
@@ -103,7 +100,7 @@ body {
     font-size: 1.1rem;
 }
 
-/* Dropdown in sidebar */
+
 .sidebar .nav-item.dropdown .nav-link {
     color: #64748b;
     padding: 14px 20px;
@@ -191,14 +188,14 @@ body {
     }
 }
 
-/* Common Table Styles */
+
 .table-hover tbody tr:hover {
     background-color: #f1f5f9;
     transition: background-color 0.2s ease;
     cursor: pointer;
 }
 
-/* Dashboard Card Helper Classes */
+
 .border-left-primary {
     border-left: 0.25rem solid #1D4ED8 !important;
 }

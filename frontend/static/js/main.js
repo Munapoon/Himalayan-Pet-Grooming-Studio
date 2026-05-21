@@ -1,7 +1,7 @@
-// Main JavaScript for Himalayan Pet Studio
+
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Auto-hide alerts after 5 seconds
+    
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -10,16 +10,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
     });
 
-    // Clear all password fields on page load to prevent autofill
+    
     const passwordInputs = document.querySelectorAll('input[type="password"]');
     passwordInputs.forEach(input => {
         input.value = '';
-        // Disable browser autofill
+        
         input.setAttribute('autocomplete', 'off');
         input.setAttribute('data-form-type', 'other');
     });
 
-    // Additional delay to ensure autofill is cleared
+    
     setTimeout(() => {
         passwordInputs.forEach(input => {
             input.value = '';
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 100);
 });
 
-// Toggle password visibility
+
 function togglePassword(inputId, button) {
     const input = document.getElementById(inputId);
     const icon = button.querySelector('i');
@@ -48,8 +48,8 @@ function togglePassword(inputId, button) {
     }
 }
 
-// Navbar Scroll Effect
-// Navbar & Back to Top Scroll Effect
+
+
 window.addEventListener('scroll', function () {
     const navbar = document.querySelector('.navbar');
     const backToTop = document.getElementById('backToTop');
@@ -71,7 +71,7 @@ window.addEventListener('scroll', function () {
     }
 });
 
-// Smooth Scroll to Top
+
 const backToTopBtn = document.getElementById('backToTop');
 if (backToTopBtn) {
     backToTopBtn.addEventListener('click', function (e) {

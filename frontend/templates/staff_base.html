@@ -68,7 +68,7 @@
 </head>
 <body>
 
-    <!-- Staff Top Bar -->
+    
     <div class="staff-topbar">
         <div class="brand">
             <i class="fas fa-paw me-2"></i> Himalayan Pet Grooming Studio — Groomer Panel
@@ -84,7 +84,7 @@
         </div>
     </div>
 
-    <!-- Messages -->
+    
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
@@ -96,12 +96,12 @@
     </div>
     {% endif %}
 
-    <!-- Main Content -->
+    
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Staff Footer -->
+    
     <div class="staff-footer">
         &copy; {% now "Y" %} Himalayan Pet Grooming Studio. Staff Portal.
     </div>

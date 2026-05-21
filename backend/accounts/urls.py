@@ -15,7 +15,7 @@ urlpatterns = [
     path('my-contact-requests/', views.my_contact_requests, name='my_contact_requests'),
     path('admin-dashboard/contact-messages/', views.contact_messages, name='contact_messages'),
     
-    # Admin Users and Reports
+    
     path('admin-dashboard/users/', views.user_list, name='user_list'),
     path('admin-dashboard/users/<int:pk>/', views.user_detail, name='user_detail'),
     path('admin-dashboard/users/<int:pk>/update-role/', views.user_update_role, name='user_update_role'),
@@ -27,7 +27,7 @@ urlpatterns = [
     path('admin-dashboard/reports/export-csv/', views.export_sales_csv, name='export_sales_csv'),
     path('admin-dashboard/search/', views.staff_search, name='staff_search'),
     
-    # Password Reset & Change
+    
     path('accounts/forgot-password/', views.forgot_password, name='forgot_password'),
     path('accounts/verify-reset-code/', views.verify_reset_code, name='verify_reset_code'),
     path('accounts/reset-password/', views.reset_password, name='reset_password'),
