@@ -8,6 +8,8 @@ from django.db.models import Q
 import requests as http_requests
 import json
 import decimal
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 from .models import Appointment, Service, ServiceReview, Pet
 from .forms import AppointmentForm, PetForm
@@ -28,7 +30,7 @@ def appointment_list(request):
     ).order_by('-created_at')
     template_name = 'appointments/appointment_list.html'
     
-    # Pagination - 10 appointments per page
+    # Pagination - 15 appointments per page
     paginator = Paginator(appointments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -45,7 +47,7 @@ def admin_appointment_list(request):
     # Hide fake/abandoned waitlist (unconfirmed payments) from admin dashboard
     appointments = Appointment.objects.exclude(payment_status='pending_payment').order_by('-created_at')
     
-    # Pagination - 10 appointments per page
+    # Pagination - 15 appointments per page
     paginator = Paginator(appointments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -58,11 +60,35 @@ def admin_appointment_list(request):
 def admin_appointment_detail(request, pk):
     """Admin view for appointment details"""
     from .forms import AppointmentForm
+    from accounts.models import User
     appointment = get_object_or_404(Appointment, pk=pk)
+    
+    if request.method == 'POST':
+        staff_id = request.POST.get('assigned_staff')
+        if staff_id:
+            try:
+                staff_user = User.objects.get(pk=staff_id, role='staff')
+                appointment.assigned_staff = staff_user
+                appointment.save()
+                messages.success(request, f'Successfully assigned to {staff_user.username}.')
+            except User.DoesNotExist:
+                messages.error(request, 'Invalid staff member selected.')
+        else:
+            appointment.assigned_staff = None
+            appointment.save()
+            messages.success(request, 'Staff assignment removed.')
+        return redirect('admin_appointment_detail', pk=pk)
+
     form = AppointmentForm(instance=appointment)
+    staff_members = User.objects.filter(role='staff', is_active=True)
+    
+    payments = appointment.payments.all().order_by('-created_at')
+    
     return render(request, 'appointments/appointment_detail_admin.html', {
         'appointment': appointment,
-        'form': form
+        'form': form,
+        'staff_members': staff_members,
+        'payments': payments
     })
 
 
@@ -82,17 +108,16 @@ def appointment_detail(request, pk):
 @login_required
 def appointment_create(request):
     """Create a new appointment — redirects to advance payment after booking"""
+    # Prevent admins from booking manually as per requirement
+    if request.user.role == 'admin':
+        messages.error(request, 'Administrators cannot book appointments manually. Please use a customer account.')
+        return redirect('admin_dashboard')
+        
     if request.method == 'POST':
-        form = AppointmentForm(request.POST, user=request.user)
+        form = AppointmentForm(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
             appointment.user = request.user
-            
-            # Sync pet data to flat fields for backward compatibility
-            if appointment.pet:
-                appointment.pet_name = appointment.pet.name
-                appointment.pet_type = appointment.pet.get_pet_type_display()
-            
             appointment.advance_amount = 10  # Fixed advance
             appointment.payment_status = 'pending_payment'  # Not confirmed until paid
             appointment.save()
@@ -111,12 +136,18 @@ def appointment_create(request):
     else:
         service = request.GET.get('service')
         if service:
-            form = AppointmentForm(initial={'service': service}, user=request.user)
+            form = AppointmentForm(initial={'service': service})
         else:
-            form = AppointmentForm(user=request.user)
+            form = AppointmentForm()
 
+    user_pets = Pet.objects.filter(user=request.user)
     base_template = 'admin_base.html' if request.user.is_admin_user() else 'base.html'
-    return render(request, 'appointments/appointment_form.html', {'form': form, 'action': 'Create', 'base_template': base_template})
+    return render(request, 'appointments/appointment_form.html', {
+        'form': form, 
+        'action': 'Create', 
+        'base_template': base_template,
+        'user_pets': user_pets
+    })
 
 
 @login_required
@@ -152,7 +183,7 @@ def appointment_khalti_initiate(request, pk):
         "website_url": request.build_absolute_uri('/'),
         "amount": int(appointment.advance_amount * 100),
         "purchase_order_id": f"appt-{appointment.pk}",
-        "purchase_order_name": f"Grooming Advance for {appointment.pet_name}",
+        "purchase_order_name": f"Booking #{appointment.id}: {appointment.get_service_display()} for {appointment.pet_name}",
         "customer_info": {
             "name": request.user.get_full_name() or request.user.username,
             "email": request.user.email or "customer@example.com",
@@ -193,13 +224,7 @@ def appointment_khalti_verify(request):
         messages.error(request, "Invalid payment callback.")
         return redirect('appointment_list')
 
-    # Since we redirected the user from initiate, we might not have the pk readily,
-    # but Khalti sends back some info OR we can use the order/appointment ID we passed in initiate.
-    # For now, let's find the appointment linked to this user with a status of 'pending' OR check session.
-    # Actually, a better way is to pass the pk in the return URL or use purchase_order_id
-    
-    # Check if we can find the appointment from the session (set in initiate)
-    # Actually, I'll update initiate to pass the info
+   
     
     appointment_id = request.session.get('pending_appointment_id')
     if not appointment_id:
@@ -237,13 +262,28 @@ def appointment_khalti_verify(request):
                 # Send email confirmation
                 from django.core.mail import send_mail
                 from django.conf import settings
+                
                 subject = f"Booking Confirmed: {appointment.pet_name}'s Grooming"
-                message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
-                          f"Your appointment for {appointment.pet_name} on {appointment.appointment_date} at {appointment.appointment_time} has been confirmed!\n" \
-                          f"We have received your advance payment of Rs. {appointment.advance_amount}.\n\n" \
-                          f"Thank you for choosing Himalayan Pet Studio!"
+                
+                context = {
+                    'user_name': request.user.get_full_name() or request.user.username,
+                    'appointment': appointment,
+                    'service_name': appointment.get_service_display(),
+                    'site_url': request.build_absolute_uri('/')[:-1]
+                }
+                
+                html_message = render_to_string('emails/appointment_confirmation.html', context)
+                plain_message = strip_tags(html_message)
+                
                 try:
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                    send_mail(
+                        subject, 
+                        plain_message, 
+                        settings.DEFAULT_FROM_EMAIL, 
+                        [request.user.email], 
+                        html_message=html_message,
+                        fail_silently=True
+                    )
                 except Exception as e:
                     print(f"DEBUG: Appointment payment email error: {e}")
                     pass
@@ -314,22 +354,15 @@ def appointment_update(request, pk):
         return redirect('appointment_list')
     
     if request.method == 'POST':
-        form = AppointmentForm(request.POST, instance=appointment, user=appointment.user)
+        form = AppointmentForm(request.POST, instance=appointment)
         if form.is_valid():
-            appointment = form.save(commit=False)
-            
-            # Sync pet data again if changed
-            if appointment.pet:
-                appointment.pet_name = appointment.pet.name
-                appointment.pet_type = appointment.pet.get_pet_type_display()
-            
-            appointment.save()
+            form.save()
             messages.success(request, 'Appointment updated successfully!')
             if request.user.is_admin_user():
                 return redirect('admin_appointment_detail', pk=appointment.pk)
             return redirect('appointment_list')
     else:
-        form = AppointmentForm(instance=appointment, user=appointment.user)
+        form = AppointmentForm(instance=appointment)
     
     base_template = 'admin_base.html' if request.user.is_admin_user() else 'base.html'
     return render(request, 'appointments/appointment_form.html', {'form': form, 'action': 'Update', 'base_template': base_template})
@@ -373,10 +406,17 @@ def appointment_cancel(request, pk):
         
         if appointment.payment_status == 'advance_paid' or appointment.payment_status == 'paid':
             if is_eligible:
+                import decimal
+                # Deduct 50% fee (assuming advance is Rs. 10, fee is Rs. 5)
+                full_advance = appointment.advance_amount
+                fee = full_advance / 2
+                refund_amount = full_advance - fee
+                
                 appointment.payment_status = 'refunded'
-                messages.success(request, 'Appointment cancelled. Your advance payment will be refunded shortly since you cancelled within 24 hours of booking.')
+                # Optionally record the fee in notes or just update statuses
+                messages.success(request, f'Appointment cancelled. A 50% cancellation fee (Rs. {fee}) has been deducted. Your remaining Rs. {refund_amount} will be refunded shortly.')
             else:
-                messages.warning(request, 'Appointment cancelled. Note: Cancellation is more than 24 hours after booking, so your advance payment is non-refundable.')
+                messages.warning(request, 'Appointment cancelled.')
         else:
             messages.success(request, 'Appointment successfully cancelled.')
             
@@ -389,55 +429,73 @@ def appointment_cancel(request, pk):
 @login_required
 @admin_required
 def admin_appointment_pay_shop(request, pk):
-    """Admin records a cash payment at the shop (remaining balance)."""
+    """Admin records a payment at the studio (balance or full)."""
     appointment = get_object_or_404(Appointment, pk=pk)
     
     if request.method == 'POST':
         try:
-            full_price = request.POST.get('total_price')
+            # We take the final total price and the actual amount paid in shop
+            final_total = request.POST.get('total_price')
+            shop_payment_amount = request.POST.get('payment_amount')
             payment_method = request.POST.get('payment_method', 'cash')
             
-            if full_price:
-                appointment.total_price = decimal.Decimal(str(full_price))
+            # 1. Update the Total Price if provided
+            if final_total:
+                appointment.total_price = decimal.Decimal(str(final_total))
             
-            # Record remaining payment
-            remaining = appointment.pending_amount
-            if remaining > 0:
-                appointment.paid_amount += remaining
-                appointment.payment_status = 'paid'
-                appointment.payment_method = payment_method
+            # 2. Determine how much was paid at the shop
+            # If admin explicitly provided an amount, use that.
+            # Otherwise, use the calculated pending balance.
+            if shop_payment_amount:
+                amount_to_record = decimal.Decimal(str(shop_payment_amount))
+            else:
+                amount_to_record = appointment.pending_amount
+
+            if amount_to_record > 0:
+                # Update appointment totals
+                appointment.paid_amount += amount_to_record
+                
+                # If we didn't have a total price yet, set it to the total paid so far
+                if appointment.total_price == 0:
+                    appointment.total_price = appointment.paid_amount
+                
+                # Update status if fully paid or just a shop payment
+                if appointment.paid_amount >= appointment.total_price:
+                    appointment.payment_status = 'paid'
+                else:
+                    appointment.payment_status = 'advance_paid' # Still partially paid
+                
                 appointment.save()
 
-                # Generate a SHOP payment record so it shows in the Payments list
+                # Generate a payment record
                 from products.models import Payment
                 from django.utils import timezone
                 import uuid
 
-                # Improved uniqueness: UUID + Timestamp
-                unique_suffix = f"{uuid.uuid4().hex[:6]}-{timezone.now().strftime('%M%S')}"
-                
+                unique_suffix = f"{uuid.uuid4().hex[:4]}-{timezone.now().strftime('%y%m%d%H%M')}"
                 method_display = "Online in Shop" if payment_method == 'online' else "Cash in Shop"
 
                 Payment.objects.create(
                     appointment=appointment,
                     user=appointment.user,
-                    transaction_id=f"SHOP-{appointment.id}-{unique_suffix}",
+                    transaction_id=f"STUDIO-{appointment.id}-{unique_suffix}",
                     payment_method=payment_method,
-                    amount=remaining,
+                    amount=amount_to_record,
                     status='completed',
                     payment_response={
                         'source': method_display,
                         'recorded_by': request.user.username,
-                        'total_price_set': str(full_price)
+                        'total_price_set': str(appointment.total_price),
+                        'remaining_before': str(amount_to_record)
                     }
                 )
 
-                messages.success(request, f'Payment of Rs. {remaining} recorded via {method_display}. Balance is now 0.')
+                messages.success(request, f'Recorded {method_display} of Rs. {amount_to_record}. Total Paid: Rs. {appointment.paid_amount}.')
             else:
-                messages.info(request, 'This appointment is already fully paid or total price not set.')
+                messages.info(request, 'No payment amount to record.')
                 
-        except ValueError:
-            messages.error(request, 'Invalid price format.')
+        except (ValueError, decimal.InvalidOperation):
+            messages.error(request, 'Invalid numeric format for price or amount.')
             
         return redirect('admin_appointment_detail', pk=appointment.pk)
 
@@ -571,12 +629,28 @@ def appointment_confirm(request, pk):
             # Send email confirmation
             from django.core.mail import send_mail
             from django.conf import settings
+            
             subject = f"Appointment Confirmed: {appointment.pet_name}'s Grooming"
-            message = f"Hello {appointment.user.get_full_name() or appointment.user.username},\n\n" \
-                      f"Your appointment for {appointment.pet_name} on {appointment.appointment_date} at {appointment.appointment_time} has been confirmed by our staff!\n\n" \
-                      f"We look forward to seeing you at Himalayan Pet Studio."
+            
+            context = {
+                'user_name': appointment.user.get_full_name() or appointment.user.username,
+                'appointment': appointment,
+                'service_name': appointment.get_service_display(),
+                'site_url': request.build_absolute_uri('/')[:-1]
+            }
+            
+            html_message = render_to_string('emails/appointment_confirmation.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [appointment.user.email], fail_silently=True)
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    settings.DEFAULT_FROM_EMAIL, 
+                    [appointment.user.email], 
+                    html_message=html_message,
+                    fail_silently=True
+                )
             except Exception as e:
                 print(f"DEBUG: Appointment confirm email error: {e}")
                 pass
@@ -594,20 +668,29 @@ def appointment_confirm(request, pk):
 
 
 @login_required
-@admin_required
 def appointment_complete(request, pk):
-    """Admin can mark a confirmed appointment as completed"""
+    """Admin or Staff can mark a confirmed appointment as completed"""
     appointment = get_object_or_404(Appointment, pk=pk)
     
+    # Check permissions (Allow Admin or assigned Staff)
+    if not request.user.is_admin_user() and not request.user.is_staff_user():
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+    
     if request.method == 'POST':
-        if appointment.status == 'confirmed':
+        # Can complete if confirmed or checked-in
+        if appointment.status in ['confirmed', 'checked_in', 'pending']:
             appointment.status = 'completed'
             appointment.save()
             messages.success(request, f'Appointment for {appointment.pet_name} has been marked as completed!')
+        elif appointment.status == 'completed':
+            messages.info(request, f'Appointment for {appointment.pet_name} is already completed.')
         else:
-            messages.warning(request, f'Only confirmed appointments can be completed. Current status: {appointment.get_status_display()}.')
+            messages.warning(request, f'Only active appointments can be completed. Current status: {appointment.get_status_display()}.')
         
-        # Check if coming from detail page
+        # Determine redirection
+        if request.POST.get('from_staff'):
+            return redirect('staff_dashboard')
         if request.POST.get('from_detail'):
             return redirect('admin_appointment_detail', pk=pk)
         return redirect('admin_appointment_list')
@@ -636,9 +719,12 @@ def admin_service_review_list(request):
     if rating_filter:
         reviews = reviews.filter(rating=int(rating_filter))
     
-    # Statistics
+    # Metrics
     total_reviews = ServiceReview.objects.count()
     avg_rating = ServiceReview.objects.aggregate(Avg('rating'))['rating__avg'] or 0
+    approved_count = ServiceReview.objects.filter(is_approved=True).count()
+    pending_count = ServiceReview.objects.filter(is_approved=False).count()
+    five_star_count = ServiceReview.objects.filter(rating=5).count()
     
     # Service-wise stats
     service_stats = []
@@ -662,6 +748,9 @@ def admin_service_review_list(request):
         'page_obj': page_obj,
         'total_reviews': total_reviews,
         'avg_rating': round(avg_rating, 1),
+        'approved_count': approved_count,
+        'pending_count': pending_count,
+        'five_star_count': five_star_count,
         'service_stats': service_stats,
         'service_choices': Appointment.SERVICE_CHOICES,
         'service_filter': service_filter,
@@ -669,6 +758,30 @@ def admin_service_review_list(request):
     }
     
     return render(request, 'appointments/admin_service_review_list.html', context)
+
+
+@login_required
+@admin_required
+def admin_approve_service_review(request, pk):
+    """Toggle approval of a service review"""
+    review = get_object_or_404(ServiceReview, pk=pk)
+    review.is_approved = not review.is_approved
+    review.save()
+    status = "approved" if review.is_approved else "unapproved"
+    messages.success(request, f'Service review has been {status}.')
+    return redirect('admin_service_review_list')
+
+
+@login_required
+@admin_required
+def admin_delete_service_review(request, pk):
+    """Delete a service review"""
+    review = get_object_or_404(ServiceReview, pk=pk)
+    review.delete()
+    messages.success(request, 'Service review deleted.')
+    return redirect('admin_service_review_list')
+
+
 
 
 def service_list(request):
@@ -753,51 +866,140 @@ def admin_service_delete(request, pk):
     """Admin view to delete a grooming service."""
     service = get_object_or_404(Service, pk=pk)
     if request.method == 'POST':
+         # Block deletion if there are active appointments for this service slug
+         # Appointment model uses service (choice slug) to link to types
+         active_appointments = Appointment.objects.filter(
+             service=service.slug, 
+             status__in=['pending', 'confirmed', 'checked_in']
+         )
+         active_count = active_appointments.count()
+         
+         if active_count > 0:
+             messages.error(
+                 request, 
+                 f'Cannot delete service "{service.name}". '
+                 f'There are {active_count} active/upcoming appointment(s) booked for this service. '
+                 f'Please complete or cancel those appointments first.'
+             )
+             return redirect('admin_service_list')
+
          service.delete()
          messages.success(request, f'Service "{service.name}" deleted successfully.')
          return redirect('admin_service_list')
     return render(request, 'appointments/admin_service_confirm_delete.html', {'service': service})
 
 
-# PET CRUD VIEWS
+@login_required
+@admin_required
+def admin_appointment_refund(request, pk):
+    """Admin manually records a refund for an appointment (e.g. cancelled booking)."""
+    appointment = get_object_or_404(Appointment, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            refund_amount = decimal.Decimal(request.POST.get('refund_amount', '0'))
+            refund_method = request.POST.get('refund_method', 'cash')
+            notes = request.POST.get('notes', '')
+            
+            if refund_amount <= 0:
+                messages.error(request, 'Refund amount must be greater than zero.')
+                return redirect('admin_appointment_detail', pk=pk)
+            
+            if refund_amount > appointment.paid_amount:
+                messages.error(request, f'Refund amount cannot exceed total paid (Rs. {appointment.paid_amount}).')
+                return redirect('admin_appointment_detail', pk=pk)
+            
+            # 1. Update appointment totals and status
+            appointment.paid_amount -= refund_amount
+            appointment.payment_status = 'refunded'
+            # If still have some paid amount, it might remain advance_paid or similar, 
+            # but usually 'refunded' status is used for the whole thing being reversed.
+            appointment.save()
+            
+            # 2. Record the refund as a Payment object with negative amount or refunded status
+            from products.models import Payment
+            from django.utils import timezone
+            import uuid
+            
+            unique_suffix = f"REF-{uuid.uuid4().hex[:4]}-{timezone.now().strftime('%y%m%d')}"
+            
+            Payment.objects.create(
+                appointment=appointment,
+                user=appointment.user,
+                transaction_id=f"STUDIO-{unique_suffix}",
+                payment_method=refund_method,
+                amount=-refund_amount, # Negative to balance books
+                status='refunded',
+                payment_response={
+                    'source': 'Manual Refund',
+                    'recorded_by': request.user.username,
+                    'notes': notes,
+                    'is_manual': True
+                }
+            )
+            
+            messages.success(request, f'Succesfully recorded refund of Rs. {refund_amount} via {refund_method}. Status updated to Refunded.')
+            
+        except (ValueError, decimal.InvalidOperation):
+            messages.error(request, 'Invalid refund amount.')
+            
+        return redirect('admin_appointment_detail', pk=pk)
+
+    return redirect('admin_appointment_detail', pk=pk)
+
+
 @login_required
 def pet_list(request):
-    """List all pets for the logged-in user"""
-    pets = Pet.objects.filter(user=request.user).order_by('name')
+    """Users can see all their saved pets."""
+    pets = Pet.objects.filter(user=request.user)
     return render(request, 'appointments/pet_list.html', {'pets': pets})
 
 
 @login_required
+@admin_required
+def admin_pet_list(request):
+    """Admin can see and manage all pets in the system."""
+    pets = Pet.objects.all().select_related('user').order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(pets, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'appointments/admin_pet_list.html', {'page_obj': page_obj})
+
+
+@login_required
 def pet_add(request):
-    """Add a new pet for the user"""
+    """Add a new pet profile."""
     if request.method == 'POST':
         form = PetForm(request.POST)
         if form.is_valid():
             pet = form.save(commit=False)
             pet.user = request.user
             pet.save()
-            messages.success(request, f'{pet.name} has been added to your profile!')
-            
-            # If came from booking page, redirect back there
-            next_url = request.GET.get('next')
-            if next_url:
-                return redirect(next_url)
+            messages.success(request, f'Pet profile for {pet.name} created!')
             return redirect('pet_list')
     else:
         form = PetForm()
-    
-    return render(request, 'appointments/pet_form.html', {'form': form, 'title': 'Add a New Pet'})
+    return render(request, 'appointments/pet_form.html', {'form': form, 'title': 'Add Pet'})
 
 
 @login_required
 def pet_edit(request, pk):
-    """Edit an existing pet"""
-    pet = get_object_or_404(Pet, pk=pk, user=request.user)
+    """Edit an existing pet profile."""
+    if request.user.role == 'admin':
+        pet = get_object_or_404(Pet, pk=pk)
+    else:
+        pet = get_object_or_404(Pet, pk=pk, user=request.user)
+    
     if request.method == 'POST':
         form = PetForm(request.POST, instance=pet)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Details for {pet.name} updated.')
+            messages.success(request, f'{pet.name}\'s profile updated!')
+            if request.user.role == 'admin':
+                return redirect('admin_pet_list')
             return redirect('pet_list')
     else:
         form = PetForm(instance=pet)
@@ -806,11 +1008,16 @@ def pet_edit(request, pk):
 
 @login_required
 def pet_delete(request, pk):
-    """Delete a pet"""
-    pet = get_object_or_404(Pet, pk=pk, user=request.user)
+    """Delete a pet profile."""
+    if request.user.role == 'admin':
+        pet = get_object_or_404(Pet, pk=pk)
+    else:
+        pet = get_object_or_404(Pet, pk=pk, user=request.user)
+        
     if request.method == 'POST':
-        name = pet.name
         pet.delete()
-        messages.success(request, f'{name} has been removed from your profile.')
+        messages.success(request, 'Pet profile deleted.')
+        if request.user.role == 'admin':
+            return redirect('admin_pet_list')
         return redirect('pet_list')
     return render(request, 'appointments/pet_confirm_delete.html', {'pet': pet})

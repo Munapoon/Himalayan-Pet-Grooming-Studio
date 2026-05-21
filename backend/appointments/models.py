@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 import json
 from decimal import Decimal
+from datetime import datetime
 
 
 class Service(models.Model):
@@ -17,7 +18,7 @@ class Service(models.Model):
 
     slug = models.CharField(max_length=100, unique=True,
                             help_text="Unique key that matches URL and appointment type (e.g., puppy-first-bath).")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     short_description = models.CharField(max_length=255, blank=True,
                                          help_text="Short tagline shown on cards.")
     description = models.TextField(blank=True, help_text="Full description on detail page.")
@@ -56,32 +57,6 @@ class Service(models.Model):
         self.features_json = json.dumps(features_list)
 
 
-class Pet(models.Model):
-    PET_TYPE_CHOICES = [
-        ('dog', 'Dog'),
-        ('cat', 'Cat'),
-        ('bird', 'Bird'),
-        ('rabbit', 'Rabbit'),
-        ('other', 'Other'),
-    ]
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pets')
-    name = models.CharField(max_length=100)
-    pet_type = models.CharField(max_length=20, choices=PET_TYPE_CHOICES, default='dog')
-    breed = models.CharField(max_length=100, blank=True, null=True)
-    age = models.IntegerField(blank=True, null=True)
-    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female')], blank=True)
-    medical_notes = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'pets'
-
-    def __str__(self):
-        return f"{self.name} ({self.get_pet_type_display()}) - {self.user.username}"
-
-
 class Appointment(models.Model):
     SERVICE_CHOICES = [
         ('bath', 'Bath & Brush'),
@@ -116,12 +91,15 @@ class Appointment(models.Model):
     ADVANCE_AMOUNT = 10
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='appointments')
-    # Linked to the new Pet model
-    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='appointments', null=True, blank=True)
-    
-    # Keeping these for backward compatibility or as fallback
-    pet_name = models.CharField(max_length=100, blank=True)
-    pet_type = models.CharField(max_length=100, blank=True)
+    assigned_staff = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name='assigned_appointments',
+        limit_choices_to={'role': 'staff'}
+    )
+    pet_name = models.CharField(max_length=100)
+    pet_type = models.CharField(max_length=100)
     service = models.CharField(max_length=100)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
@@ -150,10 +128,21 @@ class Appointment(models.Model):
 
     @property
     def is_refund_eligible(self):
-        """Refund eligible ONLY if cancelled within 24 hours of booking."""
+        """
+        Refund eligible ONLY if cancelled at least 24 hours before the appointment time.
+        """
         now = timezone.now()
-        time_diff = now - self.created_at
-        return time_diff.total_seconds() <= 24 * 3600
+        
+        # Combine date and time to get the appointment datetime
+        # appointment_time is a time object, appointment_date is a date object
+        appt_datetime = timezone.make_aware(
+            datetime.combine(self.appointment_date, self.appointment_time),
+            timezone.get_current_timezone()
+        )
+        
+        time_diff = appt_datetime - now
+        # Refund only if cancellation is at least 24 hours before the appointment
+        return time_diff.total_seconds() >= 24 * 3600
 
     @property
     def pending_amount(self):
@@ -201,6 +190,7 @@ class ServiceReview(models.Model):
     service = models.CharField(max_length=100)
     rating = models.IntegerField(choices=[(i, f"{i} Star") for i in range(1, 6)])
     review = models.TextField()
+    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -221,3 +211,25 @@ class ServiceReview(models.Model):
         if name:
             return name
         return self.service.replace('-', ' ').title()
+
+
+class Pet(models.Model):
+    """Users can save their pets for faster booking."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pets')
+    name = models.CharField(max_length=100)
+    pet_type = models.CharField(max_length=50, help_text="e.g. Dog, Cat, Rabbit")
+    breed = models.CharField(max_length=100, blank=True)
+    age = models.IntegerField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], blank=True)
+    medical_notes = models.TextField(blank=True, help_text="Known allergies, health issues, or medicines.")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pets'
+        unique_together = ('user', 'name')
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.pet_type})"

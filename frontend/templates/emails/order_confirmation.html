@@ -1,0 +1,27 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h3 style="color: #b51c3a;">Order Received!</h3>
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+<p>Thanks for your order <strong>#{{ order.order_number }}</strong>. We're processing it now!</p>
+
+<table class="details-table">
+    {% for item in order.items.all %}
+    <tr>
+        <td>{{ item.product.name }} (x{{ item.quantity }})</td>
+        <td>Rs. {{ item.subtotal }}</td>
+    </tr>
+    {% endfor %}
+    <tr style="border-top: 2px solid #eee;">
+        <td><strong>Total Amount</strong></td>
+        <td style="color: #b51c3a;"><strong>Rs. {{ order.total_amount }}</strong></td>
+    </tr>
+</table>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}{% url 'products:order_detail' order.order_number %}" class="button">Track Order</a>
+</div>
+
+<p style="margin-top: 30px; font-size: 13px; color: #888;">Questions? Reply to this email or visit our store.</p>
+{% endblock %}
+

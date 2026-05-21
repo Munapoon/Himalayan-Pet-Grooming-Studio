@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        .wrapper { width: 100%; padding: 20px 0; }
+        .container { max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .header { background: #1f2937; padding: 20px; text-align: center; color: #ffffff; }
+        .logo { color: #ffffff; text-decoration: none; font-size: 20px; font-weight: bold; }
+        .content { padding: 30px; color: #333333; line-height: 1.6; }
+        .footer { padding: 20px; text-align: center; color: #888888; font-size: 11px; }
+        .button { display: inline-block; padding: 12px 24px; background: #b51c3a; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
+        .details-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .details-table td { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .details-table td:first-child { color: #888; }
+        .details-table td:last-child { text-align: right; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <a href="#" class="logo">🐾 Himalayan Pet Studio</a>
+            </div>
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+            <div class="footer">
+                <p>&copy; 2026 Himalayan Pet Studio | Pokhara, Nepal</p>
+                <p>You received this because you are a registered member.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

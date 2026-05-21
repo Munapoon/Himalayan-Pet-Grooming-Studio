@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Our Studio - Himalayan Pet Grooming Studio{% endblock %}
+
+{% block main_class %}p-0{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --studio-blue: #1e3a8a;
+        --studio-light-blue: #eff6ff;
+        --studio-darker-blue: #172554;
+        --text-muted: #64748b;
+    }
+
+    /* Fixed navbar offset */
+    body {
+        padding-top: 60px;
+    }
+
+    /* Hero Section */
+    .about-hero {
+        background-color: var(--studio-blue);
+        color: white;
+        padding: 4rem 0;
+        text-align: center;
+        width: 100%;
+        margin: 0;
+    }
+
+    .about-hero .badge-text {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        opacity: 0.8;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .about-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+    }
+
+    .about-hero .lead-text {
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: 1.15rem;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+
+    /* Story Section */
+    .story-section {
+        padding: 4rem 0;
+    }
+
+    .story-section h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+    }
+
+    .story-section p {
+        color: #475569;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+
+    .story-image {
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    /* Values Section */
+    .values-section {
+        padding: 2rem 0 4rem 0;
+        text-align: center;
+    }
+
+    .values-section h2 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .values-section .section-desc {
+        color: var(--text-muted);
+        margin-bottom: 3rem;
+    }
+
+    .value-card {
+        background: white;
+        padding: 2.5rem 2rem;
+        border-radius: 20px;
+        border: 1px solid #f1f5f9;
+        height: 100%;
+        transition: all 0.3s ease;
+        text-align: left;
+    }
+
+    .value-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+    }
+
+    .value-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--studio-light-blue);
+        color: var(--studio-blue);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .value-card h4 {
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        color: #1e293b;
+    }
+
+    .value-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+
+    /* Team Section */
+    .team-section {
+        padding: 6rem 0;
+        background-color: #f8fafc;
+        text-align: center;
+    }
+
+    .team-section h2 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .team-section .section-desc {
+        color: var(--text-muted);
+        margin-bottom: 4rem;
+    }
+
+    .team-avatar {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1.5rem;
+        border: 8px solid white;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .team-card h5 {
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .team-card .role {
+        color: var(--studio-blue);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        padding: 5rem 0;
+        text-align: center;
+    }
+
+    .cta-box {
+        background-color: var(--studio-blue);
+        color: white;
+        padding: 4rem 2rem;
+        border-radius: 10px;
+    }
+
+    .cta-box h2 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .cta-box p {
+        opacity: 0.9;
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+    }
+
+    .btn-white {
+        background-color: white;
+        color: var(--studio-blue);
+        transition: all 0.3s ease;
+    }
+
+    .btn-white:hover {
+        background-color: #f1f5f9;
+        color: var(--studio-darker-blue);
+    }
+
+    .btn-outline-white {
+        border-color: white;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-white:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .about-hero h1 { font-size: 2.5rem; }
+        .story-section { padding: 4rem 0; }
+        .story-section h2 { font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero">
+    <div class="container">
+        <span class="badge-text">About Our Studio</span>
+        <h1>Himalayan Pet Grooming Studio</h1>
+        <p class="lead-text">
+            Premium grooming and specialized care for your beloved pets in the heart of the Himalayas. We treat every animal with love and expertise.
+        </p>
+    </div>
+</section>
+
+<!-- Our Story Section -->
+<section class="story-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h2>Our Story</h2>
+                <p>
+                    Founded in the heart of Pokhara, Nepal, Himalayan Pet Grooming Studio began with a simple mission: to provide world-class grooming services for pets in the Himalayan region.
+                </p>
+                <p>
+                    What started as a small grooming salon has grown into a comprehensive pet care destination, serving hundreds of happy pets and their families. Our team of certified groomers combines traditional care with modern techniques to ensure your pet looks and feels their best.
+                </p>
+                <p>
+                    We believe that every pet deserves professional care in a comfortable, stress-free environment. That's why we've designed our studio to be a welcoming space where pets can relax and enjoy their grooming experience.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="story-image">
+                    <img src="https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=1200&auto=format&fit=crop" alt="Our Story" class="img-fluid w-100">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Values Section -->
+<section class="values-section">
+    <div class="container">
+        <h2>Our Values</h2>
+        <p class="section-desc">These principles guide everything we do at Himalayan Pet Grooming Studio</p>
+        
+        <div class="row g-4 text-start">
+            <div class="col-md-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="far fa-heart"></i></div>
+                    <h4>Pet Welfare First</h4>
+                    <p>Every decision we make prioritizes the comfort, safety, and happiness of your beloved pets.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="far fa-award"></i></div>
+                    <h4>Professional Excellence</h4>
+                    <p>Our certified groomers bring years of experience and continuous training to every service.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="far fa-users"></i></div>
+                    <h4>Community Focus</h4>
+                    <p>We're proud to serve the Himalayan region with dedicated care for local pet families.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="far fa-star"></i></div>
+                    <h4>Premium Quality</h4>
+                    <p>We use only the finest, pet-safe products and maintain the highest hygiene standards.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="team-section">
+    <div class="container">
+        <h2>Meet Our Team</h2>
+        <p class="section-desc">Our certified groomers are passionate professionals dedicated to your pet's well-being</p>
+        
+        <div class="row g-5">
+            <div class="col-md-4">
+                <div class="team-card">
+                    <img src="https://ui-avatars.com/api/?name=Muna+Pun&background=1e3a8a&color=fff&size=400" class="team-avatar" alt="Muna Pun">
+                    <h5>Muna Pun</h5>
+                    <p class="role">Founder & Lead Stylist</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="team-card">
+                    <img src="https://ui-avatars.com/api/?name=Nirjala+Shrestha&background=1e3a8a&color=fff&size=400" class="team-avatar" alt="Nirjala Shrestha">
+                    <h5>Nirjala Shrestha</h5>
+                    <p class="role">Studio Manager</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="team-card">
+                    <img src="https://ui-avatars.com/api/?name=Ronil+Shakya&background=1e3a8a&color=fff&size=400" class="team-avatar" alt="Ronil Shakya">
+                    <h5>Ronil Shakya</h5>
+                    <p class="role">Master Groomer</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box shadow-lg">
+            <h2>Ready to Pamper Your Pet?</h2>
+            <p>Book an appointment today and experience the Himalayan difference</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'contact_us' %}" class="btn btn-white rounded-pill px-5 py-2 fw-bold">Contact Us</a>
+                <a href="{% url 'service_list' %}" class="btn btn-outline-white rounded-pill px-5 py-2 fw-bold">View Services</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

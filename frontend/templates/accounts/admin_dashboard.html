@@ -8,18 +8,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Welcome Header -->
-    <div class="welcome-header d-flex justify-content-between align-items-center mb-5">
+<div class="container-fluid pt-2 pb-4">
+    <!-- Dashboard Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1>
-                <i class="fas fa-home text-primary"></i>
-                Welcome back, {{ request.user.get_full_name|default:request.user.username }}!
-            </h1>
-            <p>Here's what's happening with your pet studio today.</p>
+            <h2 class="h3 mb-1 text-dark fw-semibold" style="letter-spacing: -0.5px;">Dashboard</h2>
+            <p class="text-secondary small mb-0">Welcome back! Here's what's happening today.</p>
         </div>
-        <a href="{% url 'export_sales_csv' %}" class="btn btn-generate shadow-sm">
-            <i class="fas fa-download me-2"></i> Generate Report
+        <a href="{% url 'export_sales_csv' %}" class="btn btn-primary px-3 shadow-sm rounded-3 py-2"
+            style="background-color: #2563eb; border-color: #2563eb;">
+            <i class="fas fa-download fa-sm me-1"></i> Generate Report
         </a>
     </div>
 
@@ -81,35 +79,53 @@
             </div>
         </div>
 
-        <!-- Pending Appointments Card -->
+        <!-- Grooming Services Card -->
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stat-card accent-orange">
                 <div class="card-body">
                     <div class="w-100">
-                        <div class="stat-card-title text-orange">Pending Appointments</div>
-                        <div class="stat-card-value text-dark">{{ pending_appointments }}</div>
+                        <div class="stat-card-title text-orange">Grooming Services</div>
+                        <div class="stat-card-value text-dark">{{ total_services }}</div>
                     </div>
                     <div class="stat-card-icon text-dark">
-                        <i class="fas fa-hourglass-half fa-2x text-gray-800"></i>
+                        <i class="fas fa-cut fa-2x text-gray-800"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Stat Cards Row ends here -->
+
     <!-- Main Content Row -->
     <div class="row">
         <!-- Sales Chart Column -->
-        <div class="col-xl-12 mb-4">
-            <div class="card dashboard-section-card shadow-sm">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-chart-line text-primary"></i> Weekly Sales Activity
+        <div class="col-xl-6 mb-4">
+            <div class="card dashboard-section-card shadow-sm h-100">
+                <div class="section-header border-0 pb-0">
+                    <div class="section-title fs-5 fw-bold text-dark">
+                        Monthly Earnings (Rs.)
                     </div>
                 </div>
                 <div class="card-body">
                     <div style="height: 300px;">
-                        <canvas id="salesChart"></canvas>
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Trend Column -->
+        <div class="col-xl-6 mb-4">
+            <div class="card dashboard-section-card shadow-sm h-100">
+                <div class="section-header border-0 pb-0">
+                    <div class="section-title fs-5 fw-bold text-dark">
+                        Appointment Trend
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="appointmentChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -233,50 +249,95 @@
     document.addEventListener('DOMContentLoaded', function () {
         const chartJsonText = '{{ chart_data_json|escapejs }}';
         const chartData = JSON.parse(chartJsonText);
-        const ctx = document.getElementById('salesChart').getContext('2d');
 
-        new Chart(ctx, {
-            type: 'line',
+        // Earnings Bar Chart
+        const ctxEarnings = document.getElementById('earningsChart').getContext('2d');
+        new Chart(ctxEarnings, {
+            type: 'bar',
             data: {
                 labels: chartData.labels,
-                datasets: [
-                    {
-                        label: 'Product Orders',
-                        data: chartData.orders,
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#0d6efd',
-                    },
-                    {
-                        label: 'Grooming Appointments',
-                        data: chartData.appointments,
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#198754',
-                    }
-                ]
+                datasets: [{
+                    label: 'Earnings',
+                    data: chartData.earnings,
+                    backgroundColor: '#2563eb', // Blue bar color
+                    borderRadius: 4,
+                    barPercentage: 0.6
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    }
+                    legend: { display: false }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1,
+                            callback: function (value) {
+                                return value >= 1000 ? (value / 1000) + 'k' : value;
+                            }
+                        },
+                        grid: {
+                            borderDash: [5, 5],
+                            color: '#e5e7eb'
+                        },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Appointment Trend Chart
+        const ctxAppt = document.getElementById('appointmentChart').getContext('2d');
+        new Chart(ctxAppt, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Appointments',
+                    data: chartData.appointments,
+                    borderColor: '#06b6d4', // Cyan line color
+                    backgroundColor: 'rgba(6, 182, 212, 0.15)', // Cyan fill
+                    borderWidth: 3,
+                    tension: 0.4, // Curvature of the line
+                    fill: true,
+                    pointBackgroundColor: '#06b6d4',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 6,
                             precision: 0
-                        }
+                        },
+                        grid: {
+                            borderDash: [5, 5],
+                            color: '#e5e7eb'
+                        },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: {
+                            borderDash: [5, 5],
+                            color: '#e5e7eb'
+                        },
+                        border: { display: false }
                     }
                 }
             }

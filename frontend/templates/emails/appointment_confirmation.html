@@ -1,0 +1,21 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h3 style="color: #b51c3a;">Booking Confirmed!</h3>
+<p>Hi <strong>{{ user_name }}</strong>,</p>
+<p>Your appointment for <strong>{{ appointment.pet_name }}</strong> is confirmed.</p>
+
+<table class="details-table">
+    <tr><td>Service</td><td>{{ service_name }}</td></tr>
+    <tr><td>Date</td><td>{{ appointment.appointment_date|date:"F d, Y" }}</td></tr>
+    <tr><td>Time</td><td>{{ appointment.appointment_time|time:"g:i A" }}</td></tr>
+    <tr><td>Paid</td><td>Rs. {{ appointment.advance_amount }}</td></tr>
+</table>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}{% url 'appointment_detail' appointment.pk %}" class="button">View Details</a>
+</div>
+
+<p style="margin-top: 20px; font-size: 13px; color: #666;">Please arrive 10 minutes early. We look forward to seeing you!</p>
+{% endblock %}
+

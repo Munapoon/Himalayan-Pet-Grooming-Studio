@@ -1,35 +1,49 @@
 from django import forms
 from .models import Appointment, Service, Pet
-from datetime import time
+from datetime import time, timedelta, datetime
 from django.utils import timezone
 import json
 
 
 class AppointmentForm(forms.ModelForm):
+    TIME_SLOTS = [
+        ('10:00', '10:00 AM'),
+        ('11:00', '11:00 AM'),
+        ('12:00', '12:00 PM'),
+        ('13:00', '01:00 PM'),
+        ('14:00', '02:00 PM'),
+        ('15:00', '03:00 PM'),
+        ('16:00', '04:00 PM'),
+        ('17:00', '05:00 PM'),
+    ]
+
     service = forms.ChoiceField(
         choices=[], 
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-select fw-bold'})
+    )
+    
+    appointment_time = forms.ChoiceField(
+        choices=TIME_SLOTS,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
     class Meta:
         model = Appointment
-        fields = ['pet', 'service', 'appointment_date', 'appointment_time', 'notes']
+        fields = ['pet_name', 'pet_type', 'service', 'appointment_date', 'appointment_time', 'notes']
         widgets = {
-            'pet': forms.Select(attrs={'class': 'form-control'}),
+            'pet_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name'}),
+            'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dog, Cat, etc.'}),
             'appointment_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'appointment_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'min': '09:00', 'max': '18:00'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Special instructions...'}),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 3, 
+                'placeholder': 'Special instructions... e.g., [Medical: Heart Issue], [Medication: Weekly injection]'
+            }),
         }
 
+
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        
-        # Filter pet choices for the specific user
-        if user:
-            self.fields['pet'].queryset = Pet.objects.filter(user=user)
-            self.fields['pet'].empty_label = "Select one of your pets"
-        
         # Dynamically set service choices from Service model
         active_services = Service.objects.filter(is_active=True).only('slug', 'name').order_by('order')
         if active_services.exists():
@@ -38,30 +52,17 @@ class AppointmentForm(forms.ModelForm):
         else:
             # Fallback to model choices if DB is empty
             self.fields['service'].choices = Appointment.SERVICE_CHOICES
-
-
-class PetForm(forms.ModelForm):
-    class Meta:
-        model = Pet
-        fields = ['name', 'pet_type', 'breed', 'age', 'gender', 'medical_notes']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name Heritage'}),
-            'pet_type': forms.Select(attrs={'class': 'form-control'}),
-            'breed': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. German Shepherd'}),
-            'age': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Age in years'}),
-            'gender': forms.Select(attrs={'class': 'form-control'}),
-            'medical_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Allergies, medical history, etc.'}),
-        }
     
     def clean_appointment_time(self):
-        appointment_time = self.cleaned_data.get('appointment_time')
-        
-        # Check if time is between 9 AM and 6 PM
-        if appointment_time:
-            if appointment_time < time(9, 0) or appointment_time >= time(18, 0):
-                raise forms.ValidationError('Appointments are only available between 9:00 AM and 6:00 PM.')
-        
-        return appointment_time
+        time_str = self.cleaned_data.get('appointment_time')
+        if time_str:
+            # Convert string from ChoiceField to a datetime.time object
+            try:
+                hour, minute = map(int, time_str.split(':'))
+                return time(hour, minute)
+            except ValueError:
+                raise forms.ValidationError("Invalid time format selected.")
+        return time_str
     
     def clean(self):
         cleaned_data = super().clean()
@@ -72,19 +73,28 @@ class PetForm(forms.ModelForm):
             # Get current local time (naive, stripped of tzinfo for comparison with form's naive time)
             local_now = timezone.localtime()
             today = local_now.date()
-            current_time = local_now.time().replace(tzinfo=None)
 
-            # Check if appointment is in the past
+            # Check if appointment is in the past or too soon
             if appointment_date < today:
                 raise forms.ValidationError('You cannot book an appointment for a past date.')
-            if appointment_date == today and appointment_time <= current_time:
-                raise forms.ValidationError(
-                    f'The selected time {appointment_time.strftime("%I:%M %p")} has already passed. '
-                    f'Please choose a future time (current time: {current_time.strftime("%I:%M %p")}).'
-                )
+            
+            if appointment_date == today:
+                # 1. Check if the selected time is strictly in the past
+                if appointment_time < local_now.time():
+                    raise forms.ValidationError('Yo time already past vaiskyo. Please choose a future time.')
 
-            # Check if slot is already booked
-            existing_appointment = Appointment.objects.filter(
+                # 2. Enforce 30-minute advance booking for today's appointments
+                cutoff_datetime = local_now + timedelta(minutes=30)
+                
+                # If 30 minutes from now rolls to tomorrow or time is too soon
+                if cutoff_datetime.date() > today or appointment_time < cutoff_datetime.time():
+                    raise forms.ValidationError(
+                        f'Appointments must be booked at least 30 minutes in advance to allow for studio preparation. '
+                        f'Earliest available for today: {cutoff_datetime.strftime("%I:%M %p")}.'
+                    )
+
+            # Check capacity: Limit to 2 appointments per time slot
+            existing_appointments = Appointment.objects.filter(
                 appointment_date=appointment_date,
                 appointment_time=appointment_time,
                 status__in=['pending', 'confirmed']
@@ -92,12 +102,13 @@ class PetForm(forms.ModelForm):
             
             # Exclude current appointment if updating
             if self.instance and self.instance.pk:
-                existing_appointment = existing_appointment.exclude(pk=self.instance.pk)
+                existing_appointments = existing_appointments.exclude(pk=self.instance.pk)
             
-            if existing_appointment.exists():
-                raise forms.ValidationError(
-                    f'This time slot is already booked. Please choose a different date or time.'
-                )
+            MAX_CAPACITY_PER_SLOT = 1
+            
+            if existing_appointments.count() >= MAX_CAPACITY_PER_SLOT:
+                raise forms.ValidationError('This time slot is already taken. Please choose another time or day.')
+
         
         return cleaned_data
 
@@ -148,4 +159,18 @@ class ServiceForm(forms.ModelForm):
             except json.JSONDecodeError:
                 raise forms.ValidationError('Please enter valid JSON format, e.g. ["Feature 1", "Feature 2"]')
         return data
+
+
+class PetForm(forms.ModelForm):
+    class Meta:
+        model = Pet
+        fields = ['name', 'pet_type', 'gender', 'breed', 'age', 'medical_notes']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Pet Name'}),
+            'pet_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Dog, Cat'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'breed': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Breed (Optional)'}),
+            'age': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Age in years'}),
+            'medical_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Medical issues, allergies, or special care instructions...'}),
+        }
 

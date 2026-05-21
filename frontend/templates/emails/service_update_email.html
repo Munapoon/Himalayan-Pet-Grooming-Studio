@@ -1,0 +1,20 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h3 style="color: #b51c3a;">Service Updated: {{ service_name }}</h3>
+<p>Hi there,</p>
+<p>We've updated our <strong>{{ service_name }}</strong> service to provide an even better experience for your pets.</p>
+
+<table class="details-table">
+    <tr><td>Starting Price</td><td>{{ service.price }}</td></tr>
+    <tr><td>Duration</td><td>{{ service.duration }}</td></tr>
+</table>
+
+<p>{{ service.short_description }}</p>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}{% url 'service_detail' service.slug %}" class="button">View Service Details</a>
+</div>
+
+<p style="margin-top: 30px;">Book your next appointment soon!<br><strong>Himalayan Pet Studio Team</strong></p>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Staff Panel - Himalayan Pet Studio{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v=8">
+    {% block extra_css %}{% endblock %}
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; }
+        body { font-family: 'Outfit', sans-serif; background: #f1f5f9; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        main { flex: 1; padding-top: 0; }
+
+        .staff-topbar {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: white;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(37,99,235,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .staff-topbar .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .staff-topbar .brand i { color: #FBBF24; }
+        .staff-topbar .staff-name {
+            font-size: 0.95rem;
+            color: #bfdbfe;
+        }
+        .staff-topbar .btn-logout {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .staff-topbar .btn-logout:hover {
+            background: rgba(239,68,68,0.85);
+            color: white;
+        }
+
+        main { padding-top: 0; }
+
+        .staff-footer {
+            text-align: center;
+            padding: 18px 0;
+            color: #e2e8f0;
+            font-size: 0.82rem;
+            background: #0f172a;
+            margin-top: auto;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Staff Top Bar -->
+    <div class="staff-topbar">
+        <div class="brand">
+            <i class="fas fa-paw me-2"></i> Himalayan Pet Grooming Studio — Groomer Panel
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="staff-name">
+                <i class="fas fa-user-circle me-1"></i>
+                {{ user.get_full_name|default:user.username }}
+            </span>
+            <a href="{% url 'logout' %}" class="btn-logout">
+                <i class="fas fa-sign-out-alt me-1"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Staff Footer -->
+    <div class="staff-footer">
+        &copy; {% now "Y" %} Himalayan Pet Grooming Studio. Staff Portal.
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

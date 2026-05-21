@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -29,17 +32,27 @@ def forgot_password(request):
                 user = User.objects.get(email=email)
                 code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
                 user.reset_code = code
-                user.reset_code_expires_at = timezone.now() + timedelta(minutes=15)
+                user.reset_code_expires_at = timezone.now() + timedelta(minutes=5)
                 user.save()
                 
                 request.session['reset_email'] = email
                 
                 try:
+                    context = {
+                        'user_name': user.username,
+                        'verification_code': code,
+                        'title': 'Password Reset Request',
+                        'intro_text': 'We received a request to reset your password. Use the code below to proceed with the reset process:'
+                    }
+                    html_message = render_to_string('emails/verification_email.html', context)
+                    plain_message = strip_tags(html_message)
+                    
                     send_mail(
                         'Password Reset - Himalayan Pet Studio',
-                        f'Your verification code is: {code}\n\nThis code expires in 15 minutes.',
-                        None,
+                        plain_message,
+                        settings.DEFAULT_FROM_EMAIL,
                         [email],
+                        html_message=html_message,
                         fail_silently=False,
                     )
                 except Exception as e:
@@ -66,7 +79,7 @@ def verify_reset_code(request):
                     request.session['reset_email'] = email
                     return redirect('reset_password')
                 else:
-                    messages.error(request, "Reset code has expired.")
+                    messages.error(request, 'Error: "This code has expired"')
             except User.DoesNotExist:
                 messages.error(request, "Invalid email or reset code.")
     else:
@@ -119,8 +132,11 @@ def change_password(request):
 
 
 def home(request):
-    if request.user.is_authenticated and request.user.is_admin_user():
-        return redirect('admin_dashboard')
+    if request.user.is_authenticated:
+        if request.user.is_admin_user():
+            return redirect('admin_dashboard')
+        elif request.user.is_staff_user():
+            return redirect('staff_dashboard')
     
     from appointments.models import Service, ServiceReview
     from django.db.models import Avg, Count
@@ -157,7 +173,11 @@ def home(request):
 
 def user_login(request):
     if request.user.is_authenticated:
-        return redirect('admin_dashboard' if request.user.is_admin_user() else 'home')
+        if request.user.is_admin_user():
+            return redirect('admin_dashboard')
+        elif request.user.is_staff_user():
+            return redirect('staff_dashboard')
+        return redirect('home')
 
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
@@ -174,14 +194,31 @@ def user_login(request):
                 # Send Welcome Email on FIRST Login Only
                 if is_first_login:
                     try:
-                        subject = 'Welcome to Himalayan Pet Studio!'
-                        message = f'Hi {user.username},\n\nWelcome to Himalayan pet grooming services! We are happy to see you. Thank you for choosing us for your furry friends.\n\nBest regards,\nHimalayan Pet Studio Team'
-                        send_mail(subject, message, None, [user.email], fail_silently=False)
+                        context = {
+                            'user_name': user.username,
+                            'site_url': request.build_absolute_uri('/')[:-1]
+                        }
+                        html_message = render_to_string('emails/welcome_email.html', context)
+                        plain_message = strip_tags(html_message)
+                        
+                        send_mail(
+                            'Welcome to Himalayan Pet Studio!',
+                            plain_message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [user.email],
+                            html_message=html_message,
+                            fail_silently=False,
+                        )
                     except Exception as e:
                         print(f"Failed to send welcome email: {e}")
 
+
                 messages.success(request, 'Login successful')
-                return redirect('admin_dashboard' if user.is_admin_user() else 'home')
+                if user.is_admin_user():
+                    return redirect('admin_dashboard')
+                elif user.is_staff_user():
+                    return redirect('staff_dashboard')
+                return redirect('home')
             else:
                 # Check if it's an unverified/inactive user
                 try:
@@ -215,11 +252,23 @@ def user_register(request):
             
             # Send Code Email
             try:
-                subject = 'Email Verification - Himalayan Pet Studio'
-                message = f'Hi {user.username},\n\nYour verification code is: {code}\n\nPlease enter this code to verify your email address.'
-                email_from = None
-                recipient_list = [user.email]
-                send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+                context = {
+                    'user_name': user.username,
+                    'verification_code': code,
+                    'title': 'Welcome to Himalayan Pet Studio',
+                    'intro_text': 'Thank you for signing up! To complete your registration and verify your email, please use the code below:'
+                }
+                html_message = render_to_string('emails/verification_email.html', context)
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    'Email Verification - Himalayan Pet Studio',
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
             except Exception as e:
                 print(f"Failed to send verification email: {e}")
 
@@ -266,49 +315,87 @@ def user_logout(request):
 @login_required
 @admin_required
 def admin_dashboard(request):
-    from appointments.models import Appointment
-    from products.models import Product, Order
+    from appointments.models import Appointment, Service
+    from products.models import Product, Order, Payment
     from django.utils import timezone
     from datetime import timedelta
     import json
 
     total_users = User.objects.count()
     total_bookings = Appointment.objects.count()
+    total_services = Service.objects.count()
     completed_appointments = Appointment.objects.filter(status='completed').count()
     tasks_percentage = int((completed_appointments / total_bookings) * 100) if total_bookings > 0 else 0
     pending_appointments = Appointment.objects.filter(status='pending').count()
     recent_appointments = Appointment.objects.select_related('user').all().order_by('-created_at')[:5]
     low_stock_products = Product.objects.filter(stock_quantity__lt=10).order_by('stock_quantity')[:5]
 
-    # --- Charts Data (Last 7 Days) ---
+    # --- Total Revenue (all time, completed payments) ---
+    import calendar
+    from decimal import Decimal
+    from django.db.models import Sum
+
+    total_revenue = Payment.objects.filter(
+        status__in=['completed', 'refunded']
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+    # --- Charts Data (Last 6 Months) ---
     today = timezone.now().date()
-    days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
-    labels = [d.strftime('%a') for d in days]
+    import calendar
+    from decimal import Decimal
     
-    order_data = []
+    months_labels = []
+    earnings_data = []
     appointment_data = []
     
-    for d in days:
-        # Orders for this day
-        o_count = Order.objects.filter(created_at__date=d, payment_status='paid').count()
-        order_data.append(o_count)
-        # Appointments for this day
-        a_count = Appointment.objects.filter(appointment_date=d, payment_status__in=['advance_paid', 'paid']).count()
+    from datetime import date, datetime
+    
+    for i in range(5, -1, -1):
+        # Calculate target month and year
+        m = today.month - i
+        y = today.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        
+        target_date = date(y, m, 1)
+        months_labels.append(target_date.strftime('%b'))
+        
+        # Date range for the target month
+        last_day = calendar.monthrange(y, m)[1]
+        start_date = timezone.make_aware(datetime(y, m, 1))
+        end_date = timezone.make_aware(datetime(y, m, last_day, 23, 59, 59))
+        
+        # Revenue via Payment model
+        month_revenue = Payment.objects.filter(
+            created_at__range=(start_date, end_date),
+            status__in=['completed', 'refunded']
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        earnings_data.append(float(month_revenue))
+        
+        # Appointment counts
+        a_count = Appointment.objects.filter(
+            created_at__range=(start_date, end_date),
+            status__in=['pending', 'confirmed', 'completed']
+        ).count()
         appointment_data.append(a_count)
 
     chart_data = {
-        'labels': labels,
-        'orders': order_data,
+        'labels': months_labels,
+        'earnings': earnings_data,
         'appointments': appointment_data,
     }
 
     context = {
         'total_users': total_users,
         'total_bookings': total_bookings,
+        'total_services': total_services,
         'tasks_percentage': tasks_percentage,
         'pending_appointments': pending_appointments,
         'recent_appointments': recent_appointments,
         'low_stock_products': low_stock_products,
+        'total_revenue': float(total_revenue),
         'chart_data_json': json.dumps(chart_data),
     }
     return render(request, 'accounts/admin_dashboard.html', context)
@@ -316,7 +403,49 @@ def admin_dashboard(request):
 
 @login_required
 def user_dashboard(request):
-    return render(request, 'accounts/user_dashboard.html')
+    if request.user.is_admin_user():
+        return redirect('admin_dashboard')
+    elif request.user.is_staff_user():
+        return redirect('staff_dashboard')
+    
+    # Since the user requested to remove the dashboard, we redirect them to their profile
+    return redirect('user_profile')
+
+@login_required
+def staff_dashboard(request):
+    if not request.user.is_staff_user() and not request.user.is_admin_user():
+        messages.error(request, "Access denied.")
+        return redirect('home')
+        
+    from appointments.models import Appointment
+    from datetime import date
+    
+    today = date.today()
+    # Fetch today's assignments for this staff member
+    today_appointments = Appointment.objects.filter(
+        assigned_staff=request.user, 
+        appointment_date=today
+    ).order_by('appointment_time')
+    
+    # Upcoming tasks (> today)
+    upcoming_appointments = Appointment.objects.filter(
+        assigned_staff=request.user,
+        appointment_date__gt=today
+    ).exclude(status='completed').order_by('appointment_date', 'appointment_time')[:10]
+    
+    # Stats
+    completed_today = today_appointments.filter(status='completed').count()
+    pending_today = today_appointments.exclude(status='completed').count()
+    total_completed_all_time = Appointment.objects.filter(assigned_staff=request.user, status='completed').count()
+
+    context = {
+        'today_appointments': today_appointments,
+        'upcoming_appointments': upcoming_appointments,
+        'completed_today': completed_today,
+        'pending_today': pending_today,
+        'total_completed_all_time': total_completed_all_time,
+    }
+    return render(request, 'accounts/staff_dashboard.html', context)
 
 
 @login_required
@@ -340,6 +469,20 @@ def user_profile(request):
         'member_points': total_orders * 10,
     }
     return render(request, 'accounts/user_profile.html', context)
+
+
+@login_required
+def remove_profile_picture(request):
+    """Remove user's profile picture"""
+    user = request.user
+    if user.profile_picture:
+        user.profile_picture.delete(save=False) # Physically delete file
+        user.profile_picture = None
+        user.save()
+        messages.success(request, 'Profile picture removed.')
+    else:
+        messages.info(request, 'No profile picture to remove.')
+    return redirect('user_profile')
 
 
 @login_required
@@ -370,25 +513,63 @@ def user_detail(request, pk):
 
 @login_required
 @admin_required
+def user_update_role(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        new_role = request.POST.get('role')
+        if new_role in ['admin', 'staff', 'user']:
+            user_obj.role = new_role
+            # Sync Django flags with the role
+            if new_role == 'admin':
+                user_obj.is_superuser = True
+                user_obj.is_staff = True
+            elif new_role == 'staff':
+                user_obj.is_superuser = False
+                user_obj.is_staff = True
+            else: # regular user
+                user_obj.is_superuser = False
+                user_obj.is_staff = False
+                
+            user_obj.save()
+            messages.success(request, f"User {user_obj.username}'s role was updated to {new_role}.")
+    return redirect('user_detail', pk=pk)
+
+
+@login_required
+@admin_required
 def reports(request):
     from products.models import Payment
     import calendar
     from datetime import datetime
 
-    now = datetime.now()
+    now = timezone.now()
     selected_month = int(request.GET.get('month', now.month))
     selected_year = int(request.GET.get('year', now.year))
 
-    all_sales = Payment.objects.filter(status='completed')
+    all_sales = Payment.objects.filter(status__in=['completed', 'refunded'])
     
-    # DEBUG: Temporary show ALL completed sales to check if any exist
-    monthly_sales = all_sales
+    from datetime import datetime
+    month_last_day = calendar.monthrange(selected_year, selected_month)[1]
+    
+    if timezone.is_aware(now):
+        start_date = timezone.make_aware(datetime(selected_year, selected_month, 1))
+        end_date = timezone.make_aware(datetime(selected_year, selected_month, month_last_day, 23, 59, 59))
+        start_year_date = timezone.make_aware(datetime(selected_year, 1, 1))
+        end_year_date = timezone.make_aware(datetime(selected_year, 12, 31, 23, 59, 59))
+    else:
+        start_date = datetime(selected_year, selected_month, 1)
+        end_date = datetime(selected_year, selected_month, month_last_day, 23, 59, 59)
+        start_year_date = datetime(selected_year, 1, 1)
+        end_year_date = datetime(selected_year, 12, 31, 23, 59, 59)
+
+    # Actual filtered data for the selected period using __range
+    monthly_sales = all_sales.filter(created_at__range=(start_date, end_date))
     
     monthly_revenue = monthly_sales.aggregate(total=Sum('amount'))['total'] or 0
     product_monthly_revenue = monthly_sales.filter(order__isnull=False).aggregate(total=Sum('amount'))['total'] or 0
     service_monthly_revenue = monthly_sales.filter(appointment__isnull=False).aggregate(total=Sum('amount'))['total'] or 0
 
-    yearly_sales = all_sales.filter(created_at__year=selected_year)
+    yearly_sales = all_sales.filter(created_at__range=(start_year_date, end_year_date))
     yearly_revenue = yearly_sales.aggregate(total=Sum('amount'))['total'] or 0
     product_yearly_revenue = yearly_sales.filter(order__isnull=False).aggregate(total=Sum('amount'))['total'] or 0
     service_yearly_revenue = yearly_sales.filter(appointment__isnull=False).aggregate(total=Sum('amount'))['total'] or 0
@@ -396,20 +577,22 @@ def reports(request):
     service_name_map = dict(Appointment.SERVICE_CHOICES)
     sales_qs = monthly_sales.select_related('order', 'appointment', 'user').order_by('-created_at')
 
-    # Aggregation by date to avoid timezone issues
-    from django.db.models.functions import TruncDate
-    daily_summary_raw = monthly_sales.annotate(date=TruncDate('created_at')).values('date').annotate(
-        total=Sum('amount'), 
-        count=Count('id')
-    ).order_by('date')
+    # Python-side aggregation to avoid timezone issues with TruncDate on SQLite
+    from collections import defaultdict
+    daily_stats = defaultdict(lambda: {"total": 0, "count": 0})
     
+    for sale in sales_qs:
+        date_str = timezone.localtime(sale.created_at).date().strftime('%b %d, %Y')
+        daily_stats[date_str]["total"] += float(sale.amount)
+        daily_stats[date_str]["count"] += 1
+        
     daily_summary = []
-    for d in daily_summary_raw:
+    for date_str, stats in sorted(daily_stats.items()):
         daily_summary.append({
-            'date': d['date'],
-            'total': float(d['total']),
-            'count': d['count'],
-            'percentage': (float(d['total']) / float(monthly_revenue) * 100) if monthly_revenue > 0 else 0
+            'date': date_str,
+            'total': stats['total'],
+            'count': stats['count'],
+            'percentage': (stats['total'] / float(monthly_revenue) * 100) if monthly_revenue > 0 else 0
         })
 
     enriched_sales = []
@@ -465,10 +648,11 @@ def reports(request):
 @admin_required
 def export_sales_csv(request):
     import csv
+    import calendar
     from django.http import HttpResponse
     from products.models import Payment
+    from appointments.models import Appointment
     from datetime import datetime
-    import calendar
 
     now = datetime.now()
     selected_month = int(request.GET.get('month', now.month))
@@ -481,7 +665,21 @@ def export_sales_csv(request):
     writer.writerow(['ID', 'Source', 'Detail', 'Customer', 'Amount', 'Method', 'Date', 'Time'])
 
     service_name_map = dict(Appointment.SERVICE_CHOICES)
-    payments = Payment.objects.filter(status='completed', created_at__month=selected_month, created_at__year=selected_year).select_related('order', 'appointment', 'user').order_by('-created_at')
+    
+    from django.utils import timezone
+    month_last_day = calendar.monthrange(selected_year, selected_month)[1]
+    
+    if timezone.is_aware(now):
+        start_date = timezone.make_aware(datetime(selected_year, selected_month, 1))
+        end_date = timezone.make_aware(datetime(selected_year, selected_month, month_last_day, 23, 59, 59))
+    else:
+        start_date = datetime(selected_year, selected_month, 1)
+        end_date = datetime(selected_year, selected_month, month_last_day, 23, 59, 59)
+    
+    payments = Payment.objects.filter(
+        status__in=['completed', 'refunded'],
+        created_at__range=(start_date, end_date)
+    ).select_related('order', 'appointment', 'user').order_by('-created_at')
 
     for p in payments:
         source, detail = "Misc", "N/A"
@@ -493,9 +691,16 @@ def export_sales_csv(request):
             svc_name = service_name_map.get(p.appointment.service, p.appointment.service)
             detail = f"{svc_name} ({p.appointment.pet_name})"
 
+        customer_name = (p.user.get_full_name() or p.user.username) if p.user else "Walk-in"
         writer.writerow([
-            p.id, source, detail, (p.user.get_full_name() or p.user.username) if p.user else "Walk-in",
-            p.amount, p.get_payment_method_display(), p.created_at.strftime('%Y-%m-%d'), p.created_at.strftime('%H:%M')
+            p.id, 
+            source, 
+            detail, 
+            customer_name,
+            p.amount, 
+            p.get_payment_method_display(), 
+            p.created_at.strftime('%Y-%m-%d'), 
+            p.created_at.strftime('%H:%M')
         ])
     return response
 
@@ -504,9 +709,26 @@ def export_sales_csv(request):
 @admin_required
 def contact_messages(request):
     messages_list = Contact.objects.all().order_by('-created_at')
+    
+    # Contact metrics
+    unread_count = Contact.objects.filter(is_read=False).count()
+    # "Read Messages" defined as read but not yet replied
+    read_count = Contact.objects.filter(is_read=True, admin_reply__isnull=True).exclude(admin_reply__exact='').count()
+    # Replied messages 
+    replied_count = Contact.objects.exclude(admin_reply__isnull=True).exclude(admin_reply__exact='').count()
+    high_priority_count = Contact.objects.filter(priority='High').count()
+
     paginator = Paginator(messages_list, 10)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'accounts/contact_messages.html', {'contact_messages_list': page_obj, 'page_obj': page_obj, 'unread_count': Contact.objects.filter(is_read=False).count()})
+    
+    return render(request, 'accounts/contact_messages.html', {
+        'contact_messages_list': page_obj, 
+        'page_obj': page_obj, 
+        'unread_count': unread_count,
+        'read_count': read_count,
+        'replied_count': replied_count,
+        'high_priority_count': high_priority_count
+    })
 
 
 def contact_us(request):
@@ -591,6 +813,15 @@ def mark_contact_read(request, pk):
 
 @login_required
 @admin_required
+def delete_contact(request, pk):
+    message = get_object_or_404(Contact, pk=pk)
+    message.delete()
+    messages.success(request, 'Message deleted successfully.')
+    return redirect('contact_messages')
+
+
+@login_required
+@admin_required
 def staff_search(request):
     query = request.GET.get('q', '').strip()
     appointments, orders, users = [], [], []
@@ -599,3 +830,13 @@ def staff_search(request):
         orders = Order.objects.filter(Q(order_number__icontains=query) | Q(user__username__icontains=query))[:10]
         users = User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query))[:10]
     return render(request, 'accounts/staff_search_results.html', {'query': query, 'appointments': appointments, 'orders': orders, 'users': users})
+
+
+def about_us(request):
+    """View to render the About Us page."""
+    return render(request, 'about.html')
+
+
+def legal(request):
+    """View to render the Legal/Terms & Conditions page."""
+    return render(request, 'legal.html')

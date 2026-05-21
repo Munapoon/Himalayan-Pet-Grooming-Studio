@@ -1,0 +1,147 @@
+{% extends 'staff_base.html' %}
+{% load static %}
+
+{% block title %}Staff Dashboard - Himalayan Pet Studio{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-1">Welcome, {{ user.get_full_name|default:user.username }}!</h2>
+            <p class="text-secondary">Here is your grooming schedule and task summary.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="badge bg-primary px-3 py-2 rounded-pill fs-6 shadow-sm">
+                <i class="fas fa-calendar-check me-2"></i> {{ today_appointments.count }} Tasks Today
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 rounded-4" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);">
+                <div class="card-body p-4 text-center">
+                    <h3 class="text-primary fw-bold display-5 mb-0">{{ pending_today }}</h3>
+                    <p class="text-secondary fw-bold text-uppercase small mb-0 mt-2">Remaining Today</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 rounded-4" style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);">
+                <div class="card-body p-4 text-center">
+                    <h3 class="text-success fw-bold display-5 mb-0">{{ completed_today }}</h3>
+                    <p class="text-secondary fw-bold text-uppercase small mb-0 mt-2">Completed Today</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 rounded-4" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                <div class="card-body p-4 text-center">
+                    <h3 class="text-warning fw-bold display-5 mb-0">{{ total_completed_all_time }}</h3>
+                    <p class="text-secondary fw-bold text-uppercase small mb-0 mt-2">Total Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-5">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                    <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-clipboard-list text-primary me-2"></i> Today's Schedule</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if today_appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Pet Details</th>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in today_appointments %}
+                                <tr>
+                                    <td class="fw-bold">{{ appointment.appointment_time|time:"h:i A" }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ appointment.pet_name }}</div>
+                                        <div class="small text-muted">{{ appointment.pet_type }} • Owner: {{ appointment.user.get_full_name|default:appointment.user.username }}</div>
+                                        {% if appointment.notes %}
+                                        <div class="small text-danger"><i class="fas fa-exclamation-triangle"></i> {{ appointment.notes }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">{{ appointment.get_service_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if appointment.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif appointment.status == 'checked_in' %}
+                                        <span class="badge bg-warning text-dark">In Progress</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ appointment.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if appointment.status != 'completed' %}
+                                        <form method="post" action="{% url 'appointment_complete' appointment.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="from_staff" value="1">
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill fw-bold" onclick="return confirm('Mark this grooming session as completed?');">
+                                                <i class="fas fa-check"></i> Mark Complete
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill disabled"><i class="fas fa-check-double"></i> Done</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-coffee fa-3x text-muted mb-3 opacity-50"></i>
+                        <h5 class="text-secondary fw-normal">You have no tasks scheduled for today.</h5>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> Upcoming Assignments</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if upcoming_appointments %}
+                    <div class="row g-3">
+                        {% for appt in upcoming_appointments %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong class="text-primary">{{ appt.appointment_date|date:"M d, Y" }}</strong>
+                                    <span class="badge bg-secondary">{{ appt.appointment_time|time:"h:i A" }}</span>
+                                </div>
+                                <div class="fw-bold text-dark mb-1">{{ appt.pet_name }} <span class="text-muted fw-normal">({{ appt.pet_type }})</span></div>
+                                <div class="small">Service: {{ appt.get_service_display }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No upcoming assignments found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

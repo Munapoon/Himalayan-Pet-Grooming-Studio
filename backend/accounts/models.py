@@ -7,6 +7,7 @@ class User(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('user', 'User'),
+        ('staff', 'Staff'),
     ]
     
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
@@ -36,6 +37,9 @@ class User(AbstractUser):
     
     def is_regular_user(self):
         return self.role == 'user'
+        
+    def is_staff_user(self):
+        return self.role == 'staff'
 
 
 class Contact(models.Model):
@@ -48,6 +52,7 @@ class Contact(models.Model):
     is_read = models.BooleanField(default=False)
     admin_reply = models.TextField(blank=True, null=True)
     replied_at = models.DateTimeField(blank=True, null=True)
+    priority = models.CharField(max_length=20, choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')], default='Medium')
     
     class Meta:
         db_table = 'contacts'
@@ -55,3 +60,11 @@ class Contact(models.Model):
     
     def __str__(self):
         return f"{self.name} - {self.subject}"
+
+    @property
+    def status(self):
+        if self.admin_reply:
+            return 'Replied'
+        if self.is_read:
+            return 'Read'
+        return 'New'

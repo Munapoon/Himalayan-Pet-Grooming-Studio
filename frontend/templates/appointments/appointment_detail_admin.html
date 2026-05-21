@@ -31,6 +31,39 @@
                         </div>
                     </div>
 
+                    {% if request.GET.mode != 'view' %}
+                    <div class="row mb-4 bg-light rounded p-3 m-0 border" style="border-left: 4px solid var(--color-primary) !important;">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-user-tag"></i> Staff Assignment</h6>
+                            <form method="post" action="{% url 'admin_appointment_detail' appointment.pk %}" class="d-flex align-items-center gap-3">
+                                {% csrf_token %}
+                                <select name="assigned_staff" class="form-select w-auto">
+                                    <option value="">-- Unassigned --</option>
+                                    {% for staff in staff_members %}
+                                    <option value="{{ staff.id }}" {% if appointment.assigned_staff.id == staff.id %}selected{% endif %}>
+                                        {{ staff.get_full_name|default:staff.username }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-save"></i> Save Assignment</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="row mb-4 bg-light rounded p-3 m-0 border" style="border-left: 4px solid var(--color-primary) !important;">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-user-tag"></i> Staff Assignment Info</h6>
+                            <p class="h6 mb-0">
+                                {% if appointment.assigned_staff %}
+                                    <span class="badge bg-primary fs-6"><i class="fas fa-user-check"></i> {{ appointment.assigned_staff.get_full_name|default:appointment.assigned_staff.username }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6"><i class="fas fa-user-slash"></i> Not Yet Assigned</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <hr>
 
                     <!-- Owner Details Section -->
@@ -115,45 +148,135 @@
 
                     <hr>
 
-                    <!-- Payment & Settlement Section -->
                     <h5 class="mb-3 text-success"><i class="fas fa-money-bill-wave"></i> Payment & Settlement</h5>
-                    <div class="row mb-3 bg-light p-3 rounded">
-                        <div class="col-md-3">
-                            <h6 class="text-muted small">Total Paid</h6>
-                            <p class="h6 text-success fw-bold">Rs. {{ appointment.paid_amount }}</p>
-                            <small class="text-muted">(Advance: Rs. {{ appointment.advance_amount }})</small>
-                            <div class="mt-1 badge bg-success">{{ appointment.get_payment_status_display }}</div>
+                    <div class="row mb-3 bg-light p-3 rounded border">
+                        <div class="col-md-3 text-center border-end">
+                            <h6 class="text-muted small">Total Price Set</h6>
+                            <p class="h4 text-dark fw-bold">Rs. {{ appointment.total_price }}</p>
+                            <div class="badge bg-secondary">Estimated/Final</div>
                         </div>
-                        <div class="col-md-3">
-                            <h6 class="text-muted small">Total Price</h6>
-                            <p class="h6">Rs. {{ appointment.total_price }}</p>
+                        <div class="col-md-3 text-center border-end">
+                            <h6 class="text-muted small">Paid Amount</h6>
+                            <p class="h4 text-success fw-bold">Rs. {{ appointment.paid_amount }}</p>
+                            <div class="badge bg-success">{{ appointment.get_payment_status_display }}</div>
                         </div>
-                        <div class="col-md-3 border-start">
-                            <h6 class="text-muted small">Remaining Balance</h6>
-                            <p class="h5 text-danger fw-bold">Rs. {{ appointment.pending_amount }}</p>
-                        </div>
-                        <div class="col-md-3">
-                            {% if appointment.paid_amount < appointment.total_price or appointment.total_price == 0 %}
-                            <form method="POST" action="{% url 'admin_appointment_pay_shop' appointment.id %}">
-                                {% csrf_token %}
-                                <div class="input-group input-group-sm mb-2">
-                                    <span class="input-group-text">Rs.</span>
-                                    <input type="number" name="total_price" class="form-control" placeholder="Set Total Price" value="{{ appointment.total_price|floatformat:0 }}">
-                                </div>
-                                <select name="payment_method" class="form-select form-select-sm mb-2" required>
-                                    <option value="" disabled selected>Select Payment Method</option>
-                                    <option value="cash">Cash in hand</option>
-                                    <option value="online">Online</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-success w-100">
-                                    <i class="fas fa-cash-register"></i> Update & Pay (Online/Cash)
-                                </button>
-                                <small class="text-muted smaller d-block mt-1">Updates total price and clears the current balance.</small>
-                            </form>
+                        <div class="col-md-3 text-center border-end">
+                            <h6 class="text-muted small">Pending Balance</h6>
+                            <p class="h4 {% if appointment.pending_amount > 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">
+                                Rs. {{ appointment.pending_amount }}
+                            </p>
+                            {% if appointment.pending_amount > 0 %}
+                                <div class="badge bg-danger">Unpaid</div>
                             {% else %}
-                            <div class="text-success small fw-bold mt-2">
-                                <i class="fas fa-check-circle"></i> Fully Paid
+                                <div class="badge bg-success">Cleared</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-3 text-center">
+                            {% if appointment.paid_amount > 0 %}
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#refundModal">
+                                <i class="fas fa-undo"></i> Manual Refund
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Payment Action Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            {% if request.GET.mode != 'view' %}
+                                {% if appointment.paid_amount < appointment.total_price or appointment.total_price == 0 %}
+                            <div class="bg-white p-3 rounded border shadow-sm" style="border-top: 3px solid #28a745 !important;">
+                                <h6 class="text-success fw-bold mb-3"><i class="fas fa-plus-circle"></i> Record New Payment (Shop)</h6>
+                                <form method="POST" action="{% url 'admin_appointment_pay_shop' appointment.id %}" class="row g-2 align-items-end">
+                                    {% csrf_token %}
+                                    <div class="col-sm-3">
+                                        <label class="small fw-bold">Update Total Bill</label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" name="total_price" class="form-control" placeholder="Total" value="{{ appointment.total_price|floatformat:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label class="small fw-bold">Payment Received</label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" name="payment_amount" class="form-control bg-success-subtle" placeholder="Amount" value="{{ appointment.pending_amount|floatformat:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label class="small fw-bold">Method</label>
+                                        <select name="payment_method" class="form-select form-select-sm" required>
+                                            <option value="cash" selected>Cash in hand</option>
+                                            <option value="online">Online (QR/Fonepay)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <button type="submit" class="btn btn-sm btn-success w-100">
+                                            <i class="fas fa-cash-register"></i> Collect Payment
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Payment History Table -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3"><i class="fas fa-history"></i> Payment & Refund History</h6>
+                            {% if payments %}
+                            <div class="table-responsive rounded border">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Transaction ID</th>
+                                            <th>Method</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Source/Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in payments %}
+                                        <tr class="{% if p.status == 'refunded' %}table-warning{% endif %}">
+                                            <td class="small">{{ p.created_at|date:"M d, Y" }}</td>
+                                            <td class="small"><code>{{ p.transaction_id }}</code></td>
+                                            <td>
+                                                <span class="badge {% if p.payment_method == 'khalti' %}bg-purple{% elif p.payment_method == 'cash' %}bg-success{% else %}bg-info{% endif %}">
+                                                    {{ p.payment_method|upper }}
+                                                </span>
+                                            </td>
+                                            <td class="fw-bold {% if p.amount < 0 %}text-danger{% else %}text-success{% endif %}">
+                                                Rs. {{ p.amount }}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if p.status == 'completed' %}bg-success{% elif p.status == 'refunded' %}bg-info{% else %}bg-warning{% endif %}">
+                                                    {{ p.status|capfirst }}
+                                                </span>
+                                            </td>
+                                            <td class="small text-muted">
+                                                {% if p.payment_response.source %}
+                                                    {{ p.payment_response.source }}
+                                                    {% if p.payment_response.notes %}
+                                                        <br><small>({{ p.payment_response.notes }})</small>
+                                                    {% endif %}
+                                                {% elif p.payment_response.notes %}
+                                                    {{ p.payment_response.notes }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-center text-muted small py-3 border rounded bg-light">No transaction history recorded yet.</p>
                             {% endif %}
                         </div>
                     </div>
@@ -180,22 +303,28 @@
                             <i class="fas fa-arrow-left"></i> Back to List
                         </a>
                         <div>
-                            {% if appointment.status == 'pending' %}
-                            <form method="POST" action="{% url 'appointment_confirm' appointment.id %}" style="display: inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="from_detail" value="1">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check-circle"></i> Confirm Booking
+                            {% if request.GET.mode != 'view' %}
+                                {% if appointment.status == 'pending' %}
+                                <form method="POST" action="{% url 'appointment_confirm' appointment.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="from_detail" value="1">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check-circle"></i> Confirm Booking
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <!-- Quick Edit Button -->
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editAppointmentModal">
+                                    <i class="fas fa-edit"></i> Edit
                                 </button>
-                            </form>
+                                <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            {% else %}
+                                <a href="{% url 'admin_appointment_detail' appointment.id %}" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> Switch to Edit Mode
+                                </a>
                             {% endif %}
-                            <!-- Quick Edit Button -->
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editAppointmentModal">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <a href="{% url 'appointment_delete' appointment.id %}" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> Delete
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -246,6 +375,56 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Refund Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="refundModalLabel"><i class="fas fa-undo me-2"></i>Record Manual Refund</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_appointment_refund' appointment.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small text-muted">Use this to record a refund that was already processed (e.g. cash returned or Khalti reversal). This will update the appointment status and accounting records.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Current Paid Amount</label>
+                        <p class="h5 text-success">Rs. {{ appointment.paid_amount }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Refund Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Rs.</span>
+                            <input type="number" name="refund_amount" class="form-control" value="{{ appointment.paid_amount|floatformat:0 }}" max="{{ appointment.paid_amount }}" required>
+                        </div>
+                        <small class="text-muted">Max: Rs. {{ appointment.paid_amount }}</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Refund Method</label>
+                        <select name="refund_method" class="form-select" required>
+                            <option value="cash">Cash Refuned</option>
+                            <option value="khalti">Khalti Reversal (External)</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Notes / Reason</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="e.g. Customer cancelled early, 50% refund given."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Refund</button>
                 </div>
             </form>
         </div>

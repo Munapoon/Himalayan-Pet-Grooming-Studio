@@ -41,3 +41,15 @@ class ReviewForm(forms.ModelForm):
                 'placeholder': 'Share your experience with this product...'
             }),
         }
+
+
+class OrderUpdateForm(forms.ModelForm):
+    class Meta:
+        from .models import Order
+        model = Order
+        fields = ['shipping_address', 'phone_number', 'notes']
+        widgets = {
+            'shipping_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Extra delivery instructions...'}),
+        }

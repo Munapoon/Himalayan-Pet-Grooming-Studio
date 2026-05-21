@@ -6,6 +6,11 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
 import requests as http_requests
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+import decimal
+import uuid
+from django.utils import timezone
 
 from accounts.decorators import admin_required
 from .models import ProductCategory, Product, Cart, Order, OrderItem, Payment, Sale
@@ -62,8 +67,19 @@ def category_update(request, pk):
 def category_delete(request, pk):
     category = get_object_or_404(ProductCategory, pk=pk)
     if request.method == 'POST':
+        # Block deletion if category has active products
+        active_products = category.products.filter(is_active=True)
+        active_count = active_products.count()
+        if active_count > 0:
+            messages.error(
+                request,
+                f'Cannot delete "{category.name}" category. '
+                f'It has {active_count} active product(s) assigned to it. '
+                f'Please deactivate or reassign those products before deleting this category.'
+            )
+            return redirect('products:category_list')
         category.delete()
-        messages.success(request, 'Category deleted successfully!')
+        messages.success(request, f'Category "{category.name}" deleted successfully!')
         return redirect('products:category_list')
     return render(request, 'products/category_confirm_delete.html', {'category': category})
 
@@ -192,11 +208,35 @@ def product_detail(request, pk):
         # Admins see everything
         reviews = reviews_qs
     
+    # Simple Recommendation System
+    from appointments.models import Service
+    recommended_service = None
+    
+    product_text = f"{product.name} {product.category.name}".lower()
+    
+    if "nail" in product_text or "clipper" in product_text or "trimmer" in product_text:
+        recommended_service = Service.objects.filter(is_active=True, slug__icontains='nail').first()
+    elif "shampoo" in product_text or "conditioner" in product_text or "bath" in product_text or "soap" in product_text:
+        recommended_service = Service.objects.filter(is_active=True, slug__icontains='bath').first()
+    elif "scissor" in product_text or "brush" in product_text or "comb" in product_text or "hair" in product_text:
+        recommended_service = Service.objects.filter(is_active=True, slug__icontains='haircut').first()
+    elif "oil" in product_text or "spa" in product_text or "massage" in product_text:
+        recommended_service = Service.objects.filter(is_active=True, slug__icontains='spa').first()
+        
+    if not recommended_service:
+        # Fallback to a deterministic service based on product ID so it doesn't change on refresh
+        active_services = list(Service.objects.filter(is_active=True))
+        if active_services:
+            index = product.id % len(active_services)
+            recommended_service = active_services[index]
+
+
     context = {
         'product': product,
         'has_purchased': has_purchased,
         'user_review': user_review,
         'reviews': reviews,
+        'recommended_service': recommended_service,
     }
     
     if request.user.is_authenticated and request.user.is_admin_user():
@@ -506,13 +546,27 @@ def checkout(request):
             
             # Send email confirmation
             from django.core.mail import send_mail
-            subject = f"Order Confirmed: #{order.order_number}"
-            message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
-                      f"Your order #{order.order_number} has been placed successfully!\n" \
-                      f"Total amount to pay on delivery: Rs. {order.total_amount}.\n\n" \
-                      f"Thank you for shopping with Himalayan Pet Studio!"
+            
+            subject = f"Order #{order.order_number} Placed"
+            
+            context = {
+                'user_name': request.user.get_full_name() or request.user.username,
+                'order': order,
+                'site_url': request.build_absolute_uri('/')[:-1]
+            }
+            
+            html_message = render_to_string('emails/order_confirmation.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    settings.DEFAULT_FROM_EMAIL, 
+                    [request.user.email], 
+                    html_message=html_message,
+                    fail_silently=True
+                )
             except Exception as e:
                 print(f"DEBUG: Email confirmation error (COD): {e}")
                 pass
@@ -531,12 +585,17 @@ def checkout(request):
             url = f"{settings.KHALTI_BASE_URL}epayment/initiate/"
             return_url = request.build_absolute_uri(reverse('products:khalti_verify'))
             
+            # Build purchase name from product items
+            product_names = ", ".join([item.product.name for item in order.items.all()])
+            if len(product_names) > 80:
+                product_names = product_names[:77] + "..."
+            
             payload = {
                 "return_url": return_url,
                 "website_url": request.build_absolute_uri('/'),
                 "amount": int(order.total_amount * 100),
                 "purchase_order_id": f"order-{order.order_number}",
-                "purchase_order_name": f"Himalayan Pet Studio Order #{order.order_number}",
+                "purchase_order_name": f"Order #{order.order_number}: {product_names}",
                 "customer_info": {
                     "name": request.user.get_full_name() or request.user.username,
                     "email": request.user.email or "customer@example.com",
@@ -610,6 +669,55 @@ def order_list(request):
 
 
 @login_required
+def order_cancel(request, order_number):
+    """Allow user to cancel a pending order"""
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+    
+    if order.status != 'pending':
+        messages.error(request, f"Order #{order_number} cannot be cancelled as it's already {order.status}.")
+        return redirect('products:order_detail', order_number=order_number)
+    
+    if request.method == 'POST':
+        # Restore stock before cancelling
+        for item in order.items.all():
+            item.product.stock_quantity += item.quantity
+            item.product.save()
+            
+        order.status = 'cancelled'
+        order.save()
+        messages.success(request, f"Order #{order_number} has been cancelled successfully.")
+        return redirect('products:order_list')
+        
+    return render(request, 'products/order_confirm_cancel.html', {'order': order})
+
+
+@login_required
+def order_edit(request, order_number):
+    """Allow user to edit shipping details of a pending order"""
+    from .forms import OrderUpdateForm
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+    
+    if order.status != 'pending':
+        messages.error(request, f"Order #{order_number} cannot be edited as it's already {order.status}.")
+        return redirect('products:order_detail', order_number=order_number)
+        
+    if request.method == 'POST':
+        form = OrderUpdateForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Order #{order_number} shipping details updated!")
+            return redirect('products:order_detail', order_number=order_number)
+    else:
+        form = OrderUpdateForm(instance=order)
+        
+    return render(request, 'products/order_form_user.html', {
+        'form': form, 
+        'order': order,
+        'action': 'Update Shipping Info'
+    })
+
+
+@login_required
 def khalti_verify(request):
     """
     KPG-2 Callback: Handles return from Khalti and verifies status using lookup API.
@@ -659,13 +767,27 @@ def khalti_verify(request):
                 
                 # Send email confirmation
                 from django.core.mail import send_mail
-                subject = f"Payment Confirmed: Order #{order.order_number}"
-                message = f"Hello {request.user.get_full_name() or request.user.username},\n\n" \
-                          f"Your Khalti payment of Rs. {order.total_amount} for order #{order.order_number} was successful!\n" \
-                          f"Your order is now being processed.\n\n" \
-                          f"Thank you for shopping with Himalayan Pet Studio!"
+                
+                subject = f"Payment Received: Order #{order.order_number}"
+                
+                context = {
+                    'user_name': request.user.get_full_name() or request.user.username,
+                    'order': order,
+                    'site_url': request.build_absolute_uri('/')[:-1]
+                }
+                
+                html_message = render_to_string('emails/order_confirmation.html', context)
+                plain_message = strip_tags(html_message)
+                
                 try:
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email], fail_silently=True)
+                    send_mail(
+                        subject, 
+                        plain_message, 
+                        settings.DEFAULT_FROM_EMAIL, 
+                        [request.user.email], 
+                        html_message=html_message,
+                        fail_silently=True
+                    )
                 except Exception as e:
                     print(f"DEBUG: Email confirmation error (Khalti): {e}")
                     pass
@@ -815,13 +937,66 @@ def update_order_status(request, order_number):
     return redirect('products:admin_order_list')
 
 
+@login_required
+@admin_required
+def admin_order_refund(request, order_number):
+    """Admin manually records a refund for an e-commerce order."""
+    order = get_object_or_404(Order, order_number=order_number)
+    
+    if request.method == 'POST':
+        try:
+            refund_amount = decimal.Decimal(request.POST.get('refund_amount', '0'))
+            refund_method = request.POST.get('refund_method', 'cash')
+            notes = request.POST.get('notes', '')
+            
+            if refund_amount <= 0:
+                messages.error(request, 'Refund amount must be greater than zero.')
+                return redirect('products:admin_order_detail', order_number=order_number)
+            
+            if refund_amount > order.total_amount:
+                messages.error(request, f'Refund amount cannot exceed order total (Rs. {order.total_amount}).')
+                return redirect('products:admin_order_detail', order_number=order_number)
+            
+            # 1. Update order status and payment status
+            order.status = 'refunded'
+            order.payment_status = 'refunded'
+            order.save()
+            
+            # 2. Record the refund as a Payment object with negative amount
+            unique_id = f"REF-{uuid.uuid4().hex[:4]}-{timezone.now().strftime('%y%m%d')}"
+            
+            Payment.objects.create(
+                order=order,
+                user=order.user,
+                transaction_id=f"PAY-{order.order_number}-{unique_id}",
+                payment_method=refund_method,
+                amount=-refund_amount,
+                status='refunded',
+                payment_response={
+                    'source': 'Manual Order Refund',
+                    'recorded_by': request.user.username,
+                    'notes': notes,
+                    'is_manual': True
+                }
+            )
+            
+            messages.success(request, f'Succesfully recorded refund of Rs. {refund_amount} for Order #{order.order_number}.')
+            
+        except (ValueError, decimal.InvalidOperation):
+            messages.error(request, 'Invalid refund amount.')
+            
+        return redirect('products:admin_order_detail', order_number=order_number)
+
+    return redirect('products:admin_order_detail', order_number=order_number)
+
+
 # Admin Review Management Views
 @login_required
 @admin_required
 def admin_review_list(request):
     """Admin view to list all product reviews"""
     from .models import Review
-    from django.db.models import Q
+    from django.db.models import Q, Avg
     from django.core.paginator import Paginator
     
     # Get filter parameters
@@ -853,15 +1028,41 @@ def admin_review_list(request):
     
     # Get all products for filter dropdown
     products = Product.objects.filter(is_active=True).order_by('name')
+
+    # Metrics
+    total_reviews = Review.objects.count()
+    approved_count = Review.objects.filter(is_approved=True).count()
+    pending_count = Review.objects.filter(is_approved=False).count()
+    avg_rating = Review.objects.aggregate(Avg('rating'))['rating__avg'] or 0
+    five_star_count = Review.objects.filter(rating=5).count()
     
     context = {
         'page_obj': page_obj,
         'rating_filter': rating_filter,
         'product_filter': product_filter,
+        'product_filter_int': int(product_filter) if product_filter else None,
         'search_query': search_query,
         'products': products,
+        'total_reviews': total_reviews,
+        'approved_count': approved_count,
+        'pending_count': pending_count,
+        'avg_rating': round(avg_rating, 1),
+        'five_star_count': five_star_count,
     }
     return render(request, 'products/admin_review_list.html', context)
+
+
+@login_required
+@admin_required
+def admin_approve_review(request, pk):
+    """Toggle approval status of a product review"""
+    from .models import Review
+    review = get_object_or_404(Review, pk=pk)
+    review.is_approved = not review.is_approved
+    review.save()
+    status = "approved" if review.is_approved else "unapproved"
+    messages.success(request, f'Review has been {status}.')
+    return redirect('products:admin_review_list')
 
 
 @login_required
@@ -880,6 +1081,7 @@ def admin_delete_review(request, pk):
         return redirect('products:admin_review_list')
     
     return render(request, 'products/admin_review_confirm_delete.html', {'review': review})
+
 
 
 # Payment Views
@@ -974,5 +1176,238 @@ def admin_payment_detail(request, pk):
         'payment': payment,
     }
     return render(request, 'products/admin_payment_detail.html', context)
+
+
+@login_required
+@admin_required
+def export_orders_excel(request):
+    """Export all or filtered orders to Excel"""
+    import openpyxl
+    from django.http import HttpResponse
+    from django.utils import timezone
+    from openpyxl.styles import Font, Alignment, PatternFill
+    
+    # Get filters from request
+    status_filter = request.GET.get('status', '')
+    payment_status_filter = request.GET.get('payment_status', '')
+    search_query = request.GET.get('search', '')
+    
+    orders = Order.objects.all().select_related('user').order_by('-created_at')
+    
+    # Apply filters (same as admin_order_list)
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+    if payment_status_filter:
+        orders = orders.filter(payment_status=payment_status_filter)
+    if search_query:
+        orders = orders.filter(
+            Q(order_number__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query)
+        )
+    
+    # Create workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Orders Report"
+    
+    # Header cells
+    headers = ['Order #', 'Customer', 'Email', 'Date', 'Amount (Rs.)', 'Method', 'Payment Status', 'Order Status']
+    ws.append(headers)
+    
+    # Style headers
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4E73DF", end_color="4E73DF", fill_type="solid")
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+    
+    # Add data
+    for order in orders:
+        ws.append([
+            order.order_number,
+            order.user.get_full_name() or order.user.username,
+            order.user.email,
+            order.created_at.strftime('%Y-%m-%d %H:%M'),
+            float(order.total_amount),
+            order.payment_method.upper() if order.payment_method else 'COD',
+            order.payment_status.upper(),
+            order.status.upper()
+        ])
+    
+    # Adjust column widths
+    for column_cells in ws.columns:
+        length = max(len(str(cell.value)) for cell in column_cells)
+        ws.column_dimensions[column_cells[0].column_letter].width = length + 2
+
+    # Prepare response
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="Order_Report_{timestamp}.xlsx"'
+    
+    wb.save(response)
+    return response
+
+
+@login_required
+@admin_required
+def export_payments_excel(request):
+    """Export all or filtered payments to Excel"""
+    import openpyxl
+    from django.http import HttpResponse
+    from django.utils import timezone
+    from openpyxl.styles import Font, Alignment, PatternFill
+    
+    # Get filters
+    status_filter = request.GET.get('status', '')
+    method_filter = request.GET.get('payment_method', '')
+    
+    payments = Payment.objects.all().select_related('user', 'order', 'appointment').order_by('-created_at')
+    
+    if status_filter:
+        payments = payments.filter(status=status_filter)
+    if method_filter:
+        payments = payments.filter(payment_method=method_filter)
+        
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Payments Report"
+    
+    headers = ['Transaction ID', 'User', 'Email', 'Amount (Rs.)', 'Method', 'ID (Order/Appt)', 'Status', 'Date']
+    ws.append(headers)
+    
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="1CC88A", end_color="1CC88A", fill_type="solid")
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+        
+    for p in payments:
+        target_id = f"Order: {p.order.order_number}" if p.order else (f"Appt: {p.appointment.id}" if p.appointment else "N/A")
+        ws.append([
+            p.transaction_id,
+            p.user.get_full_name() or p.user.username,
+            p.user.email,
+            float(p.amount),
+            p.payment_method.upper() if p.payment_method else 'N/A',
+            target_id,
+            p.status.upper(),
+            p.created_at.strftime('%Y-%m-%d %H:%M')
+        ])
+        
+    for column_cells in ws.columns:
+        length = max(len(str(cell.value)) for cell in column_cells if cell.value)
+        ws.column_dimensions[column_cells[0].column_letter].width = length + 2
+
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="Payment_Report_{timestamp}.xlsx"'
+    wb.save(response)
+    return response
+
+
+@login_required
+@admin_required
+def export_orders_csv(request):
+    """Export all or filtered orders to CSV"""
+    from django.http import HttpResponse
+    from django.utils import timezone
+    import csv
+
+    # Get filters from request
+    status_filter = request.GET.get('status', '')
+    payment_status_filter = request.GET.get('payment_status', '')
+    search_query = request.GET.get('search', '')
+
+    orders = Order.objects.all().select_related('user').order_by('-created_at')
+
+    # Apply filters (same as admin_order_list)
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+    if payment_status_filter:
+        orders = orders.filter(payment_status=payment_status_filter)
+    if search_query:
+        orders = orders.filter(
+            Q(order_number__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query)
+        )
+
+    # Prepare response
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="Order_Report_{timestamp}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Order #', 'Customer', 'Email', 'Date', 'Amount (Rs.)', 'Method', 'Payment Status', 'Order Status'])
+
+    for order in orders:
+        writer.writerow([
+            order.order_number,
+            order.user.get_full_name() or order.user.username,
+            order.user.email,
+            order.created_at.strftime('%Y-%m-%d %H:%M'),
+            float(order.total_amount),
+            order.payment_method.upper() if order.payment_method else 'COD',
+            order.payment_status.upper(),
+            order.status.upper()
+        ])
+
+    return response
+
+
+@login_required
+@admin_required
+def export_payments_csv(request):
+    """Export all or filtered payments to CSV"""
+    from django.http import HttpResponse
+    from django.utils import timezone
+    import csv
+
+    # Get filters
+    status_filter = request.GET.get('status', '')
+    method_filter = request.GET.get('payment_method', '')
+
+    payments = Payment.objects.all().select_related('user', 'order', 'appointment').order_by('-created_at')
+
+    if status_filter:
+        payments = payments.filter(status=status_filter)
+    if method_filter:
+        payments = payments.filter(payment_method=method_filter)
+
+    # Prepare response
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="Payment_Report_{timestamp}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Transaction ID', 'User', 'Email', 'Amount (Rs.)', 'Method', 'ID (Order/Appt)', 'Status', 'Date'])
+
+    for p in payments:
+        target_id = f"Order: {p.order.order_number}" if p.order else (f"Appt: {p.appointment.id}" if p.appointment else "N/A")
+        writer.writerow([
+            p.transaction_id,
+            p.user.get_full_name() or p.user.username,
+            p.user.email,
+            float(p.amount),
+            p.payment_method.upper() if p.payment_method else 'N/A',
+            target_id,
+            p.status.upper(),
+            p.created_at.strftime('%Y-%m-%d %H:%M')
+        ])
+
+    return response
+
+
+@login_required
+@admin_required
+def export_sales_csv(request):
+    """Redirect to accounts version of sales report"""
+    from django.shortcuts import redirect
+    from django.urls import reverse
+    url = reverse('export_sales_csv') + f"?month={request.GET.get('month', '')}&year={request.GET.get('year', '')}"
+    return redirect(url)
 
 

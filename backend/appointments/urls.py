@@ -14,6 +14,7 @@ urlpatterns = [
     path('confirm/<int:pk>/', views.appointment_confirm, name='appointment_confirm'),
     path('complete/<int:pk>/', views.appointment_complete, name='appointment_complete'),
     path('pay-shop/<int:pk>/', views.admin_appointment_pay_shop, name='admin_appointment_pay_shop'),
+    path('admin/<int:pk>/refund/', views.admin_appointment_refund, name='admin_appointment_refund'),
     path('<int:pk>/payment/', views.appointment_payment, name='appointment_payment'),
     path('<int:pk>/khalti/initiate/', views.appointment_khalti_initiate, name='appointment_khalti_initiate'),
     path('khalti/verify/', views.appointment_khalti_verify, name='appointment_khalti_verify'),
@@ -22,14 +23,18 @@ urlpatterns = [
     path('service/<str:service_type>/', views.service_detail, name='service_detail'),
     path('service/<str:service_type>/review/', views.add_service_review, name='add_service_review'),
     path('reviews/admin/', views.admin_service_review_list, name='admin_service_review_list'),
+    path('reviews/admin/<int:pk>/approve/', views.admin_approve_service_review, name='admin_approve_service_review'),
+    path('reviews/admin/<int:pk>/delete/', views.admin_delete_service_review, name='admin_delete_service_review'),
     
     # Service Admin CRUD
     path('admin-dashboard/services/', views.admin_service_list, name='admin_service_list'),
     path('admin-dashboard/services/add/', views.admin_service_add, name='admin_service_add'),
     path('admin-dashboard/services/edit/<int:pk>/', views.admin_service_edit, name='admin_service_edit'),
     path('admin-dashboard/services/delete/<int:pk>/', views.admin_service_delete, name='admin_service_delete'),
-    # Pet CRUD
+    
+    # Pet Profiles
     path('pets/', views.pet_list, name='pet_list'),
+    path('admin-dashboard/pets/', views.admin_pet_list, name='admin_pet_list'),
     path('pets/add/', views.pet_add, name='pet_add'),
     path('pets/edit/<int:pk>/', views.pet_edit, name='pet_edit'),
     path('pets/delete/<int:pk>/', views.pet_delete, name='pet_delete'),

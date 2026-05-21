@@ -2,12 +2,39 @@
 
 {% block title %}{{ action }} Appointment - Himalayan Pet Studio{% endblock %}
 
+{% block extra_js %}
+<script>
+function autoFillPet(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const nameField = document.querySelector('input[name="pet_name"]');
+    const typeField = document.querySelector('input[name="pet_type"]');
+    const alertDiv = document.getElementById('pet-medical-alert');
+    const alertText = document.getElementById('pet-medical-text');
+    
+    if (selectedOption.value) {
+        nameField.value = selectedOption.value;
+        typeField.value = selectedOption.getAttribute('data-type');
+        
+        const medical = selectedOption.getAttribute('data-medical');
+        if (medical && medical.trim() !== "") {
+            alertText.innerText = medical;
+            alertDiv.classList.remove('d-none');
+        } else {
+            alertDiv.classList.add('d-none');
+        }
+    } else {
+        alertDiv.classList.add('d-none');
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header text-white" style="background-color: #1e3a8a;">
                     <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> {{ action }} Appointment</h4>
                 </div>
                 <div class="card-body">
@@ -22,18 +49,42 @@
                         </div>
                         {% endif %}
 
-                        <div class="mb-4">
-                            <label for="{{ form.pet.id_for_label }}" class="form-label font-weight-bold">Select Your Pet *</label>
-                            <div class="input-group">
-                                {{ form.pet }}
-                                <a href="{% url 'pet_add' %}?next={{ request.path }}" class="btn btn-outline-secondary" title="Add a New Pet">
-                                    <i class="fas fa-plus"></i>
-                                </a>
+                        {% if user_pets %}
+                        <div class="mb-4 p-3 bg-light border rounded-3">
+                            <label class="form-label fw-bold" style="color: #1e3a8a;"><i class="fas fa-paw"></i> Select from Your Saved Pets</label>
+                            <select id="pet-selector" class="form-select shadow-sm" onchange="autoFillPet(this)">
+                                <option value="">-- Choose a Pet for Fast Booking --</option>
+                                {% for pet in user_pets %}
+                                <option value="{{ pet.name }}" data-type="{{ pet.pet_type }}" data-medical="{{ pet.medical_notes|escapejs }}">
+                                    {{ pet.name }} ({{ pet.pet_type }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text mt-1 text-muted">Selecting a saved pet will automatically fill the name and type fields.</div>
+                            
+                            <div id="pet-medical-alert" class="mt-3 p-2 bg-danger-subtle border border-danger-subtle rounded-3 d-none">
+                                <span class="fw-bold text-danger"><i class="fas fa-notes-medical"></i> Medical Alert:</span>
+                                <span id="pet-medical-text" class="text-dark small"></span>
                             </div>
-                            <small class="text-muted">Choose the pet for this grooming session. <a href="{% url 'pet_add' %}?next={{ request.path }}">Add new pet if not listed.</a></small>
-                            {% if form.pet.errors %}
-                            <div class="text-danger small mt-1">{{ form.pet.errors }}</div>
-                            {% endif %}
+                        </div>
+{% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.pet_name.id_for_label }}" class="form-label">Pet Name *</label>
+                                {{ form.pet_name }}
+                                {% if form.pet_name.errors %}
+                                <div class="text-danger">{{ form.pet_name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.pet_type.id_for_label }}" class="form-label">Pet Type *</label>
+                                {{ form.pet_type }}
+                                {% if form.pet_type.errors %}
+                                <div class="text-danger">{{ form.pet_type.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -70,21 +121,25 @@
                             {% endif %}
                         </div>
                         
-                        <div class="alert alert-danger py-2 mb-4">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            <strong>Important Note:</strong> There will be no refund for any bookings. Please book your appointment carefully.
-                        </div>
+
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn text-white" style="background-color: #1e3a8a;">
                                 <i class="fas fa-save"></i> Save Appointment
                             </button>
                             <a href="{% if user.is_admin_user %}{% url 'admin_appointment_list' %}{% else %}{% url 'appointment_list' %}{% endif %}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
+                            {% if user.is_admin_user %}
+                            <a href="{% url 'admin_appointment_list' %}" class="btn btn-outline-secondary ms-auto">
+                                <i class="fas fa-arrow-left"></i> Back to Appointments
+                            </a>
+                            {% else %}
                             <a href="{% url 'service_list' %}" class="btn btn-outline-primary ms-auto">
                                 <i class="fas fa-arrow-left"></i> Back to Services
                             </a>
+                            {% endif %}
+
                         </div>
                     </form>
                 </div>

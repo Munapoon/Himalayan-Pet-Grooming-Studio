@@ -153,9 +153,9 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Session Settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'  # Use cached database backend
-SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
+SESSION_COOKIE_AGE = 600  # 10 minutes in seconds
 SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session after browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Keep session after browser close
 SESSION_COOKIE_NAME = 'himalayan_pet_sessionid'
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS

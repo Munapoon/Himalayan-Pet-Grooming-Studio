@@ -143,13 +143,13 @@
                             <input type="hidden" name="size" id="selectedSizeInput" value="">
                             
                             <div class="quantity-controls">
-                                <button type="button" class="quantity-btn decrement-btn">
+                                <button type="button" class="quantity-btn decrement-btn" onclick="changeQty(-1)">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1"
                                     max="{{ product.stock_quantity }}" class="quantity-input" readonly
                                     style="background-color: white; cursor: default;">
-                                <button type="button" class="quantity-btn increment-btn"
+                                <button type="button" class="quantity-btn increment-btn" onclick="changeQty(1)"
                                     data-max="{{ product.stock_quantity }}">
                                     <i class="fas fa-plus"></i>
                                 </button>
@@ -170,13 +170,13 @@
                         </form>
                         {% else %}
                         <div class="quantity-controls">
-                            <button type="button" class="quantity-btn decrement-btn">
+                            <button type="button" class="quantity-btn decrement-btn" onclick="changeQty(-1)">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <input type="number" id="quantity" value="1" min="1" max="{{ product.stock_quantity }}"
                                 class="quantity-input" readonly
                                 style="background-color: white; cursor: default;">
-                            <button type="button" class="quantity-btn increment-btn"
+                            <button type="button" class="quantity-btn increment-btn" onclick="changeQty(1)"
                                 data-max="{{ product.stock_quantity }}">
                                 <i class="fas fa-plus"></i>
                             </button>
@@ -196,6 +196,8 @@
                 </div>
             </div>
         </div>
+
+
 
         <!-- Reviews Section -->
         <div class="reviews-section">

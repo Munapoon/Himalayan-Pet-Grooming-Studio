@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Legal Information - Himalayan Pet Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/templates/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="legal-header text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Legal & Policies</h1>
+        <p class="lead">Everything you need to know about our terms, privacy and services.</p>
+    </div>
+</section>
+
+<div class="container mb-5 pb-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="nav flex-column nav-pills me-3 mb-4" id="v-pills-tab" role="tablist">
+                <button class="nav-link active" id="v-pills-tos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-tos" type="button" role="tab">
+                    <i class="fas fa-file-contract me-2"></i> Terms of Service
+                </button>
+                <button class="nav-link" id="v-pills-privacy-tab" data-bs-toggle="pill" data-bs-target="#v-pills-privacy" type="button" role="tab">
+                    <i class="fas fa-user-shield me-2"></i> Privacy Policy
+                </button>
+                <button class="nav-link" id="v-pills-refund-tab" data-bs-toggle="pill" data-bs-target="#v-pills-refund" type="button" role="tab">
+                    <i class="fas fa-undo-alt me-2"></i> Refund Policy
+                </button>
+                <button class="nav-link" id="v-pills-booking-tab" data-bs-toggle="pill" data-bs-target="#v-pills-booking" type="button" role="tab">
+                    <i class="fas fa-calendar-check me-2"></i> Booking Rules
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="tab-content" id="v-pills-tabContent">
+                <!-- Terms of Service -->
+                <div class="tab-pane fade show active" id="v-pills-tos" role="tabpanel">
+                    <div class="policy-box">
+                        <h2>Terms of Service</h2>
+                        <p class="text-muted">Last Updated: April 2026</p>
+                        <p>Welcome to Himalayan Pet Grooming Studio. By using our website and services, you agree to comply with and be bound by the following terms and conditions.</p>
+                        
+                        <h5 class="mt-4">1. Use of Services</h5>
+                        <p>Our grooming services are provided based on availability. We reserve the right to refuse service to pets with extreme aggression or severe contagious health conditions that might endanger our staff or other pets.</p>
+
+                        <h5 class="mt-4">2. Liability</h5>
+                        <p>While we take every precaution to ensure the safety of your pet, Himalayan Pet Studio shall not be liable for any pre-existing health conditions or stress-related problems that may arise during or after grooming.</p>
+
+                        <h5 class="mt-4">3. Accurate Information</h5>
+                        <p>Users are responsible for providing accurate information regarding their identity, contact details, and pet's health history when booking services or purchasing products.</p>
+                    </div>
+                </div>
+
+                <!-- Privacy Policy -->
+                <div class="tab-pane fade" id="v-pills-privacy" role="tabpanel">
+                    <div class="policy-box">
+                        <h2>Privacy Policy</h2>
+                        <p class="text-muted">Last Updated: April 2026</p>
+                        <p>Your privacy is important to us. It is Himalayan Pet Studio's policy to respect your privacy regarding any information we may collect from you across our website.</p>
+
+                        <h5 class="mt-4">Data Collection</h5>
+                        <p>We only ask for personal information (such as name, email, and phone number) when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent.</p>
+
+                        <h5 class="mt-4">Data Protection</h5>
+                        <p>We only retain collected information for as long as necessary to provide you with your requested service. What data we store, we’ll protect within commercially acceptable means to prevent loss and theft.</p>
+                    </div>
+                </div>
+
+                <!-- Refund Policy -->
+                <div class="tab-pane fade" id="v-pills-refund" role="tabpanel">
+                    <div class="policy-box">
+                        <h2>Refund Policy</h2>
+                        <p class="text-muted">Last Updated: April 2026</p>
+                        
+                        <h5 class="mt-4">Service Refunds</h5>
+                        <p>If you are not satisfied with our grooming service, please let us know before leaving the studio. We will do our best to correct it immediately. Once the pet has left the premises, refunds are generally not provided.</p>
+
+                        <h5 class="mt-4">Product Refunds</h5>
+                        <p>Products purchased through our shop can be returned within 7 days of purchase if they are unused, in original packaging, and accompanied by a receipt. Perishable pet food and treats are not returnable.</p>
+                    </div>
+                </div>
+
+                <!-- Booking Rules -->
+                <div class="tab-pane fade" id="v-pills-booking" role="tabpanel">
+                    <div class="policy-box">
+                        <h2>Booking Rules</h2>
+                        <p class="text-muted">Last Updated: April 2026</p>
+                        
+                        <h5 class="mt-4">Cancellation Policy</h5>
+                        <p>Please notify us at least 24 hours in advance if you need to cancel or reschedule your appointment. Cancellations made less than 24 hours before the appointment may be subject to a cancellation fee.</p>
+
+                        <h5 class="mt-4">Late Arrivals</h5>
+                        <p>If you are more than 15 minutes late for your appointment, we may need to reschedule or shorten the grooming session to avoid delaying other appointments. Fees may still apply.</p>
+                        
+                        <h5 class="mt-4">Pet Vaccinations</h5>
+                        <p>For the safety of all pets at our studio, we require all grooming clients to be up-to-date on their core vaccinations (Rabies, DHLPP). Proof of vaccination may be requested.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

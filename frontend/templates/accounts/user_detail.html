@@ -45,13 +45,36 @@
                     </form>
                     {% endif %}
 
-                    {% if not user_profile.is_superuser %}
-                    <form method="POST" action="{% url 'user_delete' user_profile.id %}" class="d-inline">
+                    {% if user_profile.username != 'User' %}
+                    <!-- Role Management -->
+                    <hr>
+                    <h6 class="text-start mb-2"><i class="fas fa-user-shield text-primary"></i> Change User Role</h6>
+                    {% if user_profile.is_superuser %}
+                    <div class="alert alert-dark py-2 px-3 mb-2" style="font-size: 0.85rem;">
+                        <i class="fas fa-crown text-warning me-1"></i> This user is currently a <strong>Superuser</strong>.
+                    </div>
+                    {% endif %}
+                    
+                    <form action="{% url 'user_update_role' user_profile.id %}" method="POST" class="d-flex flex-column gap-2">
                         {% csrf_token %}
-                        <button class="btn btn-sm btn-danger w-100" onclick="return confirm('Are you completely sure? This will DELETE the user and all their records permanently.')">
+                        <select name="role" class="form-select form-select-sm">
+                            <option value="user" {% if user_profile.role == 'user' %}selected{% endif %}>Regular User</option>
+                            <option value="staff" {% if user_profile.role == 'staff' %}selected{% endif %}>Staff (Groomer)</option>
+                            <option value="admin" {% if user_profile.role == 'admin' %}selected{% endif %}>Admin (Superuser)</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary w-100 mt-1">Update Role</button>
+                    </form>
+                    
+                    <hr>
+                    <form method="POST" action="{% url 'user_delete' user_profile.id %}" class="d-inline mt-2">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Are you completely sure? This will DELETE the user and all their records permanently.')">
                             <i class="fas fa-trash"></i> Delete User
                         </button>
                     </form>
+                    {% else %}
+                    <hr>
+                    <span class="badge bg-dark mt-2 py-2 w-100"><i class="fas fa-crown text-warning"></i> Master Admin</span>
                     {% endif %}
                 </div>
             </div>

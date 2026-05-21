@@ -35,6 +35,8 @@
                             <span class="badge bg-info">{{ order.get_status_display }}</span>
                             {% elif order.status == 'completed' %}
                             <span class="badge bg-success">{{ order.get_status_display }}</span>
+                            {% elif order.status == 'refunded' %}
+                            <span class="badge bg-dark">{{ order.get_status_display }}</span>
                             {% else %}
                             <span class="badge bg-danger">{{ order.get_status_display }}</span>
                             {% endif %}
@@ -45,6 +47,8 @@
                             <strong>Payment Method:</strong><br>
                             {% if order.payment_method == 'cod' %}
                             <i class="fas fa-money-bill-wave text-success"></i> Cash on Delivery
+                            {% elif order.payment_method == 'khalti' %}
+                            <span class="text-primary font-weight-bold">Khalti</span>
                             {% else %}
                             <i class="fab fa-stripe text-primary"></i> Stripe
                             {% endif %}
@@ -55,6 +59,8 @@
                             <span class="badge bg-warning">{{ order.get_payment_status_display }}</span>
                             {% elif order.payment_status == 'paid' %}
                             <span class="badge bg-success">{{ order.get_payment_status_display }}</span>
+                            {% elif order.payment_status == 'refunded' %}
+                            <span class="badge bg-info">{{ order.get_payment_status_display }}</span>
                             {% else %}
                             <span class="badge bg-danger">{{ order.get_payment_status_display }}</span>
                             {% endif %}
@@ -126,10 +132,20 @@
                 </div>
             </div>
 
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
                 <a href="{% url 'products:order_list' %}" class="btn btn-primary">
-                    <i class="fas fa-list"></i> View All Orders
+                    <i class="fas fa-list"></i> My Orders
                 </a>
+                
+                {% if order.status == 'pending' %}
+                <a href="{% url 'products:order_edit' order.order_number %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit Info
+                </a>
+                <a href="{% url 'products:order_cancel' order.order_number %}" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Cancel Order
+                </a>
+                {% endif %}
+                
                 <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
                     <i class="fas fa-shopping-bag"></i> Continue Shopping
                 </a>
