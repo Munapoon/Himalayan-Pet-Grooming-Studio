@@ -65,8 +65,8 @@
                             </div>
                             <div class="col">
                                 <div class="progress progress-sm mr-2 dashboard-progress">
-                                    <div class="progress-bar bg-info" role="progressbar"
-                                        style="width: {{ tasks_percentage }}%;" aria-valuenow="{{ tasks_percentage }}"
+                                    <div class="progress-bar bg-info dynamic-task-progress" role="progressbar"
+                                        style="width: 0%;" data-width="{{ tasks_percentage }}" aria-valuenow="{{ tasks_percentage }}"
                                         aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </div>
@@ -342,6 +342,10 @@
                 }
             }
         });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        const el = document.querySelector('.dynamic-task-progress');
+        if (el) el.style.width = el.getAttribute('data-width') + '%';
     });
 </script>
 {% endblock %}

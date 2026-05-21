@@ -132,8 +132,8 @@
                             <td class="text-end pe-4 fw-bold">Rs. {{ d.total|floatformat:2 }}</td>
                             <td class="pe-4">
                                 <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" role="progressbar"
-                                        style="width: {{ d.percentage }}%"></div>
+                                    <div class="progress-bar bg-success dynamic-progress" role="progressbar"
+                                        style="width: 0%;" data-width="{{ d.percentage }}"></div>
                                 </div>
                             </td>
                         </tr>
@@ -266,4 +266,11 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.dynamic-progress').forEach(function(el) {
+            el.style.width = el.getAttribute('data-width') + '%';
+        });
+    });
+</script>
 {% endblock %}
